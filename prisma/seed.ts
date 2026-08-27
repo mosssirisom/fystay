@@ -23,22 +23,49 @@ function hashCode(input: string): number {
   return Math.abs(hash);
 }
 
-function placeholderPhoto(seedText: string, index: number): string {
+// Line-art glyphs (24x24 viewBox, same stroke language as the lucide icons
+// used everywhere else in the app) standing in for a property's photos.
+// "house" reuses the brand mark itself for city apartments/lofts.
+type PlaceholderIcon = "house" | "mountain" | "waves";
+
+const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
+  house: [
+    "M3 11.5L12 4l9 7.5",
+    "M5.5 10v9a1 1 0 0 0 1 1H17.5a1 1 0 0 0 1-1v-9",
+  ],
+  mountain: ["M2 20 L8 8 L11 13 L15 5 L22 20 Z"],
+  waves: [
+    "M2 9c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
+    "M2 15c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
+  ],
+};
+
+function iconMarkup(icon: PlaceholderIcon): string {
+  const size = 320; // rendered icon box, in canvas pixels
+  const scale = size / 24;
+  const tx = 600 - size / 2;
+  const ty = 450 - size / 2;
+  const paths = ICON_PATHS[icon]
+    .map((d) => `<path d="${d}" />`)
+    .join("");
+  return `<g transform="translate(${tx} ${ty}) scale(${scale})" fill="none" stroke="white" stroke-opacity="0.28" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${paths}</g>`;
+}
+
+function placeholderPhoto(seedText: string, index: number, icon: PlaceholderIcon): string {
   const [from, to] = PALETTES[(hashCode(seedText) + index) % PALETTES.length];
   const angle = index % 2 === 0 ? "x1='0' y1='0' x2='1' y2='1'" : "x1='1' y1='0' x2='0' y2='1'";
-  const letter = seedText.charAt(0).toUpperCase();
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">
     <defs><linearGradient id="g" ${angle}>
       <stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/>
     </linearGradient></defs>
     <rect width="100%" height="100%" fill="url(#g)"/>
-    <text x="50%" y="54%" font-family="Arial, sans-serif" font-size="240" font-weight="700" fill="rgba(255,255,255,0.22)" text-anchor="middle" dominant-baseline="middle">${letter}</text>
+    ${iconMarkup(icon)}
   </svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-function placeholderPhotos(seedText: string, count: number): string[] {
-  return Array.from({ length: count }, (_, i) => placeholderPhoto(seedText, i));
+function placeholderPhotos(seedText: string, count: number, icon: PlaceholderIcon): string[] {
+  return Array.from({ length: count }, (_, i) => placeholderPhoto(seedText, i, icon));
 }
 
 const LISTINGS = [
@@ -54,6 +81,7 @@ const LISTINGS = [
     beds: 1,
     bathrooms: 1,
     amenities: ["Wifi", "Kitchen", "Air conditioning", "Workspace"],
+    placeholderIcon: "house" as const,
   },
   {
     title: "Cliffside villa overlooking Ao Nang beach",
@@ -67,6 +95,7 @@ const LISTINGS = [
     beds: 5,
     bathrooms: 3,
     amenities: ["Pool", "Wifi", "Kitchen", "Free parking", "Ocean view"],
+    placeholderIcon: "mountain" as const,
   },
   {
     title: "Modern canal-side apartment",
@@ -80,6 +109,7 @@ const LISTINGS = [
     beds: 2,
     bathrooms: 1,
     amenities: ["Wifi", "Kitchen", "Washer", "Bikes included"],
+    placeholderIcon: "waves" as const,
   },
 ];
 
@@ -109,11 +139,11 @@ async function main() {
     },
   });
 
-  for (const listing of LISTINGS) {
+  for (const { placeholderIcon, ...listing } of LISTINGS) {
     await prisma.listing.create({
       data: {
         ...listing,
-        photos: placeholderPhotos(listing.city, 4),
+        photos: placeholderPhotos(listing.city, 4, placeholderIcon),
         hostId: host.id,
       },
     });

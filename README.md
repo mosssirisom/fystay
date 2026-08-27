@@ -105,11 +105,20 @@ project's dashboard settings. You'll need to configure, in the Vercel project's 
 variables:
 
 - `DATABASE_URL` pointing at a real Postgres instance (e.g. [Neon](https://neon.tech) or
-  [Supabase](https://supabase.com)), then run `npx prisma migrate deploy` against it once
+  [Supabase](https://supabase.com)). **On Supabase, use the pooled connection string** (the
+  "Transaction pooler" option in the dashboard, port `6543`, with `?pgbouncer=true` appended) —
+  serverless functions open a new connection per invocation, and a direct connection
+  (port `5432`) exhausts Postgres's connection limit under real traffic.
+- `DIRECT_URL` set to the *direct* (non-pooled, port `5432`) connection string. Prisma Migrate
+  needs a direct connection — PgBouncer's transaction mode doesn't support the operations it
+  runs — so this is used only when you run `npx prisma migrate deploy`, never by the app itself.
 - `AUTH_SECRET` (a random string) and `NEXTAUTH_URL` (your deployed URL)
 - `NEXT_PUBLIC_BASE_URL` set to the same deployed URL (used for Stripe redirect URLs and Open
   Graph metadata)
 - Stripe keys if you want real payments; otherwise bookings auto-confirm as described above
+
+After setting `DATABASE_URL`/`DIRECT_URL`, run `npx prisma migrate deploy` once from your machine
+(with those same two variables in your local `.env`) to create the schema on the real database.
 
 ## Project structure
 

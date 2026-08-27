@@ -26,7 +26,7 @@ export default function Icon() {
             display: "flex",
           }}
         >
-          <span style={{ color: "#14b8a6" }}>fy</span>
+          <span style={{ color: "#14b8a6" }}>FY</span>
         </span>
       </div>
     ),

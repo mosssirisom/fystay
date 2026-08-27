@@ -18,7 +18,7 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", fontSize: 132, fontWeight: 700, fontFamily: "sans-serif" }}>
-          <span style={{ color: "#14b8a6" }}>fy</span>
+          <span style={{ color: "#14b8a6" }}>FY</span>
           <span style={{ color: "#142a3d" }}>stay</span>
         </div>
         <div style={{ marginTop: 24, display: "flex", fontSize: 34, fontFamily: "sans-serif" }}>

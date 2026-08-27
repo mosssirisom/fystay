@@ -20,7 +20,7 @@ export function Logo({
       <span
         className={cn("font-[family-name:var(--font-logo)] leading-none", sizeClasses[size])}
       >
-        <span className="text-brand-500">fy</span>
+        <span className="text-brand-500">FY</span>
         <span className="text-[var(--color-ink)]">stay</span>
       </span>
       {withTagline && (

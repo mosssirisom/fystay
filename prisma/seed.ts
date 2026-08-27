@@ -26,14 +26,18 @@ function hashCode(input: string): number {
 // Line-art glyphs (24x24 viewBox, same stroke language as the lucide icons
 // used everywhere else in the app) standing in for a property's photos.
 // "house" reuses the brand mark itself for city apartments/lofts.
-type PlaceholderIcon = "house" | "mountain" | "waves";
+type PlaceholderIcon = "house" | "lighthouse" | "waves";
 
 const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
   house: [
     "M3 11.5L12 4l9 7.5",
     "M5.5 10v9a1 1 0 0 0 1 1H17.5a1 1 0 0 0 1-1v-9",
   ],
-  mountain: ["M2 20 L8 8 L11 13 L15 5 L22 20 Z"],
+  lighthouse: [
+    "M9 21V10a3 3 0 0 1 3-3 3 3 0 0 1 3 3v11",
+    "M9.5 14h5",
+    "M7 21h10",
+  ],
   waves: [
     "M2 9c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
     "M2 15c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
@@ -70,46 +74,46 @@ function placeholderPhotos(seedText: string, count: number, icon: PlaceholderIco
 
 const LISTINGS = [
   {
-    title: "Sunlit loft in the heart of Chiang Mai",
+    title: "Seafront apartment overlooking Blackpool promenade",
     description:
-      "A bright, airy loft two minutes from the Old City moat. Wake up to mountain views, work from the rooftop co-working nook, and walk to night markets after dark.",
-    city: "Chiang Mai",
-    country: "Thailand",
-    pricePerNightCents: 4200,
-    maxGuests: 3,
-    bedrooms: 1,
-    beds: 1,
-    bathrooms: 1,
-    amenities: ["Wifi", "Kitchen", "Air conditioning", "Workspace"],
-    placeholderIcon: "house" as const,
-  },
-  {
-    title: "Cliffside villa overlooking Ao Nang beach",
-    description:
-      "Private infinity pool, floor-to-ceiling glass walls, and a five-minute walk down to the beach. Perfect for groups chasing sunsets.",
-    city: "Krabi",
-    country: "Thailand",
-    pricePerNightCents: 18500,
-    maxGuests: 8,
-    bedrooms: 4,
-    beds: 5,
-    bathrooms: 3,
-    amenities: ["Pool", "Wifi", "Kitchen", "Free parking", "Ocean view"],
-    placeholderIcon: "mountain" as const,
-  },
-  {
-    title: "Modern canal-side apartment",
-    description:
-      "A design-forward apartment on a quiet canal, ten minutes by bike to the city center. Full kitchen, fast wifi, and a private balcony for morning coffee.",
-    city: "Amsterdam",
-    country: "Netherlands",
-    pricePerNightCents: 15900,
+      "Wake up to sea views right on Blackpool's famous promenade. Two minutes from the beach, five from the Tower, with the tram stop just outside.",
+    city: "Blackpool",
+    country: "England",
+    pricePerNightCents: 7500,
     maxGuests: 4,
     bedrooms: 2,
     beds: 2,
     bathrooms: 1,
-    amenities: ["Wifi", "Kitchen", "Washer", "Bikes included"],
+    amenities: ["Wifi", "Kitchen", "Sea view", "Free parking"],
     placeholderIcon: "waves" as const,
+  },
+  {
+    title: "Elegant Victorian townhouse in Lytham St Annes",
+    description:
+      "A beautifully restored townhouse two streets back from Lytham Green. High ceilings, a walled garden, and a five-minute stroll to the shops and windmill.",
+    city: "Lytham St Annes",
+    country: "England",
+    pricePerNightCents: 14500,
+    maxGuests: 6,
+    bedrooms: 3,
+    beds: 3,
+    bathrooms: 2,
+    amenities: ["Wifi", "Kitchen", "Garden", "Washer", "Free parking"],
+    placeholderIcon: "house" as const,
+  },
+  {
+    title: "Cosy cottage near Fleetwood Marina",
+    description:
+      "A snug fisherman's cottage a short walk from Fleetwood Marina and the historic lighthouses. Perfect for a quiet coastal break, with the Knott End ferry nearby.",
+    city: "Fleetwood",
+    country: "England",
+    pricePerNightCents: 5800,
+    maxGuests: 3,
+    bedrooms: 1,
+    beds: 2,
+    bathrooms: 1,
+    amenities: ["Wifi", "Kitchen", "Washer"],
+    placeholderIcon: "lighthouse" as const,
   },
 ];
 

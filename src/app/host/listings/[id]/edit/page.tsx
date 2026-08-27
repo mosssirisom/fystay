@@ -32,7 +32,7 @@ export default async function EditListingPage({
           bedrooms: listing.bedrooms.toString(),
           beds: listing.beds.toString(),
           bathrooms: listing.bathrooms.toString(),
-          photos: listing.photos.join("\n"),
+          photos: listing.photos,
           amenities: listing.amenities.join(", "),
         }}
       />

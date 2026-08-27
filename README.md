@@ -34,6 +34,8 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
   computes the total price.
 - **Payments** — booking a stay creates a Stripe Checkout session; a webhook confirms the
   booking once payment succeeds.
+- **Photo uploads** — hosts upload real photos (via Supabase Storage) instead of pasting URLs,
+  with a manual URL-paste fallback if storage isn't configured on a given deployment.
 
 ## Getting started
 
@@ -116,9 +118,28 @@ variables:
 - `NEXT_PUBLIC_BASE_URL` set to the same deployed URL (used for Stripe redirect URLs and Open
   Graph metadata)
 - Stripe keys if you want real payments; otherwise bookings auto-confirm as described above
+- `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` if you want real host photo uploads
+  (see [Photo uploads](#photo-uploads) below); otherwise the upload button shows an error and
+  hosts fall back to pasting an image URL directly
 
 After setting `DATABASE_URL`/`DIRECT_URL`, run `npx prisma migrate deploy` once from your machine
 (with those same two variables in your local `.env`) to create the schema on the real database.
+
+## Photo uploads
+
+Hosts upload photos through `/api/uploads`, which checks the session is a logged-in host, then
+uploads server-side to a Supabase Storage bucket using the `service_role` key (uploads are
+authorized by our own session check, not Supabase's row-level security, since the app doesn't use
+Supabase Auth). To enable this:
+
+1. In a Supabase project, create a public bucket named `listing-photos`.
+2. Set `NEXT_PUBLIC_SUPABASE_URL` to the project's URL (not sensitive — safe to expose).
+3. Set `SUPABASE_SERVICE_ROLE_KEY` to the project's `service_role` secret key from
+   Settings → API Keys. **Never expose this to the client** — it's only read in
+   `src/lib/storage.ts`, a server-only module.
+
+If these aren't set, `isStorageConfigured()` returns `false` and the upload API returns a clear
+error instead of crashing; the listing form's "paste an image URL" fallback still works.
 
 ## Project structure
 

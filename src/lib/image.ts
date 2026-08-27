@@ -1,5 +1,14 @@
 const OPTIMIZABLE_HOSTS = new Set(["images.unsplash.com"]);
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+if (supabaseUrl) {
+  try {
+    OPTIMIZABLE_HOSTS.add(new URL(supabaseUrl).hostname);
+  } catch {
+    // ignore malformed env value
+  }
+}
+
 /**
  * next/image can only optimize remote hosts declared in next.config.ts.
  * Hosts type arbitrary photo URLs today, so we optimize the ones we know

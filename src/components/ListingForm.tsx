@@ -8,6 +8,7 @@ import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
+import { PhotoUploader } from "@/components/PhotoUploader";
 
 export type ListingFormValues = {
   title: string;
@@ -20,7 +21,7 @@ export type ListingFormValues = {
   bedrooms: string;
   beds: string;
   bathrooms: string;
-  photos: string;
+  photos: string[];
   amenities: string;
 };
 
@@ -35,7 +36,7 @@ const emptyValues: ListingFormValues = {
   bedrooms: "1",
   beds: "1",
   bathrooms: "1",
-  photos: "",
+  photos: [],
   amenities: "",
 };
 
@@ -47,6 +48,7 @@ type Props = {
 export function ListingForm({ listingId, initialValues }: Props) {
   const router = useRouter();
   const [values, setValues] = useState<ListingFormValues>(initialValues ?? emptyValues);
+  const [pastedUrl, setPastedUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -54,9 +56,25 @@ export function ListingForm({ listingId, initialValues }: Props) {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  function addPastedUrl() {
+    const url = pastedUrl.trim();
+    if (!url) return;
+    if (!values.photos.includes(url)) {
+      update("photos", [...values.photos, url]);
+    }
+    setPastedUrl("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (values.photos.length === 0) {
+      setError("Add at least one photo.");
+      toast.error("Add at least one photo.");
+      return;
+    }
+
     setLoading(true);
 
     const payload = {
@@ -70,10 +88,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
       bedrooms: Number(values.bedrooms),
       beds: Number(values.beds),
       bathrooms: Number(values.bathrooms),
-      photos: values.photos
-        .split("\n")
-        .map((p) => p.trim())
-        .filter(Boolean),
+      photos: values.photos,
       amenities: values.amenities
         .split(",")
         .map((a) => a.trim())
@@ -172,7 +187,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             <Field>
-              <Label htmlFor="price">Price / night ($)</Label>
+              <Label htmlFor="price">Price / night (£)</Label>
               <Input
                 id="price"
                 required
@@ -237,17 +252,34 @@ export function ListingForm({ listingId, initialValues }: Props) {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Field>
-            <Label htmlFor="photos">Photo URLs</Label>
-            <Textarea
-              id="photos"
-              required
-              rows={3}
-              value={values.photos}
-              onChange={(e) => update("photos", e.target.value)}
-              placeholder={"https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg"}
-              className="font-mono text-xs"
+            <Label>Photos</Label>
+            <PhotoUploader
+              photos={values.photos}
+              onChange={(photos) => update("photos", photos)}
             />
-            <FieldHint>One URL per line. The first photo is used as the cover image.</FieldHint>
+            <FieldHint>The first photo is used as the cover image.</FieldHint>
+
+            <details className="mt-3 text-sm">
+              <summary className="cursor-pointer font-medium text-zinc-600">
+                Or paste an image URL instead
+              </summary>
+              <div className="mt-2 flex gap-2">
+                <Input
+                  value={pastedUrl}
+                  onChange={(e) => setPastedUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addPastedUrl();
+                    }
+                  }}
+                  placeholder="https://example.com/photo.jpg"
+                />
+                <Button type="button" variant="outline" onClick={addPastedUrl}>
+                  Add
+                </Button>
+              </div>
+            </details>
           </Field>
           <Field>
             <Label htmlFor="amenities">Amenities</Label>

@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fystay
+      POSTGRES_PASSWORD: fystay
+      POSTGRES_DB: fystay
+    ports:
+      - "5432:5432"
+    volumes:
+      - fystay_db_data:/var/lib/postgresql/data
+
+volumes:
+  fystay_db_data:

@@ -1,0 +1,106 @@
+# fystay
+
+A booking marketplace in the spirit of Airbnb: guests search and book stays, hosts list and
+manage properties, and payments run through Stripe Checkout.
+
+## Stack
+
+- [Next.js](https://nextjs.org) (App Router) + TypeScript + Tailwind CSS
+- [Prisma](https://www.prisma.io) + PostgreSQL
+- [NextAuth.js](https://authjs.dev) (credentials-based auth, JWT sessions)
+- [Stripe](https://stripe.com) Checkout for payments
+- [react-day-picker](https://daypicker.dev) for the booking calendar
+
+## Features
+
+- **Listings** — browse and search by destination, dates, and guest count; detail pages with
+  photo gallery, amenities, and an availability-aware booking widget.
+- **Auth & roles** — sign up as a guest or a host; hosts get a dashboard, guests get a trips page.
+- **Host dashboard** — create, edit, publish/unpublish, and delete listings; see upcoming
+  bookings per listing.
+- **Booking & availability** — date-range picker that disables already-booked nights and
+  computes the total price.
+- **Payments** — booking a stay creates a Stripe Checkout session; a webhook confirms the
+  booking once payment succeeds.
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start Postgres
+
+```bash
+docker compose up -d
+```
+
+This starts a local Postgres instance matching the connection string in `.env.example`
+(`postgresql://fystay:fystay@localhost:5432/fystay`).
+
+### 3. Configure environment variables
+
+```bash
+cp .env.example .env
+```
+
+Fill in `AUTH_SECRET` with a random string (`openssl rand -base64 32`). Stripe keys can stay
+blank for local development — see [Payments without Stripe keys](#payments-without-stripe-keys)
+below.
+
+### 4. Run migrations and seed data
+
+```bash
+npx prisma migrate dev
+npm run db:seed
+```
+
+The seed script creates:
+
+| Role  | Email               | Password       |
+| ----- | ------------------- | -------------- |
+| Host  | host@fystay.dev      | hostpass123    |
+| Guest | guest@fystay.dev     | guestpass123   |
+
+...plus three sample listings.
+
+### 5. Run the app
+
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000).
+
+## Payments without Stripe keys
+
+If `STRIPE_SECRET_KEY` is not set, the checkout API skips Stripe entirely and confirms the
+booking immediately — useful for exercising the full booking flow in local development without
+a Stripe account. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
+`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` to enable real Checkout sessions, and point a webhook at
+`/api/webhooks/stripe` for the `checkout.session.completed` event (e.g. via
+`stripe listen --forward-to localhost:3000/api/webhooks/stripe` during development).
+
+## Project structure
+
+```
+prisma/schema.prisma       Data model (User, Listing, Booking)
+prisma/seed.ts             Seed script
+src/auth.ts                NextAuth configuration
+src/lib/                   Prisma client, availability logic, formatting, Stripe client
+src/app/                   Routes (pages + API routes)
+src/components/            Shared UI (forms, booking widget, listing card, navbar)
+```
+
+## Scripts
+
+| Command             | Description                          |
+| -------------------- | ------------------------------------ |
+| `npm run dev`         | Start the dev server                 |
+| `npm run build`       | Production build                     |
+| `npm run start`       | Start the production server          |
+| `npm run lint`        | Lint                                  |
+| `npm run db:migrate`  | Run Prisma migrations                |
+| `npm run db:seed`     | Seed the database                    |

@@ -1,0 +1,86 @@
+// Prisma schema for Fystay — an Airbnb-style booking marketplace.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUEST
+  HOST
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(GUEST)
+  image        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  listings Listing[]
+  bookings Booking[]
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  city        String
+  country     String
+  address     String?
+  pricePerNightCents Int
+  maxGuests   Int      @default(1)
+  bedrooms    Int      @default(1)
+  beds        Int      @default(1)
+  bathrooms   Int      @default(1)
+  photos      String[]
+  amenities   String[]
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hostId   String
+  host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([city])
+  @@index([hostId])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  checkIn    DateTime
+  checkOut   DateTime
+  guests     Int           @default(1)
+  totalPriceCents Int
+  status     BookingStatus @default(PENDING)
+
+  stripeSessionId       String? @unique
+  stripePaymentIntentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  guestId String
+  guest   User   @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([guestId])
+}

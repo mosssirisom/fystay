@@ -98,6 +98,19 @@ a Stripe account. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
 `/api/webhooks/stripe` for the `checkout.session.completed` event (e.g. via
 `stripe listen --forward-to localhost:3000/api/webhooks/stripe` during development).
 
+## Deploying
+
+`vercel.json` pins the framework to `nextjs` so Vercel builds it correctly regardless of the
+project's dashboard settings. You'll need to configure, in the Vercel project's environment
+variables:
+
+- `DATABASE_URL` pointing at a real Postgres instance (e.g. [Neon](https://neon.tech) or
+  [Supabase](https://supabase.com)), then run `npx prisma migrate deploy` against it once
+- `AUTH_SECRET` (a random string) and `NEXTAUTH_URL` (your deployed URL)
+- `NEXT_PUBLIC_BASE_URL` set to the same deployed URL (used for Stripe redirect URLs and Open
+  Graph metadata)
+- Stripe keys if you want real payments; otherwise bookings auto-confirm as described above
+
 ## Project structure
 
 ```

@@ -14,42 +14,16 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0f766e 0%, #134e4a 100%)",
+          background: "#ffffff",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div
-            style={{
-              width: 84,
-              height: 84,
-              borderRadius: 20,
-              background: "rgba(255,255,255,0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 11.5L12 4l9 7.5"
-                stroke="white"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M5.5 10v9a1 1 0 0 0 1 1H17.5a1 1 0 0 0 1-1v-9"
-                stroke="white"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div style={{ fontSize: 76, fontWeight: 700, color: "white" }}>fystay</div>
+        <div style={{ display: "flex", fontSize: 132, fontWeight: 700, fontFamily: "sans-serif" }}>
+          <span style={{ color: "#14b8a6" }}>fy</span>
+          <span style={{ color: "#142a3d" }}>stay</span>
         </div>
-        <div style={{ marginTop: 28, fontSize: 30, color: "rgba(255,255,255,0.85)" }}>
-          Find and book unique places to stay
+        <div style={{ marginTop: 24, display: "flex", fontSize: 34, fontFamily: "sans-serif" }}>
+          <span style={{ color: "#14b8a6" }}>stay local.&nbsp;</span>
+          <span style={{ color: "#142a3d" }}>stay fylde.</span>
         </div>
       </div>
     ),

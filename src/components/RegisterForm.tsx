@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Home, Luggage } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -63,7 +64,8 @@ export function RegisterForm() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
-      <div className="mb-8 text-center">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Create your account</h1>
         <p className="mt-1 text-sm text-zinc-500">Join fystay in a few seconds</p>
       </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Fredoka } from "next/font/google";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -13,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const fredoka = Fredoka({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["600"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
@@ -46,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Navbar />

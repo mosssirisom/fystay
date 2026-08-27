@@ -28,6 +28,9 @@
   --color-accent-500: #f59e0b;
   --color-accent-600: #d97706;
 
+  /* Ink — deep navy used in the logotype's second half ("stay") */
+  --color-ink: #142a3d;
+
   --shadow-color: 220 20% 10%;
 }
 
@@ -54,8 +57,11 @@
   --color-accent-500: var(--color-accent-500);
   --color-accent-600: var(--color-accent-600);
 
+  --color-ink: var(--color-ink);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-logo: var(--font-logo);
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 8px rgb(0 0 0 / 0.06);
   --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 4px rgb(0 0 0 / 0.06);

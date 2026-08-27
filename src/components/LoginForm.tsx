@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Home } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -45,9 +45,7 @@ function LoginFormInner() {
   return (
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
       <div className="mb-8 flex flex-col items-center text-center">
-        <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
-          <Home className="h-5 w-5" strokeWidth={2.5} />
-        </span>
+        <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Welcome back</h1>
         <p className="mt-1 text-sm text-zinc-500">Log in to continue to fystay</p>
       </div>

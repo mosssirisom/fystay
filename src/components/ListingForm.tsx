@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Field, FieldHint, Label } from "@/components/ui/Label";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Button } from "@/components/ui/Button";
 
 export type ListingFormValues = {
   title: string;
@@ -84,156 +90,183 @@ export function ListingForm({ listingId, initialValues }: Props) {
     if (!res.ok) {
       setError(data.error ?? "Something went wrong.");
       setLoading(false);
+      toast.error(data.error ?? "Something went wrong.");
       return;
     }
 
+    toast.success(listingId ? "Listing updated" : "Listing created");
     router.push("/host/dashboard");
     router.refresh();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Title
-        <input
-          required
-          value={values.title}
-          onChange={(e) => update("title", e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-        />
-      </label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <Card>
+        <CardHeader>
+          <CardTitle>The basics</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Field>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              required
+              value={values.title}
+              onChange={(e) => update("title", e.target.value)}
+              placeholder="Sunlit loft in the heart of the city"
+            />
+          </Field>
+          <Field>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              required
+              rows={5}
+              value={values.description}
+              onChange={(e) => update("description", e.target.value)}
+            />
+          </Field>
+        </CardContent>
+      </Card>
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Description
-        <textarea
-          required
-          rows={5}
-          value={values.description}
-          onChange={(e) => update("description", e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-        />
-      </label>
+      <Card>
+        <CardHeader>
+          <CardTitle>Location</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                required
+                value={values.city}
+                onChange={(e) => update("city", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                required
+                value={values.country}
+                onChange={(e) => update("country", e.target.value)}
+              />
+            </Field>
+          </div>
+          <Field>
+            <Label htmlFor="address">Address (optional)</Label>
+            <Input
+              id="address"
+              value={values.address}
+              onChange={(e) => update("address", e.target.value)}
+            />
+          </Field>
+        </CardContent>
+      </Card>
 
-      <div className="grid grid-cols-2 gap-4">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          City
-          <input
-            required
-            value={values.city}
-            onChange={(e) => update("city", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Country
-          <input
-            required
-            value={values.country}
-            onChange={(e) => update("country", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Capacity & pricing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+            <Field>
+              <Label htmlFor="price">Price / night ($)</Label>
+              <Input
+                id="price"
+                required
+                type="number"
+                min={1}
+                step="0.01"
+                value={values.pricePerNight}
+                onChange={(e) => update("pricePerNight", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="maxGuests">Max guests</Label>
+              <Input
+                id="maxGuests"
+                required
+                type="number"
+                min={1}
+                value={values.maxGuests}
+                onChange={(e) => update("maxGuests", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="bedrooms">Bedrooms</Label>
+              <Input
+                id="bedrooms"
+                required
+                type="number"
+                min={0}
+                value={values.bedrooms}
+                onChange={(e) => update("bedrooms", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="beds">Beds</Label>
+              <Input
+                id="beds"
+                required
+                type="number"
+                min={1}
+                value={values.beds}
+                onChange={(e) => update("beds", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="bathrooms">Baths</Label>
+              <Input
+                id="bathrooms"
+                required
+                type="number"
+                min={0}
+                value={values.bathrooms}
+                onChange={(e) => update("bathrooms", e.target.value)}
+              />
+            </Field>
+          </div>
+        </CardContent>
+      </Card>
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Address (optional)
-        <input
-          value={values.address}
-          onChange={(e) => update("address", e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-        />
-      </label>
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Price / night ($)
-          <input
-            required
-            type="number"
-            min={1}
-            step="0.01"
-            value={values.pricePerNight}
-            onChange={(e) => update("pricePerNight", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Max guests
-          <input
-            required
-            type="number"
-            min={1}
-            value={values.maxGuests}
-            onChange={(e) => update("maxGuests", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Bedrooms
-          <input
-            required
-            type="number"
-            min={0}
-            value={values.bedrooms}
-            onChange={(e) => update("bedrooms", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Beds
-          <input
-            required
-            type="number"
-            min={1}
-            value={values.beds}
-            onChange={(e) => update("beds", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Baths
-          <input
-            required
-            type="number"
-            min={0}
-            value={values.bathrooms}
-            onChange={(e) => update("bathrooms", e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-      </div>
-
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Photo URLs (one per line)
-        <textarea
-          required
-          rows={3}
-          value={values.photos}
-          onChange={(e) => update("photos", e.target.value)}
-          placeholder={"https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg"}
-          className="rounded-lg border border-zinc-300 px-3 py-2 font-mono text-xs focus:border-rose-500 focus:outline-none"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Amenities (comma separated)
-        <input
-          value={values.amenities}
-          onChange={(e) => update("amenities", e.target.value)}
-          placeholder="Wifi, Kitchen, Free parking"
-          className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-        />
-      </label>
+      <Card>
+        <CardHeader>
+          <CardTitle>Photos & amenities</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Field>
+            <Label htmlFor="photos">Photo URLs</Label>
+            <Textarea
+              id="photos"
+              required
+              rows={3}
+              value={values.photos}
+              onChange={(e) => update("photos", e.target.value)}
+              placeholder={"https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg"}
+              className="font-mono text-xs"
+            />
+            <FieldHint>One URL per line. The first photo is used as the cover image.</FieldHint>
+          </Field>
+          <Field>
+            <Label htmlFor="amenities">Amenities</Label>
+            <Input
+              id="amenities"
+              value={values.amenities}
+              onChange={(e) => update("amenities", e.target.value)}
+              placeholder="Wifi, Kitchen, Free parking"
+            />
+            <FieldHint>Comma separated.</FieldHint>
+          </Field>
+        </CardContent>
+      </Card>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-2 self-start rounded-full bg-rose-600 px-6 py-2 font-medium text-white hover:bg-rose-700 disabled:opacity-60"
-      >
-        {loading ? "Saving…" : listingId ? "Save changes" : "Create listing"}
-      </button>
+      <Button type="submit" loading={loading} size="lg" className="self-start">
+        {listingId ? "Save changes" : "Create listing"}
+      </Button>
     </form>
   );
 }

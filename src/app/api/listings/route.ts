@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { isRangeAvailable } from "@/lib/availability";
+import { httpUrlSchema } from "@/lib/validation";
 
 const createListingSchema = z.object({
   title: z.string().min(3).max(120),
@@ -15,7 +16,7 @@ const createListingSchema = z.object({
   bedrooms: z.number().int().min(0).max(50),
   beds: z.number().int().min(1).max(50),
   bathrooms: z.number().int().min(0).max(50),
-  photos: z.array(z.string().url()).min(1),
+  photos: z.array(httpUrlSchema).min(1),
   amenities: z.array(z.string()).default([]),
 });
 

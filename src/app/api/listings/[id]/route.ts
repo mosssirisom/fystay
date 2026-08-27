@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { httpUrlSchema } from "@/lib/validation";
 
 const updateListingSchema = z.object({
   title: z.string().min(3).max(120).optional(),
@@ -14,7 +15,7 @@ const updateListingSchema = z.object({
   bedrooms: z.number().int().min(0).max(50).optional(),
   beds: z.number().int().min(1).max(50).optional(),
   bathrooms: z.number().int().min(0).max(50).optional(),
-  photos: z.array(z.string().url()).min(1).optional(),
+  photos: z.array(httpUrlSchema).min(1).optional(),
   amenities: z.array(z.string()).optional(),
   published: z.boolean().optional(),
 });

@@ -1,8 +1,10 @@
 import { Suspense } from "react";
+import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { isRangeAvailable } from "@/lib/availability";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
+import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -44,14 +46,18 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
 
   if (filtered.length === 0) {
     return (
-      <p className="mt-16 text-center text-zinc-500">
-        No listings match your search. Try different dates or destination.
-      </p>
+      <div className="mt-16 flex flex-col items-center gap-3 text-center">
+        <SearchX className="h-8 w-8 text-zinc-300" />
+        <p className="font-medium text-foreground">No stays match your search</p>
+        <p className="max-w-sm text-sm text-zinc-500">
+          Try different dates, a different destination, or fewer guests.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
       {filtered.map((listing) => (
         <ListingCard key={listing.id} listing={listing} />
       ))}
@@ -73,7 +79,7 @@ export default async function Home({
       </Suspense>
 
       <div className="mt-10">
-        <Suspense fallback={<p className="text-center text-zinc-500">Loading stays…</p>}>
+        <Suspense fallback={<ListingsGridSkeleton />}>
           <ListingsGrid searchParams={resolvedSearchParams} />
         </Suspense>
       </div>

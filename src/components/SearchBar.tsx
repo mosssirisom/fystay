@@ -2,6 +2,11 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { MapPin, Search, Users } from "lucide-react";
+import { cn } from "@/lib/cn";
+
+const fieldClasses =
+  "focus-ring w-full rounded-lg bg-transparent px-3 py-1.5 text-sm text-foreground placeholder:text-zinc-400";
 
 export function SearchBar() {
   const router = useRouter();
@@ -25,51 +30,68 @@ export function SearchBar() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto flex w-full max-w-4xl flex-wrap items-end gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm"
+      className={cn(
+        "mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:gap-0 sm:rounded-full",
+      )}
     >
-      <label className="flex min-w-[10rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600">
-        Where
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Search destinations"
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600">
-        Check in
-        <input
-          type="date"
-          value={checkIn}
-          onChange={(e) => setCheckIn(e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600">
-        Check out
-        <input
-          type="date"
-          value={checkOut}
-          onChange={(e) => setCheckOut(e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
-        />
-      </label>
-      <label className="flex w-24 flex-col gap-1 text-xs font-medium text-zinc-600">
-        Guests
-        <input
-          type="number"
-          min={1}
-          value={guests}
-          onChange={(e) => setGuests(e.target.value)}
-          placeholder="1"
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
-        />
-      </label>
+      <div className="flex flex-1 items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted sm:border-r sm:border-border-subtle">
+        <MapPin className="h-4 w-4 shrink-0 text-zinc-400" />
+        <div className="flex-1">
+          <span className="block text-[11px] font-semibold text-foreground">Where</span>
+          <input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Search destinations"
+            className={fieldClasses + " px-0 py-0"}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted sm:border-r sm:border-border-subtle">
+        <div>
+          <span className="block text-[11px] font-semibold text-foreground">Check in</span>
+          <input
+            type="date"
+            value={checkIn}
+            onChange={(e) => setCheckIn(e.target.value)}
+            className={fieldClasses + " px-0 py-0"}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted sm:border-r sm:border-border-subtle">
+        <div>
+          <span className="block text-[11px] font-semibold text-foreground">Check out</span>
+          <input
+            type="date"
+            value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+            className={fieldClasses + " px-0 py-0"}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted">
+        <Users className="h-4 w-4 shrink-0 text-zinc-400" />
+        <div className="w-16">
+          <span className="block text-[11px] font-semibold text-foreground">Guests</span>
+          <input
+            type="number"
+            min={1}
+            value={guests}
+            onChange={(e) => setGuests(e.target.value)}
+            placeholder="Add"
+            className={fieldClasses + " px-0 py-0"}
+          />
+        </div>
+      </div>
+
       <button
         type="submit"
-        className="rounded-full bg-rose-600 px-6 py-2 text-sm font-semibold text-white hover:bg-rose-700"
+        className="focus-ring flex items-center justify-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 sm:ml-1"
       >
-        Search
+        <Search className="h-4 w-4" />
+        <span className="sm:hidden">Search</span>
       </button>
     </form>
   );

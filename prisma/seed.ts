@@ -3,26 +3,43 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const PHOTO_SETS = [
-  [
-    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200",
-    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200",
-    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200",
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200",
-  ],
-  [
-    "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200",
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200",
-    "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200",
-    "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=1200",
-  ],
-  [
-    "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200",
-    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
-    "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1200",
-    "https://images.unsplash.com/photo-1560449017-7b3b3aad9a2f?w=1200",
-  ],
+// Seed listings ship with generated placeholder art instead of hotlinked
+// stock photos: it renders instantly with zero external requests, so the
+// demo never depends on a third-party image host being reachable.
+const PALETTES: [string, string][] = [
+  ["#0d9488", "#134e4a"],
+  ["#f59e0b", "#b45309"],
+  ["#0ea5e9", "#0369a1"],
+  ["#f43f5e", "#9f1239"],
+  ["#8b5cf6", "#5b21b6"],
 ];
+
+function hashCode(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash << 5) - hash + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function placeholderPhoto(seedText: string, index: number): string {
+  const [from, to] = PALETTES[(hashCode(seedText) + index) % PALETTES.length];
+  const angle = index % 2 === 0 ? "x1='0' y1='0' x2='1' y2='1'" : "x1='1' y1='0' x2='0' y2='1'";
+  const letter = seedText.charAt(0).toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">
+    <defs><linearGradient id="g" ${angle}>
+      <stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/>
+    </linearGradient></defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <text x="50%" y="54%" font-family="Arial, sans-serif" font-size="240" font-weight="700" fill="rgba(255,255,255,0.22)" text-anchor="middle" dominant-baseline="middle">${letter}</text>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+function placeholderPhotos(seedText: string, count: number): string[] {
+  return Array.from({ length: count }, (_, i) => placeholderPhoto(seedText, i));
+}
 
 const LISTINGS = [
   {
@@ -92,11 +109,11 @@ async function main() {
     },
   });
 
-  for (const [index, listing] of LISTINGS.entries()) {
+  for (const listing of LISTINGS) {
     await prisma.listing.create({
       data: {
         ...listing,
-        photos: PHOTO_SETS[index % PHOTO_SETS.length],
+        photos: placeholderPhotos(listing.city, 4),
         hostId: host.id,
       },
     });

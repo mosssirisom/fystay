@@ -2,8 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DayPicker, type DateRange } from "react-day-picker";
-import "react-day-picker/style.css";
+import { type DateRange } from "react-day-picker";
+import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { DateRangeField } from "@/components/DateRangeField";
+import { GuestStepper } from "@/components/GuestStepper";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap } from "@/lib/availability";
 
@@ -38,12 +42,11 @@ export function BookingWidget({
   );
 
   const disabledDays = useMemo(
-    () => parsedBookedRanges.map((r) => ({ from: r.checkIn, to: r.checkOut })),
+    () => [{ before: new Date() }, ...parsedBookedRanges.map((r) => ({ from: r.checkIn, to: r.checkOut }))],
     [parsedBookedRanges],
   );
 
-  const nights =
-    range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
+  const nights = range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
   const totalPriceCents = nights * pricePerNightCents;
 
   function isSelectionValid(): boolean {
@@ -84,6 +87,7 @@ export function BookingWidget({
       const bookingData = await bookingRes.json();
       if (!bookingRes.ok) {
         setError(bookingData.error ?? "Could not create booking.");
+        toast.error(bookingData.error ?? "Could not create booking.");
         setLoading(false);
         return;
       }
@@ -96,6 +100,7 @@ export function BookingWidget({
       const checkoutData = await checkoutRes.json();
       if (!checkoutRes.ok) {
         setError(checkoutData.error ?? "Could not start checkout.");
+        toast.error(checkoutData.error ?? "Could not start checkout.");
         setLoading(false);
         return;
       }
@@ -103,56 +108,49 @@ export function BookingWidget({
       window.location.href = checkoutData.url;
     } catch {
       setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-200 p-5 shadow-sm">
-      <p className="text-lg font-semibold">
-        {formatPrice(pricePerNightCents)} <span className="text-sm font-normal text-zinc-500">night</span>
-      </p>
+    <Card className="sticky top-20 p-5">
+      <CardContent className="p-0">
+        <p className="text-lg font-semibold text-foreground">
+          {formatPrice(pricePerNightCents)}{" "}
+          <span className="text-sm font-normal text-zinc-500">night</span>
+        </p>
 
-      <div className="mt-4">
-        <DayPicker
-          mode="range"
-          selected={range}
-          onSelect={setRange}
-          disabled={[{ before: new Date() }, ...disabledDays]}
-          numberOfMonths={1}
-        />
-      </div>
-
-      <label className="mt-3 flex flex-col gap-1 text-xs font-medium text-zinc-600">
-        Guests
-        <input
-          type="number"
-          min={1}
-          max={maxGuests}
-          value={guests}
-          onChange={(e) => setGuests(Number(e.target.value))}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
-        />
-      </label>
-
-      {nights > 0 && (
-        <div className="mt-4 flex justify-between text-sm text-zinc-700">
-          <span>
-            {formatPrice(pricePerNightCents)} x {nights} night{nights > 1 ? "s" : ""}
-          </span>
-          <span>{formatPrice(totalPriceCents)}</span>
+        <div className="mt-4 flex flex-col gap-2">
+          <DateRangeField range={range} onChange={setRange} disabledRanges={disabledDays} />
+          <GuestStepper value={guests} max={maxGuests} onChange={setGuests} />
         </div>
-      )}
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {nights > 0 && (
+          <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
+            <div className="flex justify-between">
+              <span>
+                {formatPrice(pricePerNightCents)} × {nights} night{nights > 1 ? "s" : ""}
+              </span>
+              <span>{formatPrice(totalPriceCents)}</span>
+            </div>
+            <div className="flex justify-between border-t border-border-subtle pt-2 font-semibold text-foreground">
+              <span>Total</span>
+              <span>{formatPrice(totalPriceCents)}</span>
+            </div>
+          </div>
+        )}
 
-      <button
-        onClick={handleReserve}
-        disabled={loading}
-        className="mt-4 w-full rounded-full bg-rose-600 px-4 py-2.5 font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
-      >
-        {loading ? "Reserving…" : "Reserve"}
-      </button>
-    </div>
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+        <Button onClick={handleReserve} loading={loading} size="lg" className="mt-4 w-full">
+          {isLoggedIn ? "Reserve" : "Log in to book"}
+        </Button>
+
+        {isLoggedIn && (
+          <p className="mt-3 text-center text-xs text-zinc-500">You won&apos;t be charged yet</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

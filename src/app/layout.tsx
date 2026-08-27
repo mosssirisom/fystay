@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +15,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+const description = "Find and book unique places to stay, or host your own.";
+
 export const metadata: Metadata = {
-  title: "fystay — book unique stays",
-  description: "Find and book unique places to stay, or host your own.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "fystay — book unique stays",
+    template: "%s · fystay",
+  },
+  description,
+  openGraph: {
+    title: "fystay — book unique stays",
+    description,
+    siteName: "fystay",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "fystay — book unique stays",
+    description,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d9488",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -27,6 +51,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <Navbar />
         <div className="flex flex-1 flex-col">{children}</div>
+        <Footer />
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

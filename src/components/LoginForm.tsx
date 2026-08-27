@@ -4,6 +4,11 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { Home } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Field, FieldError, Label } from "@/components/ui/Label";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 function LoginFormInner() {
   const router = useRouter();
@@ -29,7 +34,7 @@ function LoginFormInner() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password.");
+      setError("That email and password don't match an account.");
       return;
     }
 
@@ -39,43 +44,53 @@ function LoginFormInner() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
-      <h1 className="mb-6 text-2xl font-bold">Log in</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Email
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Password
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
+      <div className="mb-8 flex flex-col items-center text-center">
+        <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
+          <Home className="h-5 w-5" strokeWidth={2.5} />
+        </span>
+        <h1 className="text-2xl font-bold">Welcome back</h1>
+        <p className="mt-1 text-sm text-zinc-500">Log in to continue to fystay</p>
+      </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+      <Card>
+        <CardContent className="pt-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <Field>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                invalid={Boolean(error)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                invalid={Boolean(error)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <FieldError>{error}</FieldError>
+            </Field>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-2 rounded-full bg-rose-600 px-4 py-2 font-medium text-white hover:bg-rose-700 disabled:opacity-60"
-        >
-          {loading ? "Logging in…" : "Log in"}
-        </button>
-      </form>
+            <Button type="submit" loading={loading} className="mt-2 w-full">
+              Log in
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-      <p className="mt-6 text-sm text-zinc-600">
+      <p className="mt-6 text-center text-sm text-zinc-600">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-rose-600">
+        <Link href="/register" className="font-medium text-brand-700 hover:underline">
           Sign up
         </Link>
       </p>

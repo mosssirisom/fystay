@@ -10,6 +10,18 @@ manage properties, and payments run through Stripe Checkout.
 - [NextAuth.js](https://authjs.dev) (credentials-based auth, JWT sessions)
 - [Stripe](https://stripe.com) Checkout for payments
 - [react-day-picker](https://daypicker.dev) for the booking calendar
+- A small in-house design system (`src/components/ui`) built on
+  [class-variance-authority](https://cva.style) + [lucide-react](https://lucide.dev) icons, with
+  [sonner](https://sonner.emilkowal.ski) for toasts
+
+## Design system
+
+`src/components/ui` holds the primitives every surface is built from: `Button`, `Input`,
+`Textarea`, `Select`, `Card`, `Badge`, `Avatar`, `Skeleton`, `Spinner`, and `Dialog`/`ConfirmDialog`.
+Brand colors, surface/text tokens, and shadows are defined once in `src/app/globals.css` (a teal
+brand scale, chosen to read as trustworthy and premium rather than the pink-clone look) — change
+them there and every component picks it up. Every route has a matching `loading.tsx` skeleton,
+plus shared `not-found.tsx` and `error.tsx` boundaries.
 
 ## Features
 
@@ -64,7 +76,10 @@ The seed script creates:
 | Host  | host@fystay.dev      | hostpass123    |
 | Guest | guest@fystay.dev     | guestpass123   |
 
-...plus three sample listings.
+...plus three sample listings with generated placeholder art (no external image host, so the
+demo never depends on network access). Photos submitted through the app itself must be real
+http(s) URLs — editing a seeded listing without replacing its placeholder photos first will fail
+validation.
 
 ### 5. Run the app
 

@@ -4,6 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { Home, Luggage } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Field, FieldError, Label } from "@/components/ui/Label";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
+
+const roleOptions = [
+  { value: "GUEST" as const, label: "Book stays", icon: Luggage },
+  { value: "HOST" as const, label: "Host my place", icon: Home },
+];
 
 export function RegisterForm() {
   const router = useRouter();
@@ -52,77 +63,83 @@ export function RegisterForm() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
-      <h1 className="mb-6 text-2xl font-bold">Create an account</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Name
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Email
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Password
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 focus:border-rose-500 focus:outline-none"
-          />
-        </label>
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-bold">Create your account</h1>
+        <p className="mt-1 text-sm text-zinc-500">Join fystay in a few seconds</p>
+      </div>
 
-        <fieldset className="flex flex-col gap-1 text-sm font-medium">
-          <legend className="mb-1">I want to</legend>
-          <div className="flex gap-3">
-            <label className="flex items-center gap-2 font-normal">
-              <input
-                type="radio"
-                name="role"
-                checked={role === "GUEST"}
-                onChange={() => setRole("GUEST")}
+      <Card>
+        <CardContent className="pt-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-medium text-zinc-800">I want to</legend>
+              <div className="grid grid-cols-2 gap-2">
+                {roleOptions.map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setRole(value)}
+                    aria-pressed={role === value}
+                    className={cn(
+                      "focus-ring flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-sm font-medium transition-colors",
+                      role === value
+                        ? "border-brand-600 bg-brand-50 text-brand-800"
+                        : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <Field>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                required
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
-              Book stays
-            </label>
-            <label className="flex items-center gap-2 font-normal">
-              <input
-                type="radio"
-                name="role"
-                checked={role === "HOST"}
-                onChange={() => setRole("HOST")}
+            </Field>
+            <Field>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
-              Host my place
-            </label>
-          </div>
-        </fieldset>
+            </Field>
+            <Field>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                invalid={Boolean(error)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <FieldError>{error}</FieldError>
+            </Field>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+            <Button type="submit" loading={loading} className="mt-2 w-full">
+              Sign up
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-2 rounded-full bg-rose-600 px-4 py-2 font-medium text-white hover:bg-rose-700 disabled:opacity-60"
-        >
-          {loading ? "Creating account…" : "Sign up"}
-        </button>
-      </form>
-
-      <p className="mt-6 text-sm text-zinc-600">
+      <p className="mt-6 text-center text-sm text-zinc-600">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-rose-600">
+        <Link href="/login" className="font-medium text-brand-700 hover:underline">
           Log in
         </Link>
       </p>

@@ -19,7 +19,7 @@ const bookingStatusVariant = {
   CANCELLED: "neutral",
 } as const;
 
-export const metadata: Metadata = { title: "Host dashboard" };
+export const metadata: Metadata = { title: "Host dashboard", robots: { index: false } };
 
 export default async function HostDashboardPage() {
   const session = await auth();

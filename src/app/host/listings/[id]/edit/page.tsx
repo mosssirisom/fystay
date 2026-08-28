@@ -14,7 +14,10 @@ export async function generateMetadata({
     where: { id },
     select: { title: true },
   });
-  return { title: listing ? `Edit ${listing.title}` : "Edit listing" };
+  return {
+    title: listing ? `Edit ${listing.title}` : "Edit listing",
+    robots: { index: false },
+  };
 }
 
 export default async function EditListingPage({

@@ -9,6 +9,8 @@ import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
 import { Avatar } from "@/components/ui/Avatar";
 
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+
 const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
     where: { id },
@@ -32,14 +34,23 @@ export async function generateMetadata({
   if (!listing || !listing.published) return {};
 
   const description = `${listing.title} in ${listing.city}, ${listing.country}. ${listing.description.slice(0, 140)}`;
+  const url = `${siteUrl}/listings/${listing.id}`;
 
   return {
     title: listing.title,
     description,
+    alternates: { canonical: url },
     openGraph: {
       title: listing.title,
       description,
+      url,
       images: listing.photos[0] ? [{ url: listing.photos[0] }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: listing.title,
+      description,
+      images: listing.photos[0] ? [listing.photos[0]] : undefined,
     },
   };
 }
@@ -63,8 +74,29 @@ export default async function ListingDetailPage({
     { icon: Bath, label: `${listing.bathrooms} bath${listing.bathrooms === 1 ? "" : "s"}` },
   ];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: listing.title,
+    description: listing.description,
+    image: listing.photos,
+    url: `${siteUrl}/listings/${listing.id}`,
+    brand: { "@type": "Brand", name: "fystay" },
+    offers: {
+      "@type": "Offer",
+      price: (listing.pricePerNightCents / 100).toFixed(2),
+      priceCurrency: "GBP",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/listings/${listing.id}`,
+    },
+  };
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
       <p className="mt-1 text-zinc-600">
         {listing.city}, {listing.country}

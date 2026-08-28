@@ -18,7 +18,7 @@ const statusVariant: Record<string, BadgeProps["variant"]> = {
   CANCELLED: "neutral",
 };
 
-export const metadata: Metadata = { title: "My trips" };
+export const metadata: Metadata = { title: "My trips", robots: { index: false } };
 
 export default async function BookingsPage() {
   const session = await auth();

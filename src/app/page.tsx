@@ -1,10 +1,19 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { isRangeAvailable } from "@/lib/availability";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
+
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+
+// Search-filtered variations of the homepage (?city=, ?checkIn=, ...) all
+// canonicalize to the bare URL so they consolidate into one indexed page.
+export const metadata: Metadata = {
+  alternates: { canonical: siteUrl },
+};
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

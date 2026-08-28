@@ -5,6 +5,7 @@ import { ListingForm } from "@/components/ListingForm";
 
 export const metadata: Metadata = {
   title: "Create a listing",
+  robots: { index: false },
 };
 
 export default async function NewListingPage() {

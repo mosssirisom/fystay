@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { SearchX } from "lucide-react";
+import { Lock, MapPin, SearchX, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
 import { auth } from "@/auth";
@@ -10,6 +10,24 @@ import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
 
 const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
+
+const TRUST_POINTS = [
+  {
+    icon: MapPin,
+    title: "Local Fylde Coast hosts",
+    description: "Every stay is listed directly by a real local host, not resold from elsewhere.",
+  },
+  {
+    icon: Star,
+    title: "Genuine guest reviews",
+    description: "Reviews can only be left by guests once they've completed a paid stay.",
+  },
+  {
+    icon: Lock,
+    title: "Secure payments",
+    description: "Bookings are paid through Stripe's encrypted checkout — we never see your card details.",
+  },
+];
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
@@ -143,6 +161,18 @@ export default async function Home({
             <ListingsGrid searchParams={resolvedSearchParams} />
           </Suspense>
         </div>
+      </div>
+
+      <div className="mt-14 grid grid-cols-1 gap-6 border-t border-border-subtle pt-10 sm:grid-cols-3">
+        {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
+          <div key={title} className="flex items-start gap-3">
+            <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">{title}</p>
+              <p className="mt-0.5 text-sm text-zinc-500">{description}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

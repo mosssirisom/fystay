@@ -112,7 +112,7 @@ const LISTINGS = [
     bedrooms: 1,
     beds: 2,
     bathrooms: 1,
-    amenities: ["Wifi", "Kitchen", "Washer"],
+    amenities: ["Wifi", "Kitchen", "Washer", "Pet friendly"],
     placeholderIcon: "lighthouse" as const,
   },
 ];

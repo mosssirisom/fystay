@@ -25,8 +25,10 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
 
 ## Features
 
-- **Listings** — browse and search by destination, dates, and guest count; detail pages with
-  photo gallery, amenities, and an availability-aware booking widget.
+- **Listings** — browse and search by destination, dates, and guest count (a toggle-based picker
+  with separate Adults, Children, Infants, and Pets counters — infants don't count toward a
+  listing's capacity, and a pet count filters to listings with a "pet friendly" amenity); detail
+  pages with photo gallery, amenities, and an availability-aware booking widget.
 - **Auth & roles** — sign up as a guest or a host; hosts get a dashboard, guests get a trips page.
 - **Host dashboard** — create, edit, publish/unpublish, and delete listings; see upcoming
   bookings per listing.

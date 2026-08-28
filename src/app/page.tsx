@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Lock, MapPin, SearchX, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
+import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
@@ -41,15 +42,19 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
   const city = typeof searchParams.city === "string" ? searchParams.city : "";
-  const guests = typeof searchParams.guests === "string" ? searchParams.guests : "";
   const checkInParam = typeof searchParams.checkIn === "string" ? searchParams.checkIn : "";
   const checkOutParam = typeof searchParams.checkOut === "string" ? searchParams.checkOut : "";
+  const adults = parseGuestParam(searchParams.adults, 1);
+  const children = parseGuestParam(searchParams.children, 0);
+  const pets = parseGuestParam(searchParams.pets, 0);
+  const guestsNeeded = totalOccupants({ adults, children });
 
   const [session, listings] = await Promise.all([
     auth(),
     prisma.listing.findMany({
       where: {
         published: true,
+        maxGuests: { gte: guestsNeeded },
         ...(city
           ? {
               OR: [
@@ -58,7 +63,6 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
               ],
             }
           : {}),
-        ...(guests ? { maxGuests: { gte: Number(guests) } } : {}),
       },
       include: {
         bookings: {
@@ -85,10 +89,14 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
   const checkIn = checkInParam ? new Date(checkInParam) : null;
   const checkOut = checkOutParam ? new Date(checkOutParam) : null;
 
-  const filtered =
+  const dateFiltered =
     checkIn && checkOut
       ? listings.filter((listing) => isRangeAvailable(checkIn, checkOut, listing.bookings))
       : listings;
+
+  const filtered = pets > 0
+    ? dateFiltered.filter((listing) => isPetFriendly(listing.amenities))
+    : dateFiltered;
 
   if (filtered.length === 0) {
     return (

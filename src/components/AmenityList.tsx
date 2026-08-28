@@ -5,6 +5,7 @@ import {
   ChefHat,
   Laptop,
   ParkingCircle,
+  PawPrint,
   Waves,
   Wifi,
   WashingMachine,
@@ -21,6 +22,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   workspace: Laptop,
   "ocean view": Waypoints,
   "bikes included": Bike,
+  "pet friendly": PawPrint,
 };
 
 export function AmenityList({ amenities }: { amenities: string[] }) {

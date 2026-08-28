@@ -54,11 +54,15 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
     await page.waitForURL("/");
 
     await page.goto("/bookings");
-    // Bookings are ordered newest-first, and this one was just created,
-    // so it's always the first row. (Filtering by "Leave a review" text would
-    // go stale the moment that text disappears post-submission, and
-    // filtering by listing title alone can match another booking of the
-    // same listing, e.g. the seeded demo review.)
+    // A stay that already checked out lives under the "Past trips" tab, not
+    // the default "Upcoming" one.
+    await page.getByRole("tab", { name: /Past trips/ }).click();
+    // Within that tab, bookings are ordered by most recent check-out first,
+    // and this fixture's check-out (7 days ago) is more recent than any
+    // other spec's past-dated fixture, so it's always the first row.
+    // (Filtering by "Leave a review" text would go stale the moment that
+    // text disappears post-submission, and filtering by listing title alone
+    // can match another booking of the same listing, e.g. the seeded demo review.)
     await page.locator(".p-4").first().getByRole("button", { name: "Leave a review" }).click();
 
     await page.getByRole("radio", { name: "5 stars" }).click();

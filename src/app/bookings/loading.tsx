@@ -4,6 +4,11 @@ export default function Loading() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
       <Skeleton className="h-7 w-40" />
+      <div className="mt-6 flex gap-4 border-b border-border-subtle pb-2.5">
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-20" />
+      </div>
       <div className="mt-6 flex flex-col gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 rounded-2xl border border-border-subtle p-4">

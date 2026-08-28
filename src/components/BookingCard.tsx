@@ -163,31 +163,40 @@ export function BookingCard({
         />
       )}
 
-      {showActions && (
-        <div className="flex flex-wrap items-center gap-1 border-t border-border-subtle pt-3">
-          {canRequestBookingChange(effectiveBooking, hasPendingChangeRequest) && (
-            <RequestChangeDialog
-              bookingId={booking.id}
-              currentCheckIn={booking.checkIn}
-              currentCheckOut={booking.checkOut}
-              currentGuests={booking.guests}
-              currentTotalPriceCents={booking.totalPriceCents}
-              pricePerNightCents={booking.listing.pricePerNightCents}
-              cleaningFeeCents={booking.listing.cleaningFeeCents}
-              maxGuests={booking.listing.maxGuests}
-              otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
-            />
-          )}
-          {canCancelBooking(effectiveBooking) && (
-            <CancelBookingButton
-              bookingId={booking.id}
-              listingTitle={booking.listing.title}
-              onCancelled={() => setOptimisticStatus("CANCELLED")}
-              onCancelFailed={() => setOptimisticStatus(null)}
-            />
-          )}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-1 border-t border-border-subtle pt-3">
+        <Link
+          href={`/bookings/${booking.id}`}
+          className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+        >
+          View details
+        </Link>
+
+        {showActions && (
+          <div className="flex flex-wrap items-center gap-1">
+            {canRequestBookingChange(effectiveBooking, hasPendingChangeRequest) && (
+              <RequestChangeDialog
+                bookingId={booking.id}
+                currentCheckIn={booking.checkIn}
+                currentCheckOut={booking.checkOut}
+                currentGuests={booking.guests}
+                currentTotalPriceCents={booking.totalPriceCents}
+                pricePerNightCents={booking.listing.pricePerNightCents}
+                cleaningFeeCents={booking.listing.cleaningFeeCents}
+                maxGuests={booking.listing.maxGuests}
+                otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
+              />
+            )}
+            {canCancelBooking(effectiveBooking) && (
+              <CancelBookingButton
+                bookingId={booking.id}
+                listingTitle={booking.listing.title}
+                onCancelled={() => setOptimisticStatus("CANCELLED")}
+                onCancelFailed={() => setOptimisticStatus(null)}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

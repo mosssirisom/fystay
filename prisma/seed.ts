@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { nightsBetween } from "../src/lib/availability";
+import { computeBookingPricing } from "../src/lib/pricing";
+import { generateBookingReference } from "../src/lib/bookingReference";
 
 const prisma = new PrismaClient();
 
@@ -158,15 +161,33 @@ async function main() {
   // A completed stay + review, so the reviews feature has something to
   // show without needing a real guest to complete a real stay first.
   const [reviewedListing] = createdListings;
+  const pastCheckIn = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
+  const pastCheckOut = new Date(Date.now() - 17 * 24 * 60 * 60 * 1000);
+  const pastNights = nightsBetween(pastCheckIn, pastCheckOut);
+  const pastPricing = computeBookingPricing({
+    nights: pastNights,
+    pricePerNightCents: reviewedListing.pricePerNightCents,
+    cleaningFeeCents: reviewedListing.cleaningFeeCents,
+  });
   const pastBooking = await prisma.booking.create({
     data: {
+      reference: generateBookingReference(),
       listingId: reviewedListing.id,
       guestId: guest.id,
-      checkIn: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-      checkOut: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000),
+      checkIn: pastCheckIn,
+      checkOut: pastCheckOut,
       guests: 2,
-      totalPriceCents: reviewedListing.pricePerNightCents * 3,
-      status: "CONFIRMED",
+      nights: pastNights,
+      nightlyPriceCents: reviewedListing.pricePerNightCents,
+      cleaningFeeCents: pastPricing.cleaningFeeCents,
+      serviceFeeCents: pastPricing.serviceFeeCents,
+      taxCents: pastPricing.taxCents,
+      totalPriceCents: pastPricing.totalPriceCents,
+      status: "COMPLETED",
+      paymentStatus: "PAID",
+      paidAt: pastCheckIn,
+      guestName: guest.name,
+      guestEmail: guest.email,
     },
   });
   await prisma.review.create({

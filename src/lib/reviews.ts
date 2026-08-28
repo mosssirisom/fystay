@@ -6,5 +6,9 @@ export type ReviewableBooking = {
 
 /** A guest may review a stay once it's paid for, completed, and not already reviewed. */
 export function canReviewBooking(booking: ReviewableBooking, now: Date = new Date()): boolean {
-  return booking.status === "CONFIRMED" && booking.checkOut <= now && !booking.review;
+  return (
+    (booking.status === "CONFIRMED" || booking.status === "COMPLETED") &&
+    booking.checkOut <= now &&
+    !booking.review
+  );
 }

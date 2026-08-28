@@ -11,6 +11,7 @@ const updateListingSchema = z.object({
   country: z.string().min(1).max(100).optional(),
   address: z.string().max(200).optional(),
   pricePerNightCents: z.number().int().positive().optional(),
+  cleaningFeeCents: z.number().int().min(0).optional(),
   maxGuests: z.number().int().min(1).max(50).optional(),
   bedrooms: z.number().int().min(0).max(50).optional(),
   beds: z.number().int().min(1).max(50).optional(),

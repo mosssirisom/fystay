@@ -10,11 +10,13 @@ import { DateRangeField } from "@/components/DateRangeField";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap } from "@/lib/availability";
+import { computeBookingPricing } from "@/lib/pricing";
 import { isPetFriendly, totalOccupants, type GuestCounts } from "@/lib/search";
 
 type Props = {
   listingId: string;
   pricePerNightCents: number;
+  cleaningFeeCents: number;
   maxGuests: number;
   amenities: string[];
   bookedRanges: { checkIn: string; checkOut: string }[];
@@ -24,6 +26,7 @@ type Props = {
 export function BookingWidget({
   listingId,
   pricePerNightCents,
+  cleaningFeeCents,
   maxGuests,
   amenities,
   bookedRanges,
@@ -38,7 +41,17 @@ export function BookingWidget({
     pets: 0,
   });
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [reserving, setReserving] = useState(false);
+  // The selection an availability check last confirmed as free. Compared
+  // against the current selection during render (rather than reset via an
+  // effect) so changing dates or guests after a successful check
+  // automatically requires a fresh check, with no extra state to keep in sync.
+  const [checkedSelection, setCheckedSelection] = useState<{
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+  } | null>(null);
   const petsAllowed = isPetFriendly(amenities);
   const guests = totalOccupants(guestCounts);
 
@@ -57,7 +70,14 @@ export function BookingWidget({
   );
 
   const nights = range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
-  const totalPriceCents = nights * pricePerNightCents;
+  const pricing = computeBookingPricing({ nights, pricePerNightCents, cleaningFeeCents });
+
+  const availabilityChecked = Boolean(
+    checkedSelection &&
+      range?.from?.toISOString() === checkedSelection.checkIn &&
+      range?.to?.toISOString() === checkedSelection.checkOut &&
+      guests === checkedSelection.guests,
+  );
 
   function isSelectionValid(): boolean {
     if (!range?.from || !range?.to) return false;
@@ -66,13 +86,9 @@ export function BookingWidget({
     );
   }
 
-  async function handleReserve() {
+  async function handleCheckAvailability() {
     setError(null);
 
-    if (!isLoggedIn) {
-      router.push(`/login?callbackUrl=/listings/${listingId}`);
-      return;
-    }
     if (!range?.from || !range?.to) {
       setError("Select your check-in and check-out dates.");
       return;
@@ -82,7 +98,43 @@ export function BookingWidget({
       return;
     }
 
-    setLoading(true);
+    setChecking(true);
+    try {
+      const params = new URLSearchParams({
+        checkIn: range.from.toISOString(),
+        checkOut: range.to.toISOString(),
+        guests: String(guests),
+      });
+      const res = await fetch(`/api/listings/${listingId}/availability?${params}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.available) {
+        const message = data.error ?? "Those dates aren't available.";
+        setError(message);
+        toast.error(message);
+        return;
+      }
+
+      setCheckedSelection({
+        checkIn: range.from.toISOString(),
+        checkOut: range.to.toISOString(),
+        guests,
+      });
+      toast.success("Good news — those dates are available.");
+    } catch {
+      setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function handleContinueToCheckout() {
+    setError(null);
+
+    if (!range?.from || !range?.to) return;
+
+    setReserving(true);
     try {
       const bookingRes = await fetch("/api/bookings", {
         method: "POST",
@@ -98,30 +150,20 @@ export function BookingWidget({
       if (!bookingRes.ok) {
         setError(bookingData.error ?? "Could not create booking.");
         toast.error(bookingData.error ?? "Could not create booking.");
-        setLoading(false);
+        setCheckedSelection(null);
+        setReserving(false);
         return;
       }
 
-      const checkoutRes = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId: bookingData.booking.id }),
-      });
-      const checkoutData = await checkoutRes.json();
-      if (!checkoutRes.ok) {
-        setError(checkoutData.error ?? "Could not start checkout.");
-        toast.error(checkoutData.error ?? "Could not start checkout.");
-        setLoading(false);
-        return;
-      }
-
-      window.location.href = checkoutData.url;
+      router.push(`/checkout/${bookingData.booking.id}`);
     } catch {
       setError("Something went wrong. Please try again.");
       toast.error("Something went wrong. Please try again.");
-      setLoading(false);
+      setReserving(false);
     }
   }
+
+  const hasDates = Boolean(range?.from && range?.to);
 
   return (
     <Card className="sticky top-20 p-5">
@@ -148,23 +190,60 @@ export function BookingWidget({
               <span>
                 {formatPrice(pricePerNightCents)} × {nights} night{nights > 1 ? "s" : ""}
               </span>
-              <span>{formatPrice(totalPriceCents)}</span>
+              <span>{formatPrice(pricing.nightlySubtotalCents)}</span>
+            </div>
+            {pricing.cleaningFeeCents > 0 && (
+              <div className="flex justify-between">
+                <span>Cleaning fee</span>
+                <span>{formatPrice(pricing.cleaningFeeCents)}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span>Service fee</span>
+              <span>{formatPrice(pricing.serviceFeeCents)}</span>
             </div>
             <div className="flex justify-between border-t border-border-subtle pt-2 font-semibold text-foreground">
               <span>Total</span>
-              <span>{formatPrice(totalPriceCents)}</span>
+              <span>{formatPrice(pricing.totalPriceCents)}</span>
             </div>
           </div>
         )}
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-        <Button onClick={handleReserve} loading={loading} size="lg" className="mt-4 w-full">
-          {isLoggedIn ? "Reserve" : "Log in to book"}
-        </Button>
+        {!isLoggedIn ? (
+          <Button
+            onClick={() => router.push(`/login?callbackUrl=/listings/${listingId}`)}
+            size="lg"
+            className="mt-4 w-full"
+          >
+            Log in to book
+          </Button>
+        ) : availabilityChecked ? (
+          <Button
+            onClick={handleContinueToCheckout}
+            loading={reserving}
+            size="lg"
+            className="mt-4 w-full"
+          >
+            Continue to checkout
+          </Button>
+        ) : (
+          <Button
+            onClick={handleCheckAvailability}
+            loading={checking}
+            disabled={!hasDates}
+            size="lg"
+            className="mt-4 w-full"
+          >
+            Check availability
+          </Button>
+        )}
 
         {isLoggedIn && (
-          <p className="mt-3 text-center text-xs text-zinc-500">You won&apos;t be charged yet</p>
+          <p className="mt-3 text-center text-xs text-zinc-500">
+            {availabilityChecked ? "You won't be charged yet" : "We'll confirm your dates are free"}
+          </p>
         )}
       </CardContent>
     </Card>

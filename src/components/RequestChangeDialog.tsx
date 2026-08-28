@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap } from "@/lib/availability";
+import { computeBookingPricing } from "@/lib/pricing";
 import { cn } from "@/lib/cn";
 
 export function RequestChangeDialog({
@@ -19,6 +20,7 @@ export function RequestChangeDialog({
   currentGuests,
   currentTotalPriceCents,
   pricePerNightCents,
+  cleaningFeeCents = 0,
   maxGuests,
   otherBookedRanges,
 }: {
@@ -28,6 +30,7 @@ export function RequestChangeDialog({
   currentGuests: number;
   currentTotalPriceCents: number;
   pricePerNightCents: number;
+  cleaningFeeCents?: number;
   maxGuests: number;
   otherBookedRanges: { checkIn: Date; checkOut: Date }[];
 }) {
@@ -47,7 +50,11 @@ export function RequestChangeDialog({
   );
 
   const nights = range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
-  const newTotalPriceCents = nights * pricePerNightCents;
+  const { totalPriceCents: newTotalPriceCents } = computeBookingPricing({
+    nights,
+    pricePerNightCents,
+    cleaningFeeCents,
+  });
   const priceDeltaCents = newTotalPriceCents - currentTotalPriceCents;
 
   function isSelectionValid(): boolean {

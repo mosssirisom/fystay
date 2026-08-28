@@ -21,13 +21,17 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
   // concern already covered by guest-booking.spec.ts.
   const booking = await prisma.booking.create({
     data: {
+      reference: `E2E-${Date.now()}`,
       listingId: listing.id,
       guestId: guest.id,
       checkIn: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       checkOut: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       guests: 2,
+      nights: 3,
+      nightlyPriceCents: listing.pricePerNightCents,
       totalPriceCents: listing.pricePerNightCents * 3,
       status: "CONFIRMED",
+      paymentStatus: "PAID",
     },
   });
 

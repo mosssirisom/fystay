@@ -20,6 +20,14 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  COMPLETED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
 }
 
 enum ChangeRequestStatus {
@@ -70,6 +78,10 @@ model Listing {
   country     String
   address     String?
   pricePerNightCents Int
+  // A flat, once-per-stay fee (housekeeping between guests), separate from
+  // the nightly rate. Zero means the host hasn't set one, in which case the
+  // booking summary simply omits that line rather than showing "£0".
+  cleaningFeeCents  Int      @default(0)
   maxGuests   Int      @default(1)
   bedrooms    Int      @default(1)
   beds        Int      @default(1)
@@ -92,14 +104,37 @@ model Listing {
 
 model Booking {
   id         String        @id @default(cuid())
+  // A short, human-friendly code shown to the guest (e.g. on the
+  // confirmation page and "My trips"), distinct from the internal cuid id.
+  reference  String        @unique
   checkIn    DateTime
   checkOut   DateTime
   guests     Int           @default(1)
-  totalPriceCents Int
+  nights     Int
   status     BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  // Price breakdown, snapshotted at booking time so a later change to the
+  // listing's price or fees never rewrites the price a guest already agreed
+  // to. totalPriceCents is always the sum of the four fields above it.
+  nightlyPriceCents Int
+  cleaningFeeCents  Int @default(0)
+  serviceFeeCents   Int @default(0)
+  taxCents          Int @default(0)
+  totalPriceCents   Int
+
+  // Contact details for this specific stay, captured at checkout. Kept on
+  // the booking (rather than read live off the account) so the record
+  // reflects who the reservation was actually for even if the account's
+  // own name/email changes later.
+  guestName  String?
+  guestEmail String?
+  guestPhone String?
 
   stripeSessionId       String? @unique
   stripePaymentIntentId String?
+  paidAt     DateTime?
+  refundedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

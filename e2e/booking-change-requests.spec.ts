@@ -64,17 +64,22 @@ test("guest can request a date change, host approves, and guest pays the differe
   });
 
   const checkIn = addDays(120);
-  const checkOut = addDays(122); // 2 nights, £200 total
+  const checkOut = addDays(122); // 2 nights: £200 subtotal + 10% service fee = £220 total
 
   const booking = await prisma.booking.create({
     data: {
+      reference: `E2E-${Date.now()}`,
       listingId: listing.id,
       guestId: guest.id,
       checkIn,
       checkOut,
       guests: 2,
-      totalPriceCents: 20000,
+      nights: 2,
+      nightlyPriceCents: 10000,
+      serviceFeeCents: 2000,
+      totalPriceCents: 22000,
       status: "CONFIRMED",
+      paymentStatus: "PAID",
     },
   });
 
@@ -97,7 +102,12 @@ test("guest can request a date change, host approves, and guest pays the differe
     const monthsAdvanced = await selectDay(page, checkIn, 0);
     await selectDay(page, newCheckOut, monthsAdvanced);
 
-    await expect(page.getByText(/You'll owe an extra/)).toBeVisible();
+    // Scoped to the open dialog: this guest account accumulates other
+    // bookings across the e2e suite, each with its own (closed) "Request a
+    // change" dialog carrying similar preview text, so an unscoped
+    // page-wide match is ambiguous once more than one exists in the DOM.
+    const changeDialog = page.getByRole("dialog", { name: "Request a change" });
+    await expect(changeDialog.getByText(/You'll owe an extra/)).toBeVisible();
     await page.getByRole("button", { name: "Submit request" }).click();
 
     // exact: true, since a toast ("Change requested. The host will review it
@@ -128,7 +138,8 @@ test("guest can request a date change, host approves, and guest pays the differe
     await page.waitForURL(/dev_confirmed=1/, { timeout: 15_000 });
 
     const finalBooking = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } });
-    expect(finalBooking.totalPriceCents).toBe(30000);
+    // 3 nights: £300 subtotal + 10% service fee = £330 total
+    expect(finalBooking.totalPriceCents).toBe(33000);
     expect(finalBooking.checkOut.toISOString().slice(0, 10)).toBe(isoDate(newCheckOut));
   } finally {
     await hostContext.close();

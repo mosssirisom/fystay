@@ -57,14 +57,48 @@ describe("canRequestBookingChange", () => {
 
 describe("computePriceDeltaCents", () => {
   it("is positive when the new stay costs more", () => {
-    expect(computePriceDeltaCents(5, 10000, 30000)).toBe(20000);
+    // 5 nights @ £100 = £500 subtotal + 10% service fee = £550 total.
+    expect(
+      computePriceDeltaCents({
+        requestedNights: 5,
+        pricePerNightCents: 10000,
+        currentTotalPriceCents: 30000,
+      }),
+    ).toBe(25000);
   });
 
   it("is negative when the new stay costs less", () => {
-    expect(computePriceDeltaCents(2, 10000, 30000)).toBe(-10000);
+    // 2 nights @ £100 = £200 subtotal + 10% service fee = £220 total.
+    expect(
+      computePriceDeltaCents({
+        requestedNights: 2,
+        pricePerNightCents: 10000,
+        currentTotalPriceCents: 30000,
+      }),
+    ).toBe(-8000);
   });
 
   it("is zero when the price is unchanged", () => {
-    expect(computePriceDeltaCents(3, 10000, 30000)).toBe(0);
+    // 3 nights @ £100 = £300 subtotal + 10% service fee = £330 total.
+    expect(
+      computePriceDeltaCents({
+        requestedNights: 3,
+        pricePerNightCents: 10000,
+        currentTotalPriceCents: 33000,
+      }),
+    ).toBe(0);
+  });
+
+  it("includes the cleaning fee in the new total", () => {
+    // 3 nights @ £100 = £300 subtotal + £20 cleaning fee + 10% service fee
+    // (of the subtotal only) = £350 total.
+    expect(
+      computePriceDeltaCents({
+        requestedNights: 3,
+        pricePerNightCents: 10000,
+        cleaningFeeCents: 2000,
+        currentTotalPriceCents: 33000,
+      }),
+    ).toBe(2000);
   });
 });

@@ -37,6 +37,8 @@ export async function POST(request: Request) {
         where: { id: bookingId },
         data: {
           status: "CONFIRMED",
+          paymentStatus: "PAID",
+          paidAt: new Date(),
           stripePaymentIntentId:
             typeof checkoutSession.payment_intent === "string"
               ? checkoutSession.payment_intent

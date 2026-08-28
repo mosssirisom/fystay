@@ -15,6 +15,8 @@ const bookingStatusVariant = {
   PENDING: "warning",
   CONFIRMED: "success",
   CANCELLED: "neutral",
+  COMPLETED: "brand",
+  REFUNDED: "neutral",
 } as const;
 
 type PendingChangeRequest = {
@@ -41,7 +43,7 @@ export function HostListingRow({
       checkIn: Date;
       checkOut: Date;
       guests: number;
-      status: "PENDING" | "CONFIRMED" | "CANCELLED";
+      status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
       changeRequests: PendingChangeRequest[];
     }[];
   };

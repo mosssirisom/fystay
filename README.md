@@ -33,10 +33,18 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
 - **Auth & roles**: sign up as a guest or a host; hosts get a dashboard, guests get a trips page.
 - **Host dashboard**: create, edit, publish/unpublish, and delete listings; see upcoming
   bookings per listing.
-- **Booking & availability**: a date-range picker that disables already-booked nights and
-  computes the total price.
-- **Payments**: booking a stay creates a Stripe Checkout session; a webhook confirms the
-  booking once payment succeeds.
+- **Booking & availability**: a date-range picker that disables already-booked nights.
+  "Check availability" re-validates the selection against real reservation data (not just the
+  calendar's client-side view) and previews the full price breakdown before anything is created;
+  "Continue to checkout" then holds the dates with a `PENDING` booking and moves to a dedicated
+  checkout page to confirm guest contact details and review the booking before paying.
+- **Pricing**: nightly rate × nights, plus an optional per-listing cleaning fee and a 10% guest
+  service fee (`src/lib/pricing.ts`), snapshotted onto the booking at creation time so a later
+  change to the listing's rates never rewrites what a guest already agreed to pay.
+- **Payments**: paying creates a Stripe Checkout session itemized by that breakdown; a webhook
+  confirms the booking once payment succeeds, and a confirmation page shows the booking's
+  reference, full breakdown, and status. Bookings move through `PENDING` → `CONFIRMED` →
+  `COMPLETED` (once the stay ends) or `CANCELLED`/`REFUNDED`.
 - **Photo uploads**: hosts upload real photos (via Supabase Storage) instead of pasting URLs,
   with a manual URL-paste fallback if storage isn't configured on a given deployment.
 - **Reviews**: a guest can leave a star rating + comment once a booking is paid for and its stay
@@ -190,11 +198,10 @@ error instead of crashing; the listing form's "paste an image URL" fallback stil
 - A `PENDING` booking (created before Stripe Checkout completes) only blocks a listing's dates for
   30 minutes (`PENDING_BOOKING_HOLD_MINUTES` in `src/lib/availability.ts`); otherwise an abandoned
   checkout would lock those dates out for every other guest indefinitely.
-- Known accepted gap: two guests booking the same dates at the exact same moment could both pass
-  the availability check before either row is written (no DB-level exclusion constraint on
-  booking date ranges). This is a real race condition, left as-is since closing it needs a
-  Postgres `EXCLUDE` constraint (via `btree_gist`), which is a larger migration than this pass
-  covers.
+- Two guests booking the same dates at the exact same moment can't both succeed: booking creation
+  runs its availability check and insert inside a single `SERIALIZABLE` transaction
+  (`src/app/api/bookings/route.ts`), so Postgres itself rejects whichever one would conflict, and
+  that guest sees a normal "those dates were just booked" error rather than a double booking.
 
 ## Project structure
 

@@ -68,11 +68,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const nights = nightsBetween(checkIn, checkOut);
-  const priceDeltaCents = computePriceDeltaCents(
-    nights,
-    booking.listing.pricePerNightCents,
-    booking.totalPriceCents,
-  );
+  const priceDeltaCents = computePriceDeltaCents({
+    requestedNights: nights,
+    pricePerNightCents: booking.listing.pricePerNightCents,
+    cleaningFeeCents: booking.cleaningFeeCents,
+    currentTotalPriceCents: booking.totalPriceCents,
+  });
 
   const changeRequest = await prisma.bookingChangeRequest.create({
     data: {

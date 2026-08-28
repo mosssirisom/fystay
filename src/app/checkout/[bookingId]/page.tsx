@@ -1,0 +1,102 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { PENDING_BOOKING_HOLD_MINUTES } from "@/lib/availability";
+import { BookingSummaryCard } from "@/components/BookingSummaryCard";
+import { CheckoutForm } from "@/components/CheckoutForm";
+import { Card, CardContent } from "@/components/ui/Card";
+import { buttonVariants } from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
+
+export const metadata: Metadata = { title: "Confirm and pay", robots: { index: false } };
+
+export default async function CheckoutPage({
+  params,
+}: {
+  params: Promise<{ bookingId: string }>;
+}) {
+  const { bookingId } = await params;
+  const session = await auth();
+  if (!session?.user) {
+    redirect(`/login?callbackUrl=/checkout/${bookingId}`);
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { listing: true },
+  });
+
+  if (!booking || booking.guestId !== session.user.id) {
+    notFound();
+  }
+
+  if (booking.status !== "PENDING") {
+    redirect(`/bookings/${booking.id}/confirmation`);
+  }
+
+  const holdExpiresAt = new Date(
+    booking.createdAt.getTime() + PENDING_BOOKING_HOLD_MINUTES * 60 * 1000,
+  );
+  const expired = holdExpiresAt <= new Date();
+
+  return (
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 pb-28 lg:pb-8">
+      <Link
+        href={`/listings/${booking.listingId}`}
+        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Back to listing
+      </Link>
+
+      <h1 className="mt-3 text-2xl font-bold text-foreground">Confirm and pay</h1>
+
+      {expired ? (
+        <Card className="mt-6 p-6 text-center">
+          <CardContent className="flex flex-col items-center gap-3 p-0">
+            <p className="font-medium text-foreground">This reservation hold has expired</p>
+            <p className="max-w-sm text-sm text-zinc-500">
+              We held these dates for {PENDING_BOOKING_HOLD_MINUTES} minutes while you checked
+              out. Please go back and select your dates again.
+            </p>
+            <Link
+              href={`/listings/${booking.listingId}`}
+              className={cn(buttonVariants(), "mt-2")}
+            >
+              Back to listing
+            </Link>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <CheckoutForm
+              bookingId={booking.id}
+              defaultName={booking.guestName ?? session.user.name ?? ""}
+              defaultEmail={booking.guestEmail ?? session.user.email ?? ""}
+              defaultPhone={booking.guestPhone ?? ""}
+              totalPriceCents={booking.totalPriceCents}
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <BookingSummaryCard
+              listing={booking.listing}
+              checkIn={booking.checkIn}
+              checkOut={booking.checkOut}
+              nights={booking.nights}
+              guests={booking.guests}
+              nightlyPriceCents={booking.nightlyPriceCents}
+              cleaningFeeCents={booking.cleaningFeeCents}
+              serviceFeeCents={booking.serviceFeeCents}
+              taxCents={booking.taxCents}
+              totalPriceCents={booking.totalPriceCents}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

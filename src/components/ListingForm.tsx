@@ -17,6 +17,7 @@ export type ListingFormValues = {
   country: string;
   address: string;
   pricePerNight: string;
+  cleaningFee: string;
   maxGuests: string;
   bedrooms: string;
   beds: string;
@@ -32,6 +33,7 @@ const emptyValues: ListingFormValues = {
   country: "",
   address: "",
   pricePerNight: "",
+  cleaningFee: "",
   maxGuests: "2",
   bedrooms: "1",
   beds: "1",
@@ -84,6 +86,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
       country: values.country,
       address: values.address || undefined,
       pricePerNightCents: Math.round(Number(values.pricePerNight) * 100),
+      cleaningFeeCents: values.cleaningFee ? Math.round(Number(values.cleaningFee) * 100) : 0,
       maxGuests: Number(values.maxGuests),
       bedrooms: Number(values.bedrooms),
       beds: Number(values.beds),
@@ -185,7 +188,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
           <CardTitle>Capacity & pricing</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             <Field>
               <Label htmlFor="price">Price / night (£)</Label>
               <Input
@@ -196,6 +199,18 @@ export function ListingForm({ listingId, initialValues }: Props) {
                 step="0.01"
                 value={values.pricePerNight}
                 onChange={(e) => update("pricePerNight", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="cleaningFee">Cleaning fee (£, optional)</Label>
+              <Input
+                id="cleaningFee"
+                type="number"
+                min={0}
+                step="0.01"
+                value={values.cleaningFee}
+                onChange={(e) => update("cleaningFee", e.target.value)}
+                placeholder="0"
               />
             </Field>
             <Field>

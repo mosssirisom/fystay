@@ -20,6 +20,16 @@ const statusVariant: Record<string, BadgeProps["variant"]> = {
   PENDING: "warning",
   CONFIRMED: "success",
   CANCELLED: "neutral",
+  COMPLETED: "brand",
+  REFUNDED: "neutral",
+};
+
+const statusLabel: Record<string, string> = {
+  PENDING: "Pending payment",
+  CONFIRMED: "Confirmed",
+  CANCELLED: "Cancelled",
+  COMPLETED: "Completed",
+  REFUNDED: "Refunded",
 };
 
 type ChangeRequestData = {
@@ -38,8 +48,9 @@ export function BookingCard({
 }: {
   booking: {
     id: string;
+    reference: string;
     listingId: string;
-    status: "PENDING" | "CONFIRMED" | "CANCELLED";
+    status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
     checkIn: Date;
     checkOut: Date;
     guests: number;
@@ -51,6 +62,7 @@ export function BookingCard({
       country: string;
       photos: string[];
       pricePerNightCents: number;
+      cleaningFeeCents: number;
       maxGuests: number;
       bookings: { id: string; checkIn: Date; checkOut: Date }[];
     };
@@ -113,13 +125,14 @@ export function BookingCard({
               {booking.checkIn.toLocaleDateString()} – {booking.checkOut.toLocaleDateString()} ·{" "}
               {booking.guests} guest{booking.guests > 1 ? "s" : ""}
             </p>
+            <p className="text-xs text-zinc-400">Booking #{booking.reference}</p>
           </div>
         </div>
 
         <div className="flex items-center justify-between gap-3 sm:block sm:shrink-0 sm:text-right">
           <p className="font-semibold text-foreground">{formatPrice(booking.totalPriceCents)}</p>
           <Badge variant={statusVariant[status]} className="sm:mt-1">
-            {status}
+            {statusLabel[status] ?? status}
           </Badge>
         </div>
       </div>
@@ -160,6 +173,7 @@ export function BookingCard({
               currentGuests={booking.guests}
               currentTotalPriceCents={booking.totalPriceCents}
               pricePerNightCents={booking.listing.pricePerNightCents}
+              cleaningFeeCents={booking.listing.cleaningFeeCents}
               maxGuests={booking.listing.maxGuests}
               otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
             />

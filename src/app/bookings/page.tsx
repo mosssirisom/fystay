@@ -5,6 +5,7 @@ import { Luggage } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere } from "@/lib/availability";
+import { completePastBookings } from "@/lib/bookingLifecycle";
 import { Card } from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
 import { BookingCard } from "@/components/BookingCard";
@@ -17,6 +18,8 @@ export default async function BookingsPage() {
   if (!session?.user) {
     redirect("/login?callbackUrl=/bookings");
   }
+
+  await completePastBookings(prisma, session.user.id);
 
   const bookings = await prisma.booking.findMany({
     where: { guestId: session.user.id },

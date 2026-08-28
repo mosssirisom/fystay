@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere } from "@/lib/availability";
 import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
+import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
 import { ReviewList } from "@/components/ReviewList";
@@ -118,7 +119,7 @@ export default async function ListingDetailPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8 pb-24 lg:pb-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
@@ -173,10 +174,11 @@ export default async function ListingDetailPage({
           <ReviewList reviews={listing.reviews} />
         </div>
 
-        <div>
+        <div id="booking-widget">
           <BookingWidget
             listingId={listing.id}
             pricePerNightCents={listing.pricePerNightCents}
+            cleaningFeeCents={listing.cleaningFeeCents}
             maxGuests={listing.maxGuests}
             amenities={listing.amenities}
             bookedRanges={listing.bookings.map((b) => ({
@@ -187,6 +189,8 @@ export default async function ListingDetailPage({
           />
         </div>
       </div>
+
+      <MobileBookingBar pricePerNightCents={listing.pricePerNightCents} />
     </div>
   );
 }

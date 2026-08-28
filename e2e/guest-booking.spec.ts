@@ -49,11 +49,24 @@ test("guest can log in, book a listing, and see it in their trips", async ({ pag
 
   await expect(page.getByText(/Total/)).toBeVisible();
 
-  await page.getByRole("button", { name: "Reserve" }).click();
+  await page.getByRole("button", { name: "Check availability" }).click();
+  await expect(page.getByRole("button", { name: "Continue to checkout" })).toBeVisible();
+  await page.getByRole("button", { name: "Continue to checkout" }).click();
 
-  await page.waitForURL(/\/bookings/, { timeout: 15_000 });
+  await page.waitForURL(/\/checkout\//, { timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Confirm and pay" })).toBeVisible();
+  // Name/email are prefilled from the account; only phone is missing.
+  await page.fill("#guestPhone", "07700 900123");
+  await page.getByRole("button", { name: /Confirm and pay/ }).first().click();
+
+  await page.waitForURL(/\/bookings\/.+\/confirmation/, { timeout: 15_000 });
   expect(page.url()).toContain("dev_confirmed=1");
 
+  await expect(page.getByText("Booking confirmed!")).toBeVisible();
+  await expect(page.getByText(listingTitle).first()).toBeVisible();
+  await expect(page.getByText(/Booking #FY-/)).toBeVisible();
+
+  await page.goto("/bookings");
   await expect(page.getByText(listingTitle).first()).toBeVisible();
   await expect(page.getByText("Confirmed").first()).toBeVisible();
 });

@@ -26,13 +26,16 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const stripe = getStripeClient();
-  if (stripe && booking.status === "CONFIRMED" && booking.stripePaymentIntentId) {
+  const wasPaid = booking.status === "CONFIRMED" && booking.paymentStatus === "PAID";
+  if (stripe && wasPaid && booking.stripePaymentIntentId) {
     await stripe.refunds.create({ payment_intent: booking.stripePaymentIntentId });
   }
 
   const updated = await prisma.booking.update({
     where: { id },
-    data: { status: "CANCELLED" },
+    data: wasPaid
+      ? { status: "REFUNDED", paymentStatus: "REFUNDED", refundedAt: new Date() }
+      : { status: "CANCELLED" },
   });
 
   return NextResponse.json({ booking: updated });

@@ -118,9 +118,17 @@ export default async function Home({
       </Suspense>
 
       <div className="mt-10">
-        <Suspense fallback={<ListingsGridSkeleton />}>
-          <ListingsGrid searchParams={resolvedSearchParams} />
-        </Suspense>
+        <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+          Popular stays on the Fylde Coast
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Hand-picked local places to stay, ready to book today.
+        </p>
+        <div className="mt-6">
+          <Suspense fallback={<ListingsGridSkeleton />}>
+            <ListingsGrid searchParams={resolvedSearchParams} />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

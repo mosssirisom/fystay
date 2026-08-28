@@ -232,7 +232,7 @@ test.describe("availability system", () => {
       page.waitForResponse((r) => r.url().includes("/availability") && r.request().method() === "GET"),
       page.getByRole("button", { name: "Check availability" }).click(),
     ]);
-    await expect(page.getByRole("button", { name: "Continue to checkout" })).toBeVisible({
+    await expect(page.getByRole("button", { name: "Continue to payment" })).toBeVisible({
       timeout: 15_000,
     });
 
@@ -255,7 +255,7 @@ test.describe("availability system", () => {
     });
 
     try {
-      await page.getByRole("button", { name: "Continue to checkout" }).click();
+      await page.getByRole("button", { name: "Continue to payment" }).click();
 
       // Scoped to the widget itself: the same message is also shown in a
       // toast notification, which would otherwise make this an ambiguous

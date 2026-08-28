@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -13,12 +14,14 @@ export function CheckoutForm({
   defaultName,
   defaultEmail,
   defaultPhone,
+  guests,
   totalPriceCents,
 }: {
   bookingId: string;
   defaultName: string;
   defaultEmail: string;
   defaultPhone: string;
+  guests: number;
   totalPriceCents: number;
 }) {
   const [name, setName] = useState(defaultName);
@@ -109,14 +112,22 @@ export function CheckoutForm({
             />
             <FieldError>{error}</FieldError>
           </Field>
+          <div className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2 text-sm">
+            <span className="text-zinc-600">Guests</span>
+            <span className="font-medium text-foreground">
+              {guests} guest{guests === 1 ? "" : "s"}
+            </span>
+          </div>
         </CardContent>
       </Card>
 
       <Button type="submit" loading={loading} size="lg" className="mt-6 hidden w-full lg:flex">
-        Confirm and pay {formatPrice(totalPriceCents)}
+        Pay securely {formatPrice(totalPriceCents)}
       </Button>
-      <p className="mt-3 hidden text-center text-xs text-zinc-500 lg:block">
-        By confirming, you agree to pay the total amount shown for this stay.
+      <p className="mt-3 hidden items-center justify-center gap-1.5 text-center text-xs text-zinc-500 lg:flex">
+        <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+        You&apos;ll pay on Stripe&apos;s secure checkout page. FY Stay never sees or stores your
+        card details.
       </p>
 
       <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border-subtle bg-surface px-4 py-3 [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
@@ -125,7 +136,7 @@ export function CheckoutForm({
           <p className="text-base font-semibold text-foreground">{formatPrice(totalPriceCents)}</p>
         </div>
         <Button type="submit" loading={loading} size="lg" className="flex-1">
-          Confirm and pay
+          Pay securely
         </Button>
       </div>
     </form>

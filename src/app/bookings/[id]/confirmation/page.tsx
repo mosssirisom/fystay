@@ -31,6 +31,7 @@ export default async function BookingConfirmationPage({
       <BookingConfirmation
         bookingId={booking.id}
         initialStatus={booking.status}
+        initialPaymentStatus={booking.paymentStatus}
         reference={booking.reference}
         listing={{
           title: booking.listing.title,
@@ -47,6 +48,9 @@ export default async function BookingConfirmationPage({
         serviceFeeCents={booking.serviceFeeCents}
         taxCents={booking.taxCents}
         totalPriceCents={booking.totalPriceCents}
+        guestName={booking.guestName}
+        guestEmail={booking.guestEmail}
+        guestPhone={booking.guestPhone}
       />
     </div>
   );

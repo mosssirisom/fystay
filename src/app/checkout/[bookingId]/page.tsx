@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { PENDING_BOOKING_HOLD_MINUTES } from "@/lib/availability";
@@ -15,10 +15,13 @@ export const metadata: Metadata = { title: "Confirm and pay", robots: { index: f
 
 export default async function CheckoutPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ bookingId: string }>;
+  searchParams: Promise<{ cancelled?: string }>;
 }) {
   const { bookingId } = await params;
+  const { cancelled } = await searchParams;
   const session = await auth();
   if (!session?.user) {
     redirect(`/login?callbackUrl=/checkout/${bookingId}`);
@@ -54,6 +57,14 @@ export default async function CheckoutPage({
 
       <h1 className="mt-3 text-2xl font-bold text-foreground">Confirm and pay</h1>
 
+      {cancelled === "1" && !expired && (
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <Info className="h-4 w-4 shrink-0" />
+          Payment was cancelled. Your dates are still held, so you can try again whenever
+          you&apos;re ready.
+        </div>
+      )}
+
       {expired ? (
         <Card className="mt-6 p-6 text-center">
           <CardContent className="flex flex-col items-center gap-3 p-0">
@@ -78,6 +89,7 @@ export default async function CheckoutPage({
               defaultName={booking.guestName ?? session.user.name ?? ""}
               defaultEmail={booking.guestEmail ?? session.user.email ?? ""}
               defaultPhone={booking.guestPhone ?? ""}
+              guests={booking.guests}
               totalPriceCents={booking.totalPriceCents}
             />
           </div>

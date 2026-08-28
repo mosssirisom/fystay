@@ -48,6 +48,19 @@ export async function POST(request: Request) {
     } else if (changeRequestId) {
       await applyApprovedChange(changeRequestId);
     }
+  } else if (event.type === "checkout.session.expired") {
+    // The guest never completed payment and Stripe's own session TTL ran
+    // out (e.g. they abandoned the card form). Only ever touches a booking
+    // still PENDING: if it's already CONFIRMED, some other session for the
+    // same booking succeeded first, and this stale expiry must not cancel
+    // a paid stay.
+    const bookingId = event.data.object.metadata?.bookingId;
+    if (bookingId) {
+      await prisma.booking.updateMany({
+        where: { id: bookingId, status: "PENDING" },
+        data: { status: "CANCELLED" },
+      });
+    }
   }
 
   return NextResponse.json({ received: true });

@@ -36,7 +36,7 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
 - **Booking & availability**: a date-range picker that disables already-booked nights.
   "Check availability" re-validates the selection against real reservation data (not just the
   calendar's client-side view) and previews the full price breakdown before anything is created;
-  "Continue to checkout" then holds the dates with a `PENDING` booking and moves to a dedicated
+  "Continue to payment" then holds the dates with a `PENDING` booking and moves to a dedicated
   checkout page to confirm guest contact details and review the booking before paying. If the
   dates are taken by the time of that final step (someone else booked, or the host blocked them),
   the guest sees a clear error and has to pick new ones rather than the request silently failing.
@@ -56,9 +56,17 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
 - **Pricing**: nightly rate × nights, plus an optional per-listing cleaning fee and a 10% guest
   service fee (`src/lib/pricing.ts`), snapshotted onto the booking at creation time so a later
   change to the listing's rates never rewrites what a guest already agreed to pay.
-- **Payments**: paying creates a Stripe Checkout session itemized by that breakdown; a webhook
-  confirms the booking once payment succeeds, and a confirmation page shows the booking's
-  reference, full breakdown, and status. Bookings move through `PENDING` → `CONFIRMED` →
+- **Payments**: paying creates a Stripe Checkout session itemized by that breakdown; card details
+  never touch FY Stay's servers or database, since the guest enters them on Stripe's own hosted
+  page. Only Stripe's server-to-server webhook ever confirms a booking (`checkout.session.completed`),
+  never the browser redirect returning from it, so a guest can't fake a successful payment by
+  editing the URL. A declined card is Stripe's own hosted page's problem to handle (it keeps the
+  guest there to retry); a cancelled or abandoned session (`checkout.session.expired`) cancels the
+  booking rather than leaving it stuck `PENDING` forever. Re-submitting (a double-click, a second
+  tab, hitting back then forward) reuses the same still-open Stripe session instead of ever
+  creating a second chargeable one for the same booking. A confirmation page shows the booking's
+  reference, full breakdown, guest details, and payment status, and polls briefly for the webhook
+  if the redirect back arrives first. Bookings move through `PENDING` → `CONFIRMED` →
   `COMPLETED` (once the stay ends) or `CANCELLED`/`REFUNDED`.
 - **Photo uploads**: hosts upload real photos (via Supabase Storage) instead of pasting URLs,
   with a manual URL-paste fallback if storage isn't configured on a given deployment.
@@ -128,8 +136,9 @@ If `STRIPE_SECRET_KEY` is not set, the checkout API skips Stripe entirely and co
 booking immediately, which is useful for exercising the full booking flow in local development
 without a Stripe account. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
 `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` to enable real Checkout sessions, and point a webhook at
-`/api/webhooks/stripe` for the `checkout.session.completed` event (e.g. via
-`stripe listen --forward-to localhost:3000/api/webhooks/stripe` during development).
+`/api/webhooks/stripe` for the `checkout.session.completed` and `checkout.session.expired` events
+(e.g. via `stripe listen --forward-to localhost:3000/api/webhooks/stripe` during development,
+which forwards every event type without needing to list them individually).
 
 ## Password resets without an email service
 

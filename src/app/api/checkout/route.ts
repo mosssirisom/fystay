@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
+import { decideExistingSessionAction } from "@/lib/checkoutSession";
 
 const checkoutSchema = z.object({
   bookingId: z.string().min(1),
@@ -76,6 +77,23 @@ export async function POST(request: Request) {
     });
   }
 
+  // A guest re-submitting (double-click, a second tab, hitting back then
+  // forward) must never be handed a second live, payable session: that's a
+  // real double-charge risk with two separate PaymentIntents, not just a
+  // cosmetic duplicate. If a session from an earlier attempt is still
+  // usable, send them back to that one instead of minting a new one.
+  if (booking.stripeSessionId) {
+    const existingSession = await stripe.checkout.sessions.retrieve(booking.stripeSessionId);
+    const action = decideExistingSessionAction(existingSession.status);
+    if (action === "reuse" && existingSession.url) {
+      return NextResponse.json({ url: existingSession.url });
+    }
+    if (action === "already_paid") {
+      return NextResponse.json({ url: `${confirmationUrl}?success=1` });
+    }
+    // "create_new": the old session expired unpaid; fall through below.
+  }
+
   const lineItems = [
     {
       price_data: {
@@ -126,13 +144,27 @@ export async function POST(request: Request) {
     line_items: lineItems,
     metadata: { bookingId: booking.id },
     success_url: `${confirmationUrl}?success=1`,
-    cancel_url: `${baseUrl}/checkout/${booking.id}`,
+    cancel_url: `${baseUrl}/checkout/${booking.id}?cancelled=1`,
   });
 
-  await prisma.booking.update({
-    where: { id: booking.id },
+  // Conditional on stripeSessionId still being unset: if a concurrent
+  // request already attached a different session in the moment between our
+  // read above and this write, that session is the one the guest should
+  // actually pay through, not the one this request just created.
+  const attached = await prisma.booking.updateMany({
+    where: { id: booking.id, stripeSessionId: null },
     data: { stripeSessionId: checkoutSession.id },
   });
+
+  if (attached.count === 0) {
+    const winner = await prisma.booking.findUnique({ where: { id: booking.id } });
+    if (winner?.stripeSessionId) {
+      const winningSession = await stripe.checkout.sessions.retrieve(winner.stripeSessionId);
+      if (winningSession.url) {
+        return NextResponse.json({ url: winningSession.url });
+      }
+    }
+  }
 
   return NextResponse.json({ url: checkoutSession.url });
 }

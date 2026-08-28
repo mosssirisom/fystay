@@ -226,7 +226,7 @@ export function BookingWidget({
             size="lg"
             className="mt-4 w-full"
           >
-            Continue to checkout
+            Continue to payment
           </Button>
         ) : (
           <Button

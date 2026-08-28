@@ -83,12 +83,12 @@ test("guest can log in, book a listing, and see it in their trips", async ({ pag
     page.waitForResponse((r) => r.url().includes("/availability") && r.request().method() === "GET"),
     page.getByRole("button", { name: "Check availability" }).click(),
   ]);
-  await expect(page.getByRole("button", { name: "Continue to checkout" })).toBeVisible({
+  await expect(page.getByRole("button", { name: "Continue to payment" })).toBeVisible({
     timeout: 15_000,
   });
   await Promise.all([
     page.waitForResponse((r) => r.url().includes("/api/bookings") && r.request().method() === "POST"),
-    page.getByRole("button", { name: "Continue to checkout" }).click(),
+    page.getByRole("button", { name: "Continue to payment" }).click(),
   ]);
 
   await page.waitForURL(/\/checkout\//, { timeout: 15_000 });
@@ -97,7 +97,7 @@ test("guest can log in, book a listing, and see it in their trips", async ({ pag
   await page.fill("#guestPhone", "07700 900123");
   await Promise.all([
     page.waitForResponse((r) => r.url().includes("/api/checkout") && r.request().method() === "POST"),
-    page.getByRole("button", { name: /Confirm and pay/ }).first().click(),
+    page.getByRole("button", { name: /Pay securely/ }).first().click(),
   ]);
 
   await page.waitForURL(/\/bookings\/.+\/confirmation/, { timeout: 15_000 });

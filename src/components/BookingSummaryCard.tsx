@@ -1,8 +1,21 @@
 import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
+
+const paymentStatusLabel: Record<string, string> = {
+  UNPAID: "Unpaid",
+  PAID: "Paid",
+  REFUNDED: "Refunded",
+};
+
+const paymentStatusVariant: Record<string, BadgeProps["variant"]> = {
+  UNPAID: "warning",
+  PAID: "success",
+  REFUNDED: "neutral",
+};
 
 const dateFormatter = new Intl.DateTimeFormat("en-GB", {
   weekday: "short",
@@ -23,6 +36,10 @@ export function BookingSummaryCard({
   taxCents,
   totalPriceCents,
   reference,
+  guestName,
+  guestEmail,
+  guestPhone,
+  paymentStatus,
 }: {
   listing: { title: string; city: string; country: string; photos: string[] };
   checkIn: Date;
@@ -35,6 +52,11 @@ export function BookingSummaryCard({
   taxCents: number;
   totalPriceCents: number;
   reference?: string;
+  /** Only shown once there's a real reservation to review, i.e. on the confirmation page, not mid-checkout where the guest is still typing these into the form right next to this card. */
+  guestName?: string | null;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  paymentStatus?: "UNPAID" | "PAID" | "REFUNDED";
 }) {
   const nightlySubtotalCents = nights * nightlyPriceCents;
 
@@ -58,8 +80,15 @@ export function BookingSummaryCard({
               </div>
             )}
           </div>
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-foreground">{listing.title}</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <p className="truncate font-semibold text-foreground">{listing.title}</p>
+              {paymentStatus && (
+                <Badge variant={paymentStatusVariant[paymentStatus]} className="shrink-0">
+                  {paymentStatusLabel[paymentStatus]}
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-zinc-500">
               {listing.city}, {listing.country}
             </p>
@@ -68,6 +97,32 @@ export function BookingSummaryCard({
             )}
           </div>
         </div>
+
+        {(guestName || guestEmail || guestPhone) && (
+          <dl className="grid grid-cols-2 gap-y-1.5 border-t border-border-subtle pt-4 text-sm">
+            <dt className="col-span-2 mb-0.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              Guest details
+            </dt>
+            {guestName && (
+              <>
+                <dt className="text-zinc-500">Name</dt>
+                <dd className="text-right text-foreground">{guestName}</dd>
+              </>
+            )}
+            {guestEmail && (
+              <>
+                <dt className="text-zinc-500">Email</dt>
+                <dd className="truncate text-right text-foreground">{guestEmail}</dd>
+              </>
+            )}
+            {guestPhone && (
+              <>
+                <dt className="text-zinc-500">Phone</dt>
+                <dd className="text-right text-foreground">{guestPhone}</dd>
+              </>
+            )}
+          </dl>
+        )}
 
         <dl className="grid grid-cols-2 gap-y-1.5 border-t border-border-subtle pt-4 text-sm">
           <dt className="text-zinc-500">Check-in</dt>

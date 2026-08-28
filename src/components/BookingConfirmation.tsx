@@ -11,10 +11,12 @@ const POLL_INTERVAL_MS = 1500;
 const MAX_POLLS = 12;
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
+type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED";
 
 export function BookingConfirmation({
   bookingId,
   initialStatus,
+  initialPaymentStatus,
   reference,
   listing,
   checkIn,
@@ -26,9 +28,13 @@ export function BookingConfirmation({
   serviceFeeCents,
   taxCents,
   totalPriceCents,
+  guestName,
+  guestEmail,
+  guestPhone,
 }: {
   bookingId: string;
   initialStatus: BookingStatus;
+  initialPaymentStatus: PaymentStatus;
   reference: string;
   listing: { title: string; city: string; country: string; photos: string[] };
   checkIn: Date;
@@ -40,8 +46,12 @@ export function BookingConfirmation({
   serviceFeeCents: number;
   taxCents: number;
   totalPriceCents: number;
+  guestName: string | null;
+  guestEmail: string | null;
+  guestPhone: string | null;
 }) {
   const [status, setStatus] = useState<BookingStatus>(initialStatus);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(initialPaymentStatus);
   const [pollsExhausted, setPollsExhausted] = useState(false);
   const pollCount = useRef(0);
 
@@ -56,6 +66,7 @@ export function BookingConfirmation({
           const data = await res.json();
           if (data.booking.status !== "PENDING") {
             setStatus(data.booking.status);
+            setPaymentStatus(data.booking.paymentStatus);
             clearInterval(interval);
             return;
           }
@@ -133,6 +144,10 @@ export function BookingConfirmation({
           taxCents={taxCents}
           totalPriceCents={totalPriceCents}
           reference={reference}
+          guestName={guestName}
+          guestEmail={guestEmail}
+          guestPhone={guestPhone}
+          paymentStatus={paymentStatus}
         />
       </div>
 

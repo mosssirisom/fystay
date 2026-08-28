@@ -175,16 +175,24 @@ export default async function Home({
         </div>
       </div>
 
-      <div className="mt-14 grid grid-cols-1 gap-6 border-t border-border-subtle pt-10 sm:grid-cols-3">
-        {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="flex items-start gap-3">
-            <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">{title}</p>
-              <p className="mt-0.5 text-sm text-zinc-500">{description}</p>
+      <div className="mt-14 border-t border-border-subtle pt-10">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why book with FY Stay?</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            A more personal, more local way to book a stay on the Fylde Coast.
+          </p>
+        </div>
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
+            <div key={title} className="flex items-start gap-3">
+              <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{title}</p>
+                <p className="mt-0.5 text-sm text-zinc-500">{description}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -30,7 +30,10 @@ export async function GET(
     include: { host: { select: { id: true, name: true } } },
   });
 
-  if (!listing) {
+  // Unpublished listings are only ever visible via host-management routes
+  // (dashboard, edit page), never through this public endpoint — matches
+  // the listing detail page, which 404s the same way regardless of viewer.
+  if (!listing || !listing.published) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isRangeAvailable, nightsBetween, rangesOverlap } from "./availability";
+import {
+  blockingBookingWhere,
+  isRangeAvailable,
+  nightsBetween,
+  PENDING_BOOKING_HOLD_MINUTES,
+  rangesOverlap,
+} from "./availability";
 
 const d = (s: string) => new Date(s);
 
@@ -54,6 +60,22 @@ describe("isRangeAvailable", () => {
 
   it("allows a new booking ending exactly on an existing booking's checkin day", () => {
     expect(isRangeAvailable(d("2026-06-05"), d("2026-06-10"), booked)).toBe(true);
+  });
+});
+
+describe("blockingBookingWhere", () => {
+  it("always blocks on CONFIRMED status regardless of age", () => {
+    const where = blockingBookingWhere(d("2026-06-01"));
+    expect(where.OR).toContainEqual({ status: "CONFIRMED" });
+  });
+
+  it("sets the PENDING cutoff to exactly the hold window before `now`", () => {
+    const now = d("2026-06-01T12:00:00Z");
+    const where = blockingBookingWhere(now);
+    const pendingClause = where.OR.find((clause) => clause.status === "PENDING");
+    expect(pendingClause?.createdAt.gte.toISOString()).toBe(
+      new Date(now.getTime() - PENDING_BOOKING_HOLD_MINUTES * 60_000).toISOString(),
+    );
   });
 });
 

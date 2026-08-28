@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BedDouble, Bath, DoorOpen, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { blockingBookingWhere } from "@/lib/availability";
 import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
 import { PhotoGallery } from "@/components/PhotoGallery";
@@ -17,7 +18,7 @@ const getListing = cache(async (id: string) => {
     include: {
       host: { select: { name: true } },
       bookings: {
-        where: { status: { in: ["PENDING", "CONFIRMED"] } },
+        where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
       },
     },

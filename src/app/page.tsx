@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { isRangeAvailable } from "@/lib/availability";
+import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
@@ -38,7 +38,7 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
     },
     include: {
       bookings: {
-        where: { status: { in: ["PENDING", "CONFIRMED"] } },
+        where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
       },
     },

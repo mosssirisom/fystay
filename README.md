@@ -153,6 +153,30 @@ error instead of crashing; the listing form's "paste an image URL" fallback stil
 - CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and a production build against
   a real Postgres service on every push/PR, then runs the Playwright suite in a second job.
 
+## Security
+
+- **Content-Security-Policy** — `src/proxy.ts` (Next's renamed `middleware.ts`) generates a
+  per-request nonce and sets a `script-src 'self' 'nonce-...' 'strict-dynamic'` CSP; every real
+  page in the app is already dynamically rendered (via `auth()`), so nonces cost no static-
+  generation benefit. `style-src` allows `'unsafe-inline'` since a few components (e.g. `Avatar`)
+  set inline `style` attributes, which can't carry a nonce.
+- Other security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy`, `Strict-Transport-Security`) are set in `next.config.ts`.
+- `trustHost: true` is set in `src/auth.ts` — without it, NextAuth v5 rejects every request with
+  "UntrustedHost" as soon as the app runs in production mode (`next start`/Vercel), since it
+  can't otherwise tell a real request's Host header from a spoofed one. Safe here because the app
+  only ever sits behind Vercel's proxy, which sets a trustworthy Host header itself.
+- Stripe webhook signatures are verified (`src/app/api/webhooks/stripe/route.ts`); listing/booking
+  mutation routes check resource ownership server-side, not just in the UI; booking price is
+  always computed server-side from the listing's stored price, never trusted from the client.
+- A `PENDING` booking (created before Stripe Checkout completes) only blocks a listing's dates for
+  30 minutes (`PENDING_BOOKING_HOLD_MINUTES` in `src/lib/availability.ts`) — otherwise an abandoned
+  checkout would lock those dates out for every other guest indefinitely.
+- Known accepted gap: two guests booking the same dates at the exact same moment could both pass
+  the availability check before either row is written (no DB-level exclusion constraint on
+  booking date ranges) — a real race condition, left as-is since closing it needs a Postgres
+  `EXCLUDE` constraint (via `btree_gist`), which is a larger migration than this pass covers.
+
 ## Project structure
 
 ```

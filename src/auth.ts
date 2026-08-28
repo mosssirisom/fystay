@@ -4,6 +4,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Trust the Host header from the deployment platform's proxy (Vercel, etc.)
+  // — without this, NextAuth v5 rejects every request in production mode
+  // ("UntrustedHost") since it can't otherwise tell a real request apart
+  // from one with a spoofed Host header.
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",

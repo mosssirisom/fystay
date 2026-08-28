@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { isRangeAvailable, nightsBetween } from "@/lib/availability";
+import { blockingBookingWhere, isRangeAvailable, nightsBetween } from "@/lib/availability";
 
 const createBookingSchema = z.object({
   listingId: z.string().min(1),
@@ -48,12 +48,19 @@ export async function POST(request: Request) {
   if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
     return NextResponse.json({ error: "Invalid dates" }, { status: 400 });
   }
+  // The calendar UI already disables past dates, but that's client-side
+  // only — enforce it here too, since this endpoint is reachable directly.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (checkIn < today) {
+    return NextResponse.json({ error: "Check-in date must be in the future" }, { status: 400 });
+  }
 
   const listing = await prisma.listing.findUnique({
     where: { id: listingId },
     include: {
       bookings: {
-        where: { status: { in: ["PENDING", "CONFIRMED"] } },
+        where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
       },
     },

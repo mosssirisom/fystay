@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { isRangeAvailable } from "@/lib/availability";
+import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
 import { httpUrlSchema } from "@/lib/validation";
 
 const createListingSchema = z.object({
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     },
     include: {
       bookings: {
-        where: { status: { in: ["PENDING", "CONFIRMED"] } },
+        where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
       },
     },

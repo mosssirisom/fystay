@@ -6,9 +6,12 @@ import { ImageOff, Luggage } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
+import { canReviewBooking } from "@/lib/reviews";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { buttonVariants } from "@/components/ui/Button";
+import { StarRating } from "@/components/ui/StarRating";
+import { ReviewForm } from "@/components/ReviewForm";
 import { cn } from "@/lib/cn";
 import { isOptimizableImage } from "@/lib/image";
 
@@ -28,7 +31,7 @@ export default async function BookingsPage() {
 
   const bookings = await prisma.booking.findMany({
     where: { guestId: session.user.id },
-    include: { listing: true },
+    include: { listing: true, review: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -82,6 +85,18 @@ export default async function BookingsPage() {
                   {booking.checkIn.toLocaleDateString()} – {booking.checkOut.toLocaleDateString()} ·{" "}
                   {booking.guests} guest{booking.guests > 1 ? "s" : ""}
                 </p>
+                {booking.review ? (
+                  <div className="mt-2 flex items-center gap-1.5 text-sm text-zinc-500">
+                    <StarRating rating={booking.review.rating} size={14} />
+                    You reviewed this stay
+                  </div>
+                ) : (
+                  canReviewBooking(booking) && (
+                    <div className="mt-2">
+                      <ReviewForm bookingId={booking.id} listingTitle={booking.listing.title} />
+                    </div>
+                  )
+                )}
               </div>
 
               <div className="shrink-0 text-right">

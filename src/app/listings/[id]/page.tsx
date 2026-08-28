@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
+import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/ui/Avatar";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
@@ -20,6 +21,10 @@ const getListing = cache(async (id: string) => {
       bookings: {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
+      },
+      reviews: {
+        include: { author: { select: { name: true } } },
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -90,6 +95,17 @@ export default async function ListingDetailPage({
       availability: "https://schema.org/InStock",
       url: `${siteUrl}/listings/${listing.id}`,
     },
+    ...(listing.reviews.length > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: (
+              listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length
+            ).toFixed(1),
+            reviewCount: listing.reviews.length,
+          },
+        }
+      : {}),
   };
 
   return (
@@ -134,6 +150,8 @@ export default async function ListingDetailPage({
               <AmenityList amenities={listing.amenities} />
             </>
           )}
+
+          <ReviewList reviews={listing.reviews} />
         </div>
 
         <div>

@@ -143,20 +143,48 @@ async function main() {
     },
   });
 
+  const createdListings = [];
   for (const { placeholderIcon, ...listing } of LISTINGS) {
-    await prisma.listing.create({
+    const created = await prisma.listing.create({
       data: {
         ...listing,
         photos: placeholderPhotos(listing.city, 4, placeholderIcon),
         hostId: host.id,
       },
     });
+    createdListings.push(created);
   }
+
+  // A completed stay + review, so the reviews feature has something to
+  // show without needing a real guest to complete a real stay first.
+  const [reviewedListing] = createdListings;
+  const pastBooking = await prisma.booking.create({
+    data: {
+      listingId: reviewedListing.id,
+      guestId: guest.id,
+      checkIn: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      checkOut: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000),
+      guests: 2,
+      totalPriceCents: reviewedListing.pricePerNightCents * 3,
+      status: "CONFIRMED",
+    },
+  });
+  await prisma.review.create({
+    data: {
+      bookingId: pastBooking.id,
+      listingId: reviewedListing.id,
+      authorId: guest.id,
+      rating: 5,
+      comment:
+        "Wonderful stay right by the seafront — spotless, comfortable, and the host was brilliant. Would book again in a heartbeat.",
+    },
+  });
 
   console.log("Seeded database:");
   console.log(`  host  -> ${host.email} / hostpass123`);
   console.log(`  guest -> ${guest.email} / guestpass123`);
   console.log(`  ${LISTINGS.length} listings created`);
+  console.log(`  1 completed stay + review created`);
 }
 
 main()

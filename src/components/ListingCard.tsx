@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Star } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
 
@@ -11,9 +11,15 @@ export type ListingCardData = {
   country: string;
   pricePerNightCents: number;
   photos: string[];
+  reviews: { rating: number }[];
 };
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
+  const averageRating =
+    listing.reviews.length > 0
+      ? listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length
+      : null;
+
   return (
     <Link
       href={`/listings/${listing.id}`}
@@ -36,7 +42,15 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         )}
       </div>
       <div>
-        <p className="truncate font-medium text-foreground">{listing.title}</p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="truncate font-medium text-foreground">{listing.title}</p>
+          {averageRating !== null && (
+            <span className="flex shrink-0 items-center gap-1 text-sm text-foreground">
+              <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
+              {averageRating.toFixed(1)}
+            </span>
+          )}
+        </div>
         <p className="truncate text-sm text-zinc-500">
           {listing.city}, {listing.country}
         </p>

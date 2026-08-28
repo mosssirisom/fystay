@@ -41,6 +41,7 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
       },
+      reviews: { select: { rating: true } },
     },
     orderBy: { createdAt: "desc" },
   });

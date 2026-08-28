@@ -1,0 +1,57 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { canReviewBooking } from "@/lib/reviews";
+
+const createReviewSchema = z.object({
+  bookingId: z.string().min(1),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().min(10).max(2000),
+});
+
+export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const parsed = createReviewSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid input" },
+      { status: 400 },
+    );
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: parsed.data.bookingId },
+    include: { review: true },
+  });
+
+  if (!booking) {
+    return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+  }
+  if (booking.guestId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  if (!canReviewBooking(booking)) {
+    return NextResponse.json(
+      { error: "This stay can't be reviewed yet." },
+      { status: 409 },
+    );
+  }
+
+  const review = await prisma.review.create({
+    data: {
+      rating: parsed.data.rating,
+      comment: parsed.data.comment,
+      listingId: booking.listingId,
+      authorId: session.user.id,
+      bookingId: booking.id,
+    },
+  });
+
+  return NextResponse.json({ review }, { status: 201 });
+}

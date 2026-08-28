@@ -36,6 +36,9 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
   booking once payment succeeds.
 - **Photo uploads** — hosts upload real photos (via Supabase Storage) instead of pasting URLs,
   with a manual URL-paste fallback if storage isn't configured on a given deployment.
+- **Reviews** — a guest can leave a star rating + comment once a booking is paid for and its stay
+  has completed (`src/lib/reviews.ts`), one review per booking. Shown on the listing page (with an
+  aggregate rating in the page's JSON-LD) and as a rating badge on listing cards.
 
 ## Getting started
 

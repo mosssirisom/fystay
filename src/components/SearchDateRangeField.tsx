@@ -55,6 +55,7 @@ export function SearchDateRangeField({
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-controls="date-range-panel"
         onClick={() => setOpen((v) => !v)}
         className="focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
       >
@@ -74,6 +75,7 @@ export function SearchDateRangeField({
 
       {open && (
         <div
+          id="date-range-panel"
           role="dialog"
           aria-label="Choose check-in and check-out dates"
           className="absolute left-1/2 top-full z-20 mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"

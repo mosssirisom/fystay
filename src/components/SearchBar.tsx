@@ -53,7 +53,7 @@ export function SearchBar() {
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-3xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5",
+        "mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5",
       )}
     >
       <div className="flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle">

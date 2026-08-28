@@ -111,12 +111,12 @@ export function GuestCategoryPicker({
                       disabled={value[row.key] <= row.min}
                       aria-label={`Decrease ${row.label.toLowerCase()}`}
                       className={cn(
-                        "focus-ring flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
+                        "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
                         "disabled:pointer-events-none disabled:opacity-40",
                         "hover:border-zinc-400",
                       )}
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      <Minus className="h-4 w-4" />
                     </button>
                     <span className="w-4 text-center text-sm font-medium">{value[row.key]}</span>
                     <button
@@ -125,12 +125,12 @@ export function GuestCategoryPicker({
                       disabled={value[row.key] >= rowMax}
                       aria-label={`Increase ${row.label.toLowerCase()}`}
                       className={cn(
-                        "focus-ring flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
+                        "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
                         "disabled:pointer-events-none disabled:opacity-40",
                         "hover:border-zinc-400",
                       )}
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

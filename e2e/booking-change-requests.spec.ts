@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
+import { generateBookingReference } from "../src/lib/bookingReference";
 
 try {
   process.loadEnvFile();
@@ -68,7 +69,7 @@ test("guest can request a date change, host approves, and guest pays the differe
 
   const booking = await prisma.booking.create({
     data: {
-      reference: `E2E-${Date.now()}`,
+      reference: generateBookingReference(),
       listingId: listing.id,
       guestId: guest.id,
       checkIn,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff, PencilLine } from "lucide-react";
+import { CalendarDays, ImageOff, PencilLine } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
 import { ChangeRequestActions } from "@/components/ChangeRequestActions";
@@ -98,6 +98,13 @@ export function HostListingRow({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1 self-end sm:self-auto">
+              <Link
+                href={`/host/listings/${listing.id}/calendar`}
+                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Calendar
+              </Link>
               <Link
                 href={`/host/listings/${listing.id}/edit`}
                 className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"

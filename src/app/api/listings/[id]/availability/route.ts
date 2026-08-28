@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { blockingBookingWhere, isRangeAvailable, nightsBetween } from "@/lib/availability";
+import {
+  blockingBookingWhere,
+  blockingRanges,
+  isRangeAvailable,
+  nightsBetween,
+} from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 
 const querySchema = z.object({
@@ -54,6 +59,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     where: { id },
     include: {
       bookings: { where: blockingBookingWhere(), select: { checkIn: true, checkOut: true } },
+      availabilityBlocks: { select: { startDate: true, endDate: true } },
     },
   });
 
@@ -66,7 +72,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       { status: 200 },
     );
   }
-  if (!isRangeAvailable(checkIn, checkOut, listing.bookings)) {
+  if (!isRangeAvailable(checkIn, checkOut, blockingRanges(listing.bookings, listing.availabilityBlocks))) {
     return NextResponse.json(
       { available: false, error: "Those dates are not available" },
       { status: 200 },

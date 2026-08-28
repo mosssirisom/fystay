@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { blockingBookingWhere, isRangeAvailable, nightsBetween } from "@/lib/availability";
+import {
+  blockingBookingWhere,
+  blockingRanges,
+  isRangeAvailable,
+  nightsBetween,
+} from "@/lib/availability";
 import { canRequestBookingChange, computePriceDeltaCents } from "@/lib/changeRequests";
 
 const createChangeRequestSchema = z.object({
@@ -37,7 +42,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     where: { id },
     include: {
       listing: {
-        include: { bookings: { where: blockingBookingWhere(), select: { id: true, checkIn: true, checkOut: true } } },
+        include: {
+          bookings: {
+            where: blockingBookingWhere(),
+            select: { id: true, checkIn: true, checkOut: true },
+          },
+          availabilityBlocks: { select: { startDate: true, endDate: true } },
+        },
       },
       changeRequests: { where: { status: "PENDING" } },
     },
@@ -63,7 +74,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const otherBookedRanges = booking.listing.bookings.filter((b) => b.id !== booking.id);
-  if (!isRangeAvailable(checkIn, checkOut, otherBookedRanges)) {
+  const merged = blockingRanges(otherBookedRanges, booking.listing.availabilityBlocks);
+  if (!isRangeAvailable(checkIn, checkOut, merged)) {
     return NextResponse.json({ error: "Those dates are not available" }, { status: 409 });
   }
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
-import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
+import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
 
 const respondSchema = z.object({ action: z.enum(["approve", "decline"]) });
 
@@ -50,13 +50,27 @@ export async function POST(
   }
 
   // Approving: re-check availability, since the requested dates may have
-  // been booked by someone else in the time since the guest asked.
-  const otherBookings = await prisma.booking.findMany({
-    where: { listingId: changeRequest.booking.listingId, id: { not: changeRequest.bookingId }, ...blockingBookingWhere() },
-    select: { checkIn: true, checkOut: true },
-  });
+  // been booked or blocked since the guest asked.
+  const [otherBookings, blocks] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        listingId: changeRequest.booking.listingId,
+        id: { not: changeRequest.bookingId },
+        ...blockingBookingWhere(),
+      },
+      select: { checkIn: true, checkOut: true },
+    }),
+    prisma.availabilityBlock.findMany({
+      where: { listingId: changeRequest.booking.listingId },
+      select: { startDate: true, endDate: true },
+    }),
+  ]);
   if (
-    !isRangeAvailable(changeRequest.requestedCheckIn, changeRequest.requestedCheckOut, otherBookings)
+    !isRangeAvailable(
+      changeRequest.requestedCheckIn,
+      changeRequest.requestedCheckOut,
+      blockingRanges(otherBookings, blocks),
+    )
   ) {
     return NextResponse.json(
       { error: "Those dates are no longer available" },

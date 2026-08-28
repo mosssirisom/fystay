@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BedDouble, Bath, DoorOpen, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { blockingBookingWhere } from "@/lib/availability";
+import { blockingBookingWhere, blockingRanges } from "@/lib/availability";
 import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
@@ -23,6 +23,9 @@ const getListing = cache(async (id: string) => {
       bookings: {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
+      },
+      availabilityBlocks: {
+        select: { startDate: true, endDate: true },
       },
       reviews: {
         include: { author: { select: { name: true } } },
@@ -181,10 +184,9 @@ export default async function ListingDetailPage({
             cleaningFeeCents={listing.cleaningFeeCents}
             maxGuests={listing.maxGuests}
             amenities={listing.amenities}
-            bookedRanges={listing.bookings.map((b) => ({
-              checkIn: b.checkIn.toISOString(),
-              checkOut: b.checkOut.toISOString(),
-            }))}
+            bookedRanges={blockingRanges(listing.bookings, listing.availabilityBlocks).map(
+              (r) => ({ checkIn: r.checkIn.toISOString(), checkOut: r.checkOut.toISOString() }),
+            )}
             isLoggedIn={Boolean(session?.user)}
           />
         </div>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   blockingBookingWhere,
+  blockingRanges,
   isRangeAvailable,
   nightsBetween,
   PENDING_BOOKING_HOLD_MINUTES,
@@ -76,6 +77,27 @@ describe("blockingBookingWhere", () => {
     expect(pendingClause?.createdAt.gte.toISOString()).toBe(
       new Date(now.getTime() - PENDING_BOOKING_HOLD_MINUTES * 60_000).toISOString(),
     );
+  });
+});
+
+describe("blockingRanges", () => {
+  it("returns just the bookings when there are no blocks", () => {
+    const bookings = [{ checkIn: d("2026-06-10"), checkOut: d("2026-06-15") }];
+    expect(blockingRanges(bookings)).toEqual(bookings);
+  });
+
+  it("normalizes blocks' startDate/endDate into checkIn/checkOut and merges them with bookings", () => {
+    const bookings = [{ checkIn: d("2026-06-10"), checkOut: d("2026-06-15") }];
+    const blocks = [{ startDate: d("2026-07-01"), endDate: d("2026-07-03") }];
+    expect(blockingRanges(bookings, blocks)).toEqual([
+      { checkIn: d("2026-06-10"), checkOut: d("2026-06-15") },
+      { checkIn: d("2026-07-01"), checkOut: d("2026-07-03") },
+    ]);
+  });
+
+  it("a merged block range rejects an overlapping booking attempt via isRangeAvailable", () => {
+    const merged = blockingRanges([], [{ startDate: d("2026-08-01"), endDate: d("2026-08-05") }]);
+    expect(isRangeAvailable(d("2026-08-03"), d("2026-08-07"), merged)).toBe(false);
   });
 });
 

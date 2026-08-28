@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
+import { generateBookingReference } from "../src/lib/bookingReference";
 
 try {
   process.loadEnvFile();
@@ -72,7 +73,7 @@ test.describe("booking engine", () => {
     // An existing CONFIRMED booking to collide with.
     await prisma.booking.create({
       data: {
-        reference: `E2E-${Date.now()}`,
+        reference: generateBookingReference(),
         listingId: listing.id,
         guestId: host.id,
         checkIn: bookedCheckIn,

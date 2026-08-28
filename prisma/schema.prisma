@@ -97,9 +97,29 @@ model Listing {
   bookings Booking[]
   reviews  Review[]
   savedBy  SavedListing[]
+  availabilityBlocks AvailabilityBlock[]
 
   @@index([city])
   @@index([hostId])
+}
+
+// A host-initiated closure of a date range (maintenance, personal use, an
+// off-platform booking, etc.), independent of any guest Booking. Treated
+// identically to a Booking wherever availability is checked (see
+// src/lib/availability.ts's blockingRanges) so a blocked date is just as
+// unbookable to a guest as a reserved one, while staying visually and
+// structurally distinct on the host's own calendar.
+model AvailabilityBlock {
+  id        String   @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
 }
 
 model Booking {

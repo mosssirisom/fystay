@@ -3,7 +3,12 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { blockingBookingWhere, isRangeAvailable, nightsBetween } from "@/lib/availability";
+import {
+  blockingBookingWhere,
+  blockingRanges,
+  isRangeAvailable,
+  nightsBetween,
+} from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 import { generateBookingReference } from "@/lib/bookingReference";
 import { completePastBookings } from "@/lib/bookingLifecycle";
@@ -89,6 +94,9 @@ export async function POST(request: Request) {
                 where: blockingBookingWhere(),
                 select: { checkIn: true, checkOut: true },
               },
+              availabilityBlocks: {
+                select: { startDate: true, endDate: true },
+              },
             },
           });
 
@@ -101,7 +109,13 @@ export async function POST(request: Request) {
               `This listing sleeps up to ${listing.maxGuests} guests`,
             );
           }
-          if (!isRangeAvailable(checkIn, checkOut, listing.bookings)) {
+          if (
+            !isRangeAvailable(
+              checkIn,
+              checkOut,
+              blockingRanges(listing.bookings, listing.availabilityBlocks),
+            )
+          ) {
             throw new BookingRequestError(409, "Those dates are not available");
           }
 

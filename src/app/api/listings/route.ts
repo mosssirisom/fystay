@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
+import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
 import { httpUrlSchema } from "@/lib/validation";
 
 const createListingSchema = z.object({
@@ -50,6 +50,9 @@ export async function GET(request: Request) {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
       },
+      availabilityBlocks: {
+        select: { startDate: true, endDate: true },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -60,7 +63,7 @@ export async function GET(request: Request) {
   const filtered =
     checkIn && checkOut
       ? listings.filter((listing) =>
-          isRangeAvailable(checkIn, checkOut, listing.bookings),
+          isRangeAvailable(checkIn, checkOut, blockingRanges(listing.bookings, listing.availabilityBlocks)),
         )
       : listings;
 

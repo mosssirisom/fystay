@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Lock, MapPin, SearchX, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
+import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
 import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
 import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { auth } from "@/auth";
@@ -70,6 +70,9 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
           where: blockingBookingWhere(),
           select: { checkIn: true, checkOut: true },
         },
+        availabilityBlocks: {
+          select: { startDate: true, endDate: true },
+        },
         reviews: { select: { rating: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -92,7 +95,9 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
 
   const dateFiltered =
     checkIn && checkOut
-      ? listings.filter((listing) => isRangeAvailable(checkIn, checkOut, listing.bookings))
+      ? listings.filter((listing) =>
+          isRangeAvailable(checkIn, checkOut, blockingRanges(listing.bookings, listing.availabilityBlocks)),
+        )
       : listings;
 
   const filtered = pets > 0

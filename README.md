@@ -32,12 +32,27 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
   guest picker, capped to that listing's capacity and only showing Pets if it allows them.
 - **Auth & roles**: sign up as a guest or a host; hosts get a dashboard, guests get a trips page.
 - **Host dashboard**: create, edit, publish/unpublish, and delete listings; see upcoming
-  bookings per listing.
+  bookings per listing, plus a link into that listing's own availability calendar.
 - **Booking & availability**: a date-range picker that disables already-booked nights.
   "Check availability" re-validates the selection against real reservation data (not just the
   calendar's client-side view) and previews the full price breakdown before anything is created;
   "Continue to checkout" then holds the dates with a `PENDING` booking and moves to a dedicated
-  checkout page to confirm guest contact details and review the booking before paying.
+  checkout page to confirm guest contact details and review the booking before paying. If the
+  dates are taken by the time of that final step (someone else booked, or the host blocked them),
+  the guest sees a clear error and has to pick new ones rather than the request silently failing.
+- **Host availability calendar** (`/host/listings/[id]/calendar`): a month-by-month calendar
+  showing confirmed bookings, pending (unpaid) bookings, and manually blocked dates in distinct
+  colors, alongside lists of each with guest/booking details and an "Unblock" action. Hosts pick a
+  range of currently-available dates and close them off (maintenance, personal use, an
+  off-platform booking) via a new `AvailabilityBlock` model; blocked dates are folded into the
+  exact same availability check a guest booking goes through
+  (`src/lib/availability.ts::blockingRanges`), so a block is exactly as unbookable as a real
+  reservation everywhere availability is decided (the widget, the check-availability endpoint,
+  booking creation, change requests, and search filtering). The date-range and pricing logic is
+  intentionally factored into small, independent pure functions (rather than one large
+  availability function) so a future rule, like a minimum/maximum stay, an advance-booking window,
+  buffer days between stays, or seasonal availability, is a new predicate run alongside the
+  existing ones rather than a rewrite.
 - **Pricing**: nightly rate × nights, plus an optional per-listing cleaning fee and a 10% guest
   service fee (`src/lib/pricing.ts`), snapshotted onto the booking at creation time so a later
   change to the listing's rates never rewrites what a guest already agreed to pay.

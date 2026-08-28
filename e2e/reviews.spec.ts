@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
+import { generateBookingReference } from "../src/lib/bookingReference";
 
 // Playwright's test process doesn't load .env the way `next dev` does.
 // CI sets these vars directly instead of via a .env file, so don't fail
@@ -29,7 +30,7 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
   // concern already covered by guest-booking.spec.ts.
   const booking = await prisma.booking.create({
     data: {
-      reference: `E2E-${Date.now()}`,
+      reference: generateBookingReference(),
       listingId: listing.id,
       guestId: guest.id,
       checkIn: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),

@@ -104,7 +104,15 @@ export default async function Home({
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-      <h1 className="sr-only">Find places to stay on the Fylde coast</h1>
+      <div className="mx-auto mb-6 max-w-2xl text-center">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+          Stay local. Book with FY Stay.
+        </h1>
+        <p className="mt-2 text-sm text-zinc-500 sm:text-base">
+          Discover independent accommodation across Blackpool and the Fylde Coast — a local
+          alternative to the big booking platforms.
+        </p>
+      </div>
       <Suspense>
         <SearchBar />
       </Suspense>

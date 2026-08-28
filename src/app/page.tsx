@@ -7,6 +7,9 @@ import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
+import { Badge } from "@/components/ui/Badge";
+
+const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
@@ -116,6 +119,17 @@ export default async function Home({
       <Suspense>
         <SearchBar />
       </Suspense>
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-center">
+        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          Now covering
+        </span>
+        {FYLDE_COAST_AREAS.map((area) => (
+          <Badge key={area} variant="neutral">
+            {area}
+          </Badge>
+        ))}
+      </div>
 
       <div className="mt-10">
         <h2 className="text-xl font-bold text-foreground sm:text-2xl">

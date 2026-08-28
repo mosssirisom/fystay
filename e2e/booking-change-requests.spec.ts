@@ -100,7 +100,9 @@ test("guest can request a date change, host approves, and guest pays the differe
     await expect(page.getByText(/You'll owe an extra/)).toBeVisible();
     await page.getByRole("button", { name: "Submit request" }).click();
 
-    await expect(page.getByText("Change requested")).toBeVisible();
+    // exact: true, since a toast ("Change requested. The host will review it
+    // shortly.") transiently contains the same substring as the status badge.
+    await expect(page.getByText("Change requested", { exact: true })).toBeVisible();
     await expect(page.getByText("Awaiting host response")).toBeVisible();
 
     // Host reviews and approves the request.

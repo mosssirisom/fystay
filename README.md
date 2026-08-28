@@ -108,6 +108,14 @@ without a Stripe account. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
 `/api/webhooks/stripe` for the `checkout.session.completed` event (e.g. via
 `stripe listen --forward-to localhost:3000/api/webhooks/stripe` during development).
 
+## Password resets without an email service
+
+If `RESEND_API_KEY` is not set, `/forgot-password` skips sending an email and instead returns the
+reset link directly in the response (shown inline on the page, clearly marked as dev mode), which
+is useful for exercising the full reset flow in local development without an email provider. Set
+`RESEND_API_KEY` (and optionally `EMAIL_FROM`, otherwise it sends from Resend's shared
+`onboarding@resend.dev` sender) to send real emails via [Resend](https://resend.com).
+
 ## Deploying
 
 `vercel.json` pins the framework to `nextjs` so Vercel builds it correctly regardless of the
@@ -126,6 +134,8 @@ variables:
 - `NEXT_PUBLIC_BASE_URL` set to the same deployed URL (used for Stripe redirect URLs and Open
   Graph metadata)
 - Stripe keys if you want real payments; otherwise bookings auto-confirm as described above
+- `RESEND_API_KEY` if you want real password-reset emails; otherwise the reset link is returned
+  directly in the API response, as described above
 - `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` if you want real host photo uploads
   (see [Photo uploads](#photo-uploads) below); otherwise the upload button shows an error and
   hosts fall back to pasting an image URL directly

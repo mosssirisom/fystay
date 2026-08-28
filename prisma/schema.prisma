@@ -42,6 +42,24 @@ model User {
   bookings Booking[]
   reviews  Review[]
   savedListings SavedListing[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+// A single-use, time-limited token for the "forgot password" flow. Only a
+// hash of the token is stored, so a database leak alone can't be used to
+// reset anyone's password (same principle as storing password hashes, not
+// passwords).
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Listing {

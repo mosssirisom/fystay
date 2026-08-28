@@ -66,7 +66,17 @@ function LoginFormInner() {
               />
             </Field>
             <Field>
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="mb-0">
+                  Password
+                </Label>
+                <Link
+                  href="/forgot-password"
+                  className="mb-1.5 text-sm font-medium text-brand-700 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

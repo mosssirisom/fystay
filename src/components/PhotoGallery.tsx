@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Grip, ImageOff } from "lucide-react";
-import { Dialog } from "@/components/ui/Dialog";
+import { Grip, ImageOff } from "lucide-react";
+import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { isOptimizableImage } from "@/lib/image";
 
 export function PhotoGallery({ photos, title }: { photos: string[]; title: string }) {
@@ -53,45 +53,15 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
         )}
       </div>
 
-      <Dialog
-        open={lightboxIndex !== null}
-        onClose={() => setLightboxIndex(null)}
-        title={`Photo ${lightboxIndex !== null ? lightboxIndex + 1 : 1} of ${photos.length}`}
-        className="max-w-3xl"
-      >
-        {lightboxIndex !== null && (
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-muted">
-            <Image
-              src={photos[lightboxIndex]}
-              alt={`${title} photo ${lightboxIndex + 1}`}
-              fill
-              className="object-contain"
-              sizes="100vw"
-              unoptimized={!isOptimizableImage(photos[lightboxIndex])}
-            />
-            {photos.length > 1 && (
-              <>
-                <button
-                  onClick={() =>
-                    setLightboxIndex((i) => (i === null ? 0 : (i - 1 + photos.length) % photos.length))
-                  }
-                  aria-label="Previous photo"
-                  className="focus-ring absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 shadow-[var(--shadow-card)] hover:bg-surface"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setLightboxIndex((i) => (i === null ? 0 : (i + 1) % photos.length))}
-                  aria-label="Next photo"
-                  className="focus-ring absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 shadow-[var(--shadow-card)] hover:bg-surface"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </>
-            )}
-          </div>
-        )}
-      </Dialog>
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          title={title}
+          index={lightboxIndex}
+          onIndexChange={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </>
   );
 }

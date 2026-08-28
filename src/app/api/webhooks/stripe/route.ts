@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
+import { applyApprovedChange } from "@/app/api/bookings/[id]/change-requests/[requestId]/pay/route";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const checkoutSession = event.data.object;
     const bookingId = checkoutSession.metadata?.bookingId;
+    const changeRequestId = checkoutSession.metadata?.changeRequestId;
     if (bookingId) {
       await prisma.booking.update({
         where: { id: bookingId },
@@ -41,6 +43,8 @@ export async function POST(request: Request) {
               : undefined,
         },
       });
+    } else if (changeRequestId) {
+      await applyApprovedChange(changeRequestId);
     }
   }
 

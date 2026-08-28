@@ -22,6 +22,12 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -87,9 +93,42 @@ model Booking {
   guest   User   @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
   review Review?
+  changeRequests BookingChangeRequest[]
 
   @@index([listingId])
   @@index([guestId])
+}
+
+// A guest-initiated request to change a CONFIRMED booking's dates or guest
+// count, subject to host approval. Kept separate from Booking itself so the
+// original booking stays untouched (and its dates keep blocking availability
+// for other guests) until the host actually approves the change, and so a
+// price increase can be collected via its own Stripe Checkout session before
+// the change is applied, mirroring how the initial booking payment works.
+model BookingChangeRequest {
+  id     String              @id @default(cuid())
+  status ChangeRequestStatus @default(PENDING)
+
+  requestedCheckIn  DateTime
+  requestedCheckOut DateTime
+  requestedGuests   Int
+  // requestedTotalPriceCents - the original booking's totalPriceCents at
+  // request time. Positive: guest owes more. Negative: guest is due a
+  // refund. Zero: applied immediately on approval, no payment step.
+  priceDeltaCents Int
+
+  stripeSessionId String?    @unique
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  respondedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
 }
 
 model Review {

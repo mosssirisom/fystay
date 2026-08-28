@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
+import { ChangeRequestActions } from "@/components/ChangeRequestActions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { buttonVariants } from "@/components/ui/Button";
@@ -31,6 +32,7 @@ export default async function HostDashboardPage() {
     include: {
       bookings: {
         where: { status: { in: ["PENDING", "CONFIRMED"] } },
+        include: { changeRequests: { where: { status: "PENDING" } } },
         orderBy: { checkIn: "asc" },
       },
     },
@@ -86,11 +88,11 @@ export default async function HostDashboardPage() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={`/listings/${listing.id}`}
-                        className="truncate font-medium text-foreground hover:text-brand-700"
+                        className="block truncate font-medium text-foreground hover:text-brand-700"
                       >
                         {listing.title}
                       </Link>
@@ -99,7 +101,7 @@ export default async function HostDashboardPage() {
                         {formatPrice(listing.pricePerNightCents)}/night
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="flex shrink-0 items-center gap-1 self-end sm:self-auto">
                       <Link
                         href={`/host/listings/${listing.id}/edit`}
                         className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
@@ -122,19 +124,50 @@ export default async function HostDashboardPage() {
                   </div>
 
                   {listing.bookings.length > 0 && (
-                    <ul className="mt-3 flex flex-col gap-1.5 border-t border-border-subtle pt-3 text-sm text-zinc-600">
-                      {listing.bookings.map((booking) => (
-                        <li key={booking.id} className="flex items-center gap-2">
-                          <span>
-                            {booking.checkIn.toLocaleDateString()} –{" "}
-                            {booking.checkOut.toLocaleDateString()} · {booking.guests} guest
-                            {booking.guests > 1 ? "s" : ""}
-                          </span>
-                          <Badge variant={bookingStatusVariant[booking.status]}>
-                            {booking.status}
-                          </Badge>
-                        </li>
-                      ))}
+                    <ul className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-3 text-sm text-zinc-600">
+                      {listing.bookings.map((booking) => {
+                        const pendingRequest = booking.changeRequests[0];
+                        return (
+                          <li key={booking.id} className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2">
+                              <span>
+                                {booking.checkIn.toLocaleDateString()} –{" "}
+                                {booking.checkOut.toLocaleDateString()} · {booking.guests} guest
+                                {booking.guests > 1 ? "s" : ""}
+                              </span>
+                              <Badge variant={bookingStatusVariant[booking.status]}>
+                                {booking.status}
+                              </Badge>
+                            </div>
+                            {pendingRequest && (
+                              <div className="flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="font-medium text-foreground">
+                                    Guest requested a change
+                                  </p>
+                                  <p>
+                                    New dates: {pendingRequest.requestedCheckIn.toLocaleDateString()}{" "}
+                                    – {pendingRequest.requestedCheckOut.toLocaleDateString()} ·{" "}
+                                    {pendingRequest.requestedGuests} guest
+                                    {pendingRequest.requestedGuests > 1 ? "s" : ""}
+                                  </p>
+                                  {pendingRequest.priceDeltaCents !== 0 && (
+                                    <p>
+                                      {pendingRequest.priceDeltaCents > 0
+                                        ? `Guest will owe an extra ${formatPrice(pendingRequest.priceDeltaCents)}`
+                                        : `Guest will be refunded ${formatPrice(Math.abs(pendingRequest.priceDeltaCents))}`}
+                                    </p>
+                                  )}
+                                </div>
+                                <ChangeRequestActions
+                                  bookingId={booking.id}
+                                  requestId={pendingRequest.id}
+                                />
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>

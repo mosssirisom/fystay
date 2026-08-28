@@ -7,14 +7,16 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
-import { GuestStepper } from "@/components/GuestStepper";
+import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap } from "@/lib/availability";
+import { isPetFriendly, totalOccupants, type GuestCounts } from "@/lib/search";
 
 type Props = {
   listingId: string;
   pricePerNightCents: number;
   maxGuests: number;
+  amenities: string[];
   bookedRanges: { checkIn: string; checkOut: string }[];
   isLoggedIn: boolean;
 };
@@ -23,14 +25,22 @@ export function BookingWidget({
   listingId,
   pricePerNightCents,
   maxGuests,
+  amenities,
   bookedRanges,
   isLoggedIn,
 }: Props) {
   const router = useRouter();
   const [range, setRange] = useState<DateRange | undefined>();
-  const [guests, setGuests] = useState(1);
+  const [guestCounts, setGuestCounts] = useState<GuestCounts>({
+    adults: 1,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const petsAllowed = isPetFriendly(amenities);
+  const guests = totalOccupants(guestCounts);
 
   const parsedBookedRanges = useMemo(
     () =>
@@ -123,7 +133,13 @@ export function BookingWidget({
 
         <div className="mt-4 flex flex-col gap-2">
           <DateRangeField range={range} onChange={setRange} disabledRanges={disabledDays} />
-          <GuestStepper value={guests} max={maxGuests} onChange={setGuests} />
+          <GuestCategoryPicker
+            value={guestCounts}
+            onChange={setGuestCounts}
+            capacity={maxGuests}
+            showPets={petsAllowed}
+            triggerClassName="rounded-lg border border-border-subtle px-3 py-2 hover:border-zinc-300 hover:bg-transparent"
+          />
         </div>
 
         {nights > 0 && (

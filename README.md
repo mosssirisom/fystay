@@ -28,7 +28,8 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
 - **Listings**: browse and search by destination, dates, and guest count (a toggle-based picker
   with separate Adults, Children, Infants, and Pets counters; infants don't count toward a
   listing's capacity, and a pet count filters to listings with a "pet friendly" amenity). Detail
-  pages include a photo gallery, amenities, and an availability-aware booking widget.
+  pages include a photo gallery, amenities, and an availability-aware booking widget with the same
+  guest picker, capped to that listing's capacity and only showing Pets if it allows them.
 - **Auth & roles**: sign up as a guest or a host; hosts get a dashboard, guests get a trips page.
 - **Host dashboard**: create, edit, publish/unpublish, and delete listings; see upcoming
   bookings per listing.

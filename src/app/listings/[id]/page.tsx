@@ -178,6 +178,7 @@ export default async function ListingDetailPage({
             listingId={listing.id}
             pricePerNightCents={listing.pricePerNightCents}
             maxGuests={listing.maxGuests}
+            amenities={listing.amenities}
             bookedRanges={listing.bookings.map((b) => ({
               checkIn: b.checkIn.toISOString(),
               checkOut: b.checkOut.toISOString(),

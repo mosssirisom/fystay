@@ -90,7 +90,7 @@ export function SearchBar() {
         </div>
       </div>
 
-      <GuestCategoryPicker value={guestCounts} onChange={setGuestCounts} />
+      <GuestCategoryPicker value={guestCounts} onChange={setGuestCounts} className="flex-1" />
 
       <button
         type="submit"

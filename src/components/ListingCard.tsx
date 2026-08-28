@@ -30,8 +30,8 @@ export function ListingCard({
       : null;
 
   return (
-    <div className="group flex flex-col gap-2">
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-surface-muted">
+    <div className="group flex flex-col gap-3">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-surface-muted shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)]">
         <Link
           href={`/listings/${listing.id}`}
           className="focus-ring absolute inset-0 block rounded-2xl"
@@ -46,8 +46,9 @@ export function ListingCard({
               unoptimized={!isOptimizableImage(listing.photos[0])}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-zinc-400">
+            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-zinc-300">
               <ImageOff className="h-6 w-6" />
+              <span className="text-xs font-medium text-zinc-400">Photo coming soon</span>
             </div>
           )}
         </Link>
@@ -55,10 +56,10 @@ export function ListingCard({
           listingId={listing.id}
           initialSaved={isSaved}
           isLoggedIn={isLoggedIn}
-          className="absolute right-2 top-2 z-10"
+          className="absolute right-2.5 top-2.5 z-10 h-9 w-9 bg-white/80 shadow-[var(--shadow-card)] backdrop-blur-sm hover:bg-white"
         />
       </div>
-      <Link href={`/listings/${listing.id}`} className="focus-ring rounded-xl">
+      <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-1 rounded-xl">
         <div className="flex items-start justify-between gap-2">
           <p className="truncate font-medium text-foreground">{listing.title}</p>
           {averageRating !== null && (
@@ -71,7 +72,7 @@ export function ListingCard({
         <p className="truncate text-sm text-zinc-500">
           {listing.city}, {listing.country}
         </p>
-        <p className="mt-1 text-sm text-foreground">
+        <p className="text-sm text-foreground">
           <span className="font-semibold">{formatPrice(listing.pricePerNightCents)}</span>{" "}
           <span className="text-zinc-500">night</span>
         </p>

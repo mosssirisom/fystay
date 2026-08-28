@@ -4,9 +4,10 @@ import { Lock, MapPin, SearchX, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
 import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
+import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
-import { ListingCard } from "@/components/ListingCard";
+import { ListingsCarousel } from "@/components/ListingsCarousel";
 import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
 
@@ -111,17 +112,62 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
   }
 
   return (
-    <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {filtered.map((listing) => (
-        <div
-          key={listing.id}
-          className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]"
-        >
-          <ListingCard
-            listing={listing}
-            isSaved={savedListingIds.has(listing.id)}
-            isLoggedIn={Boolean(session?.user)}
-          />
+    <ListingsCarousel
+      listings={filtered}
+      savedListingIds={savedListingIds}
+      isLoggedIn={Boolean(session?.user)}
+    />
+  );
+}
+
+/**
+ * Browse-by-category rows shown only on the default, unfiltered homepage —
+ * once a visitor has an active search, they get pure filtered results
+ * instead of unrelated category rows. Fetches the whole published catalog
+ * once and reuses it across every section so no listing is queried twice.
+ */
+async function MarketplaceSections() {
+  const [session, listings] = await Promise.all([
+    auth(),
+    prisma.listing.findMany({
+      where: { published: true },
+      include: { reviews: { select: { rating: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const savedListingIds = session?.user
+    ? new Set(
+        (
+          await prisma.savedListing.findMany({
+            where: { userId: session.user.id },
+            select: { listingId: true },
+          })
+        ).map((s) => s.listingId),
+      )
+    : new Set<string>();
+
+  const sections = [
+    ...groupByCity(listings),
+    beachStaysSection(listings),
+    recentlyAddedSection(listings),
+  ].filter((section) => section !== null);
+
+  if (sections.length === 0) return null;
+
+  return (
+    <div className="mt-14 flex flex-col gap-12">
+      {sections.map((section) => (
+        <div key={section.key}>
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">{section.title}</h2>
+          <p className="mt-1 text-sm text-zinc-500">{section.subtitle}</p>
+          <div className="mt-6">
+            <ListingsCarousel
+              listings={section.listings}
+              savedListingIds={savedListingIds}
+              isLoggedIn={Boolean(session?.user)}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -134,6 +180,15 @@ export default async function Home({
   searchParams: Promise<SearchParams>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const hasActiveSearch = Boolean(
+    resolvedSearchParams.city ||
+      resolvedSearchParams.checkIn ||
+      resolvedSearchParams.checkOut ||
+      resolvedSearchParams.adults ||
+      resolvedSearchParams.children ||
+      resolvedSearchParams.infants ||
+      resolvedSearchParams.pets,
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
@@ -174,6 +229,12 @@ export default async function Home({
           </Suspense>
         </div>
       </div>
+
+      {!hasActiveSearch && (
+        <Suspense fallback={null}>
+          <MarketplaceSections />
+        </Suspense>
+      )}
 
       <div className="mt-14 border-t border-border-subtle pt-10">
         <div className="mx-auto max-w-2xl text-center">

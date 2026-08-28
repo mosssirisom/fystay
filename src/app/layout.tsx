@@ -27,19 +27,19 @@ const description = "Find and book unique places to stay, or host your own.";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "fystay — book unique stays",
+    default: "fystay: book unique stays",
     template: "%s · fystay",
   },
   description,
   openGraph: {
-    title: "fystay — book unique stays",
+    title: "fystay: book unique stays",
     description,
     siteName: "fystay",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "fystay — book unique stays",
+    title: "fystay: book unique stays",
     description,
   },
 };

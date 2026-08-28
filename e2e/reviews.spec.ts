@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 try {
   process.loadEnvFile();
 } catch {
-  // no .env file — assume the environment already has DATABASE_URL set
+  // no .env file, so assume the environment already has DATABASE_URL set
 }
 
 const prisma = new PrismaClient();
@@ -16,7 +16,7 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
   const guest = await prisma.user.findUniqueOrThrow({ where: { email: "guest@fystay.dev" } });
   const listing = await prisma.listing.findFirstOrThrow({ where: { published: true } });
 
-  // Reviews can only be left on a completed, paid-for stay — set one up
+  // Reviews can only be left on a completed, paid-for stay, so set one up
   // directly rather than through the booking flow, which is a separate
   // concern already covered by guest-booking.spec.ts.
   const booking = await prisma.booking.create({
@@ -31,7 +31,7 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
     },
   });
 
-  const comment = `E2E review ${Date.now()} — fantastic stay, would recommend to anyone visiting.`;
+  const comment = `E2E review ${Date.now()}: fantastic stay, would recommend to anyone visiting.`;
 
   try {
     await page.goto("/login");
@@ -41,8 +41,8 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
     await page.waitForURL("/");
 
     await page.goto("/bookings");
-    // Bookings are ordered newest-first, and this one was just created —
-    // it's always the first row. (Filtering by "Leave a review" text would
+    // Bookings are ordered newest-first, and this one was just created,
+    // so it's always the first row. (Filtering by "Leave a review" text would
     // go stale the moment that text disappears post-submission, and
     // filtering by listing title alone can match another booking of the
     // same listing, e.g. the seeded demo review.)

@@ -8,7 +8,7 @@
   --surface-muted: #f7f7f8;
   --border-subtle: #e5e5e7;
 
-  /* Brand — deep teal. Distinct from the pink/coral clichè, reads as
+  /* Brand: deep teal. Distinct from the pink/coral clichè, reads as
      trustworthy and premium; pairs with a warm amber accent for CTAs
      that need to pop against it. */
   --color-brand-50: #f0fdfa;
@@ -23,12 +23,12 @@
   --color-brand-900: #134e4a;
   --color-brand-950: #042f2c;
 
-  /* Accent — warm amber, used sparingly for highlights (ratings, badges) */
+  /* Accent: warm amber, used sparingly for highlights (ratings, badges) */
   --color-accent-400: #fbbf24;
   --color-accent-500: #f59e0b;
   --color-accent-600: #d97706;
 
-  /* Ink — deep navy used in the logotype's second half ("stay") */
+  /* Ink: deep navy used in the logotype's second half ("stay") */
   --color-ink: #142a3d;
 
   --shadow-color: 220 20% 10%;
@@ -85,7 +85,7 @@ body {
   color: var(--color-brand-950);
 }
 
-/* Focus ring — consistent, visible, brand-colored. Applied via the
+/* Focus ring: consistent, visible, brand-colored. Applied via the
    `.focus-ring` utility on interactive primitives rather than relying on
    browser defaults, which vary and are easy to lose track of. */
 .focus-ring {
@@ -96,7 +96,7 @@ body {
   outline-offset: 2px;
 }
 
-/* react-day-picker theming — align its accent with the brand palette. */
+/* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);
   --rdp-accent-background-color: var(--color-brand-50);

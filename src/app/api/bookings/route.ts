@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid dates" }, { status: 400 });
   }
   // The calendar UI already disables past dates, but that's client-side
-  // only — enforce it here too, since this endpoint is reachable directly.
+  // only, so enforce it here too, since this endpoint is reachable directly.
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (checkIn < today) {

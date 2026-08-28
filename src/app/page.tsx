@@ -26,7 +26,7 @@ const TRUST_POINTS = [
   {
     icon: Lock,
     title: "Secure payments",
-    description: "Bookings are paid through Stripe's encrypted checkout — we never see your card details.",
+    description: "Bookings are paid through Stripe's encrypted checkout, so we never see your card details.",
   },
 ];
 
@@ -138,7 +138,7 @@ export default async function Home({
           Stay local. Book with FY Stay.
         </h1>
         <p className="mt-2 text-sm text-zinc-500 sm:text-base">
-          Discover independent accommodation across Blackpool and the Fylde Coast — a local
+          Discover independent accommodation across Blackpool and the Fylde Coast. A local
           alternative to the big booking platforms.
         </p>
       </div>

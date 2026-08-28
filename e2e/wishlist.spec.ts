@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 try {
   process.loadEnvFile();
 } catch {
-  // no .env file — assume the environment already has DATABASE_URL set
+  // no .env file, so assume the environment already has DATABASE_URL set
 }
 
 const prisma = new PrismaClient();

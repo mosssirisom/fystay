@@ -176,7 +176,7 @@ async function main() {
       authorId: guest.id,
       rating: 5,
       comment:
-        "Wonderful stay right by the seafront — spotless, comfortable, and the host was brilliant. Would book again in a heartbeat.",
+        "Wonderful stay right by the seafront. Spotless, comfortable, and the host was brilliant. Would book again in a heartbeat.",
     },
   });
 

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const stripe = getStripeClient();
 
   if (!stripe) {
-    // Stripe isn't configured (e.g. local dev without keys) — confirm directly
+    // Stripe isn't configured (e.g. local dev without keys). Confirm directly
     // so the booking flow can still be exercised end to end.
     await prisma.booking.update({
       where: { id: booking.id },
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         price_data: {
           currency: "gbp",
           product_data: {
-            name: `${booking.listing.title} — ${formatPrice(booking.totalPriceCents)}`,
+            name: `${booking.listing.title}: ${formatPrice(booking.totalPriceCents)}`,
           },
           unit_amount: booking.totalPriceCents,
         },

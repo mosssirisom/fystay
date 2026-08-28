@@ -8,26 +8,34 @@ import { ConfirmDialog } from "@/components/ui/Dialog";
 export function CancelBookingButton({
   bookingId,
   listingTitle,
+  onCancelled,
+  onCancelFailed,
 }: {
   bookingId: string;
   listingTitle: string;
+  /** Called immediately on confirm, before the server has responded. */
+  onCancelled?: () => void;
+  /** Called if the server ultimately rejects the cancellation, to undo the optimistic update. */
+  onCancelFailed?: () => void;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   async function handleCancel() {
-    setLoading(true);
-    const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: "POST" });
-    const data = await res.json();
-    setLoading(false);
+    // Optimistic: the booking already reads as cancelled the instant the
+    // guest confirms; the request below just makes it real in the background.
     setOpen(false);
+    onCancelled?.();
+
+    const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: "POST" });
 
     if (res.ok) {
       toast.success("Booking cancelled");
       router.refresh();
     } else {
-      toast.error(data.error ?? "Could not cancel booking.");
+      const data = await res.json().catch(() => null);
+      onCancelFailed?.();
+      toast.error(data?.error ?? "Could not cancel booking.");
     }
   }
 
@@ -44,7 +52,6 @@ export function CancelBookingButton({
         open={open}
         onClose={() => setOpen(false)}
         onConfirm={handleCancel}
-        loading={loading}
         danger
         title="Cancel booking"
         description={`Cancel your stay at "${listingTitle}"? If you already paid, you'll be refunded.`}

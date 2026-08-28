@@ -9,24 +9,32 @@ import { ConfirmDialog } from "@/components/ui/Dialog";
 export function DeleteListingButton({
   listingId,
   listingTitle,
+  onDeleted,
+  onDeleteFailed,
 }: {
   listingId: string;
   listingTitle: string;
+  /** Called immediately on confirm, before the server has responded. */
+  onDeleted?: () => void;
+  /** Called if the server ultimately rejects the deletion, to undo the optimistic update. */
+  onDeleteFailed?: () => void;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
-    setLoading(true);
-    const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE" });
-    setLoading(false);
+    // Optimistic: the listing disappears from the list the instant you
+    // confirm; the request below just makes it real in the background.
     setOpen(false);
+    onDeleted?.();
+
+    const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE" });
 
     if (res.ok) {
       toast.success("Listing deleted");
       router.refresh();
     } else {
+      onDeleteFailed?.();
       toast.error("Could not delete listing.");
     }
   }
@@ -45,7 +53,6 @@ export function DeleteListingButton({
         open={open}
         onClose={() => setOpen(false)}
         onConfirm={handleDelete}
-        loading={loading}
         danger
         title="Delete listing"
         description={`Delete "${listingTitle}"? This cannot be undone, and any bookings tied to it will remain in your history.`}

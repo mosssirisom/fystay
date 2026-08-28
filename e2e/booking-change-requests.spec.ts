@@ -108,7 +108,15 @@ test("guest can request a date change, host approves, and guest pays the differe
     await hostPage.goto("/host/dashboard");
     await expect(hostPage.getByText("Guest requested a change")).toBeVisible();
     await expect(hostPage.getByText(/Guest will owe an extra/)).toBeVisible();
-    await hostPage.getByRole("button", { name: "Approve" }).click();
+    // The banner disappears optimistically as soon as you click, before the
+    // server confirms, so wait for the actual response too.
+    const [respondResponse] = await Promise.all([
+      hostPage.waitForResponse(
+        (r) => r.url().includes("/respond") && r.request().method() === "POST",
+      ),
+      hostPage.getByRole("button", { name: "Approve" }).click(),
+    ]);
+    expect(respondResponse.status()).toBe(200);
     await expect(hostPage.getByText("Guest requested a change")).toHaveCount(0);
 
     // Guest pays the difference (dev mode: no Stripe keys, so it confirms immediately).

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { MapPin, Search } from "lucide-react";
@@ -9,6 +9,11 @@ import { cn } from "@/lib/cn";
 import { parseGuestParam, type GuestCounts } from "@/lib/search";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { SearchDateRangeField } from "@/components/SearchDateRangeField";
+
+// How long to wait after the last change before auto-searching, so typing
+// a city or clicking +/- on guests a few times in a row doesn't fire a
+// request per keystroke/click.
+const SEARCH_DEBOUNCE_MS = 350;
 
 const fieldClasses =
   "focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-sm text-foreground placeholder:text-zinc-500";
@@ -19,9 +24,22 @@ function parseDateParam(value: string | null): Date | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
+function buildSearchQuery(city: string, range: DateRange | undefined, guestCounts: GuestCounts): string {
+  const params = new URLSearchParams();
+  if (city) params.set("city", city);
+  if (range?.from) params.set("checkIn", format(range.from, "yyyy-MM-dd"));
+  if (range?.to) params.set("checkOut", format(range.to, "yyyy-MM-dd"));
+  if (guestCounts.adults !== 1) params.set("adults", String(guestCounts.adults));
+  if (guestCounts.children > 0) params.set("children", String(guestCounts.children));
+  if (guestCounts.infants > 0) params.set("infants", String(guestCounts.infants));
+  if (guestCounts.pets > 0) params.set("pets", String(guestCounts.pets));
+  return params.toString();
+}
+
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const [range, setRange] = useState<DateRange | undefined>(() => {
@@ -36,17 +54,28 @@ export function SearchBar() {
     pets: parseGuestParam(searchParams.get("pets") ?? undefined, 0),
   });
 
+  // Search live as fields change, debounced, so results update without
+  // waiting for an explicit "Search" click. The results grid's own Suspense
+  // fallback (a skeleton) is what shows the "searching" state.
+  useEffect(() => {
+    const nextQuery = buildSearchQuery(city, range, guestCounts);
+    if (nextQuery === searchParams.toString()) return;
+
+    const timeout = setTimeout(() => {
+      startTransition(() => {
+        router.push(`/?${nextQuery}`, { scroll: false });
+      });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- router/searchParams/startTransition are stable
+  }, [city, range, guestCounts]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (city) params.set("city", city);
-    if (range?.from) params.set("checkIn", format(range.from, "yyyy-MM-dd"));
-    if (range?.to) params.set("checkOut", format(range.to, "yyyy-MM-dd"));
-    if (guestCounts.adults !== 1) params.set("adults", String(guestCounts.adults));
-    if (guestCounts.children > 0) params.set("children", String(guestCounts.children));
-    if (guestCounts.infants > 0) params.set("infants", String(guestCounts.infants));
-    if (guestCounts.pets > 0) params.set("pets", String(guestCounts.pets));
-    router.push(`/?${params.toString()}`);
+    startTransition(() => {
+      router.push(`/?${buildSearchQuery(city, range, guestCounts)}`);
+    });
   }
 
   return (

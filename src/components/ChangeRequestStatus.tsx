@@ -16,6 +16,8 @@ export function ChangeRequestStatus({
   requestedGuests,
   priceDeltaCents,
   paidAt,
+  onWithdrawn,
+  onWithdrawFailed,
 }: {
   bookingId: string;
   requestId: string;
@@ -25,22 +27,29 @@ export function ChangeRequestStatus({
   requestedGuests: number;
   priceDeltaCents: number;
   paidAt: Date | null;
+  /** Called immediately when the guest withdraws, before the server confirms. */
+  onWithdrawn?: () => void;
+  /** Called if the server ultimately rejects the withdrawal, to undo the optimistic update. */
+  onWithdrawFailed?: () => void;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function withdraw() {
-    setLoading(true);
+    // Optimistic: hide this banner right away; only the pay flow below has
+    // to wait on the network, since it needs a real checkout URL to send you to.
+    onWithdrawn?.();
+
     const res = await fetch(`/api/bookings/${bookingId}/change-requests/${requestId}`, {
       method: "DELETE",
     });
-    setLoading(false);
     if (res.ok) {
       toast.success("Request withdrawn");
       router.refresh();
     } else {
-      const data = await res.json();
-      toast.error(data.error ?? "Could not withdraw request.");
+      const data = await res.json().catch(() => null);
+      onWithdrawFailed?.();
+      toast.error(data?.error ?? "Could not withdraw request.");
     }
   }
 

@@ -14,7 +14,14 @@ const prisma = new PrismaClient();
 
 test("guest can save a listing and unsave it from the wishlist page", async ({ page }) => {
   const guest = await prisma.user.findUniqueOrThrow({ where: { email: "guest@fystay.dev" } });
-  const listing = await prisma.listing.findFirstOrThrow({ where: { published: true } });
+  // Anchored to the oldest published listing (one of the permanent seeded
+  // ones), not just "any published listing": other specs create and delete
+  // their own temporary listings concurrently, which could otherwise 404
+  // this test mid-run the moment that other spec's cleanup deletes it.
+  const listing = await prisma.listing.findFirstOrThrow({
+    where: { published: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   await prisma.savedListing.deleteMany({ where: { userId: guest.id, listingId: listing.id } });
 

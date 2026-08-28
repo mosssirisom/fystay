@@ -14,7 +14,15 @@ const prisma = new PrismaClient();
 
 test("guest can leave a review for a completed stay", async ({ page }) => {
   const guest = await prisma.user.findUniqueOrThrow({ where: { email: "guest@fystay.dev" } });
-  const listing = await prisma.listing.findFirstOrThrow({ where: { published: true } });
+  // Anchored to the oldest published listing (one of the permanent seeded
+  // ones), not just "any published listing": other specs create and delete
+  // their own temporary listings concurrently, and Booking.listing cascades
+  // on delete, so picking one of those here could have this test's own
+  // booking vanish out from under it the moment that other spec's cleanup runs.
+  const listing = await prisma.listing.findFirstOrThrow({
+    where: { published: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   // Reviews can only be left on a completed, paid-for stay, so set one up
   // directly rather than through the booking flow, which is a separate

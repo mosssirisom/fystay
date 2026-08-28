@@ -1,4 +1,16 @@
 import { test, expect, type Page } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
+
+// Playwright's test process doesn't load .env the way `next dev` does.
+// CI sets these vars directly instead of via a .env file, so don't fail
+// when there isn't one to load.
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file, so assume the environment already has DATABASE_URL set
+}
+
+const prisma = new PrismaClient();
 
 function addDays(days: number): Date {
   const d = new Date();
@@ -26,15 +38,29 @@ async function selectDay(page: Page, target: Date, monthsAlreadyAdvanced: number
   return monthsAlreadyAdvanced + stepsToTake;
 }
 
+test.afterAll(async () => {
+  await prisma.$disconnect();
+});
+
 test("guest can log in, book a listing, and see it in their trips", async ({ page }) => {
+  // Anchored to the oldest published listing (one of the permanent seeded
+  // ones) rather than "whatever the homepage shows first": other specs
+  // create and delete their own temporary listings concurrently, and since
+  // the homepage sorts newest-first, "first listing" can transiently be one
+  // of those, which then disappears mid-test when its owning spec's
+  // afterAll runs.
+  const listing = await prisma.listing.findFirstOrThrow({
+    where: { published: true },
+    orderBy: { createdAt: "asc" },
+  });
+
   await page.goto("/login");
   await page.fill("#email", "guest@fystay.dev");
   await page.fill("#password", "guestpass123");
   await page.click("button[type=submit]");
   await page.waitForURL("/");
 
-  await page.locator('a[href^="/listings/"]').first().click();
-  await page.waitForURL(/\/listings\//);
+  await page.goto(`/listings/${listing.id}`);
   const listingTitle = (await page.locator("h1").first().textContent())!.trim();
 
   await page.getByRole("button", { name: "Add dates" }).click();
@@ -49,15 +75,30 @@ test("guest can log in, book a listing, and see it in their trips", async ({ pag
 
   await expect(page.getByText(/Total/)).toBeVisible();
 
-  await page.getByRole("button", { name: "Check availability" }).click();
-  await expect(page.getByRole("button", { name: "Continue to checkout" })).toBeVisible();
-  await page.getByRole("button", { name: "Continue to checkout" }).click();
+  // Waiting on the actual response (rather than a short default toBeVisible
+  // timeout) matters here: these are freshly-created routes that a dev
+  // server compiles on first hit, which under CI's parallel workers can
+  // comfortably exceed a 5s default.
+  await Promise.all([
+    page.waitForResponse((r) => r.url().includes("/availability") && r.request().method() === "GET"),
+    page.getByRole("button", { name: "Check availability" }).click(),
+  ]);
+  await expect(page.getByRole("button", { name: "Continue to checkout" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await Promise.all([
+    page.waitForResponse((r) => r.url().includes("/api/bookings") && r.request().method() === "POST"),
+    page.getByRole("button", { name: "Continue to checkout" }).click(),
+  ]);
 
   await page.waitForURL(/\/checkout\//, { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Confirm and pay" })).toBeVisible();
   // Name/email are prefilled from the account; only phone is missing.
   await page.fill("#guestPhone", "07700 900123");
-  await page.getByRole("button", { name: /Confirm and pay/ }).first().click();
+  await Promise.all([
+    page.waitForResponse((r) => r.url().includes("/api/checkout") && r.request().method() === "POST"),
+    page.getByRole("button", { name: /Confirm and pay/ }).first().click(),
+  ]);
 
   await page.waitForURL(/\/bookings\/.+\/confirmation/, { timeout: 15_000 });
   expect(page.url()).toContain("dev_confirmed=1");
@@ -72,9 +113,12 @@ test("guest can log in, book a listing, and see it in their trips", async ({ pag
 });
 
 test("logged-out guest is redirected to log in when trying to book", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('a[href^="/listings/"]').first().click();
-  await page.waitForURL(/\/listings\//);
+  const listing = await prisma.listing.findFirstOrThrow({
+    where: { published: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  await page.goto(`/listings/${listing.id}`);
 
   await page.getByRole("button", { name: "Log in to book" }).click();
   await page.waitForURL(/\/login/);

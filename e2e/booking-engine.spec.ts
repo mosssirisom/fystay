@@ -111,8 +111,21 @@ test.describe("booking engine", () => {
     await expect(page.getByText("Cleaning fee")).toBeVisible();
     await expect(page.getByText("£245").first()).toBeVisible();
 
-    await page.getByRole("button", { name: "Check availability" }).click();
-    await page.getByRole("button", { name: "Continue to checkout" }).click();
+    // Waiting on the actual response (rather than a short default
+    // toBeVisible timeout) matters here: these are freshly-created routes a
+    // dev server compiles on first hit, which under CI's parallel workers
+    // can comfortably exceed a 5s default.
+    await Promise.all([
+      page.waitForResponse((r) => r.url().includes("/availability") && r.request().method() === "GET"),
+      page.getByRole("button", { name: "Check availability" }).click(),
+    ]);
+    await expect(page.getByRole("button", { name: "Continue to checkout" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await Promise.all([
+      page.waitForResponse((r) => r.url().includes("/api/bookings") && r.request().method() === "POST"),
+      page.getByRole("button", { name: "Continue to checkout" }).click(),
+    ]);
     await page.waitForURL(/\/checkout\//, { timeout: 15_000 });
 
     await expect(page.getByText("Cleaning fee")).toBeVisible();

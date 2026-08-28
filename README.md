@@ -141,6 +141,18 @@ Supabase Auth). To enable this:
 If these aren't set, `isStorageConfigured()` returns `false` and the upload API returns a clear
 error instead of crashing; the listing form's "paste an image URL" fallback still works.
 
+## Testing
+
+- **Unit tests** ([Vitest](https://vitest.dev)) cover pure logic in `src/lib/` (availability/overlap
+  math, price formatting, URL validation): `npm test` (or `npm run test:watch`).
+- **End-to-end tests** ([Playwright](https://playwright.dev)) cover the golden paths — a guest
+  logging in, booking a listing, and seeing it under "My trips"; a host creating, editing, and
+  deleting a listing — against a real running instance of the app: `npm run test:e2e`. This needs
+  the dev server's database seeded first (`npx prisma migrate deploy && npm run db:seed`);
+  Playwright then starts `npm run dev` itself (see `playwright.config.ts`).
+- CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and a production build against
+  a real Postgres service on every push/PR, then runs the Playwright suite in a second job.
+
 ## Project structure
 
 ```
@@ -160,5 +172,9 @@ src/components/            Shared UI (forms, booking widget, listing card, navba
 | `npm run build`       | Production build                     |
 | `npm run start`       | Start the production server          |
 | `npm run lint`        | Lint                                  |
+| `npm run typecheck`   | Type-check with `tsc --noEmit`       |
+| `npm test`            | Run unit tests                        |
+| `npm run test:watch`  | Run unit tests in watch mode          |
+| `npm run test:e2e`    | Run Playwright end-to-end tests       |
 | `npm run db:migrate`  | Run Prisma migrations                |
 | `npm run db:seed`     | Seed the database                    |

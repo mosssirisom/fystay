@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, isRangeAvailable } from "@/lib/availability";
+import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
@@ -23,28 +24,42 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
   const checkInParam = typeof searchParams.checkIn === "string" ? searchParams.checkIn : "";
   const checkOutParam = typeof searchParams.checkOut === "string" ? searchParams.checkOut : "";
 
-  const listings = await prisma.listing.findMany({
-    where: {
-      published: true,
-      ...(city
-        ? {
-            OR: [
-              { city: { contains: city, mode: "insensitive" } },
-              { country: { contains: city, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-      ...(guests ? { maxGuests: { gte: Number(guests) } } : {}),
-    },
-    include: {
-      bookings: {
-        where: blockingBookingWhere(),
-        select: { checkIn: true, checkOut: true },
+  const [session, listings] = await Promise.all([
+    auth(),
+    prisma.listing.findMany({
+      where: {
+        published: true,
+        ...(city
+          ? {
+              OR: [
+                { city: { contains: city, mode: "insensitive" } },
+                { country: { contains: city, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+        ...(guests ? { maxGuests: { gte: Number(guests) } } : {}),
       },
-      reviews: { select: { rating: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      include: {
+        bookings: {
+          where: blockingBookingWhere(),
+          select: { checkIn: true, checkOut: true },
+        },
+        reviews: { select: { rating: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const savedListingIds = session?.user
+    ? new Set(
+        (
+          await prisma.savedListing.findMany({
+            where: { userId: session.user.id },
+            select: { listingId: true },
+          })
+        ).map((s) => s.listingId),
+      )
+    : new Set<string>();
 
   const checkIn = checkInParam ? new Date(checkInParam) : null;
   const checkOut = checkOutParam ? new Date(checkOutParam) : null;
@@ -69,7 +84,12 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
   return (
     <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
       {filtered.map((listing) => (
-        <ListingCard key={listing.id} listing={listing} />
+        <ListingCard
+          key={listing.id}
+          listing={listing}
+          isSaved={savedListingIds.has(listing.id)}
+          isLoggedIn={Boolean(session?.user)}
+        />
       ))}
     </div>
   );

@@ -39,6 +39,8 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
 - **Reviews** — a guest can leave a star rating + comment once a booking is paid for and its stay
   has completed (`src/lib/reviews.ts`), one review per booking. Shown on the listing page (with an
   aggregate rating in the page's JSON-LD) and as a rating badge on listing cards.
+- **Wishlist** — any logged-in user can save a listing with the heart button on its card or detail
+  page, and view everything they've saved on `/wishlist`.
 
 ## Getting started
 

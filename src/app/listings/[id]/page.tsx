@@ -9,6 +9,7 @@ import { BookingWidget } from "@/components/BookingWidget";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
 import { ReviewList } from "@/components/ReviewList";
+import { SaveButton } from "@/components/SaveButton";
 import { Avatar } from "@/components/ui/Avatar";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
@@ -73,6 +74,14 @@ export default async function ListingDetailPage({
     notFound();
   }
 
+  const isSaved = session?.user
+    ? Boolean(
+        await prisma.savedListing.findUnique({
+          where: { userId_listingId: { userId: session.user.id, listingId: listing.id } },
+        }),
+      )
+    : false;
+
   const stats = [
     { icon: Users, label: `${listing.maxGuests} guest${listing.maxGuests > 1 ? "s" : ""}` },
     { icon: DoorOpen, label: `${listing.bedrooms} bedroom${listing.bedrooms === 1 ? "" : "s"}` },
@@ -114,10 +123,20 @@ export default async function ListingDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
-      <p className="mt-1 text-zinc-600">
-        {listing.city}, {listing.country}
-      </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
+          <p className="mt-1 text-zinc-600">
+            {listing.city}, {listing.country}
+          </p>
+        </div>
+        <SaveButton
+          listingId={listing.id}
+          initialSaved={isSaved}
+          isLoggedIn={Boolean(session?.user)}
+          className="static shrink-0 border border-border-subtle bg-surface"
+        />
+      </div>
 
       <PhotoGallery photos={listing.photos} title={listing.title} />
 

@@ -19,6 +19,7 @@ export function DateRangeField({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -26,8 +27,18 @@ export function DateRangeField({
         setOpen(false);
       }
     }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const label = range?.from
@@ -39,7 +50,10 @@ export function DateRangeField({
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "focus-ring flex w-full items-center gap-2 rounded-lg border border-border-subtle px-3 py-2.5 text-left text-sm hover:border-zinc-300",
@@ -51,7 +65,11 @@ export function DateRangeField({
       </button>
 
       {open && (
-        <div className="absolute left-1/2 top-full z-20 mt-2 w-max -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]">
+        <div
+          role="dialog"
+          aria-label="Choose check-in and check-out dates"
+          className="absolute left-1/2 top-full z-20 mt-2 w-max -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
+        >
           <DayPicker
             mode="range"
             min={1}

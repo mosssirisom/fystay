@@ -1,7 +1,21 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ListingForm } from "@/components/ListingForm";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    select: { title: true },
+  });
+  return { title: listing ? `Edit ${listing.title}` : "Edit listing" };
+}
 
 export default async function EditListingPage({
   params,

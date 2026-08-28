@@ -74,6 +74,7 @@ export default async function Home({
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+      <h1 className="sr-only">Find places to stay on the Fylde coast</h1>
       <Suspense>
         <SearchBar />
       </Suspense>

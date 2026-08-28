@@ -6,7 +6,7 @@ import { MapPin, Search, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const fieldClasses =
-  "focus-ring w-full rounded-lg bg-transparent px-3 py-1.5 text-sm text-foreground placeholder:text-zinc-400";
+  "focus-ring w-full rounded-lg bg-transparent px-3 py-1.5 text-sm text-foreground placeholder:text-zinc-500";
 
 export function SearchBar() {
   const router = useRouter();
@@ -37,8 +37,11 @@ export function SearchBar() {
       <div className="flex flex-1 items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted sm:border-r sm:border-border-subtle">
         <MapPin className="h-4 w-4 shrink-0 text-zinc-400" />
         <div className="flex-1">
-          <span className="block text-[11px] font-semibold text-foreground">Where</span>
+          <label htmlFor="search-city" className="block text-[11px] font-semibold text-foreground">
+            Where
+          </label>
           <input
+            id="search-city"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="Search destinations"
@@ -49,8 +52,11 @@ export function SearchBar() {
 
       <div className="flex items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted sm:border-r sm:border-border-subtle">
         <div>
-          <span className="block text-[11px] font-semibold text-foreground">Check in</span>
+          <label htmlFor="search-checkin" className="block text-[11px] font-semibold text-foreground">
+            Check in
+          </label>
           <input
+            id="search-checkin"
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
@@ -61,8 +67,11 @@ export function SearchBar() {
 
       <div className="flex items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted sm:border-r sm:border-border-subtle">
         <div>
-          <span className="block text-[11px] font-semibold text-foreground">Check out</span>
+          <label htmlFor="search-checkout" className="block text-[11px] font-semibold text-foreground">
+            Check out
+          </label>
           <input
+            id="search-checkout"
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
@@ -74,8 +83,11 @@ export function SearchBar() {
       <div className="flex items-center gap-2 rounded-xl px-3 py-1 hover:bg-surface-muted">
         <Users className="h-4 w-4 shrink-0 text-zinc-400" />
         <div className="w-16">
-          <span className="block text-[11px] font-semibold text-foreground">Guests</span>
+          <label htmlFor="search-guests" className="block text-[11px] font-semibold text-foreground">
+            Guests
+          </label>
           <input
+            id="search-guests"
             type="number"
             min={1}
             value={guests}
@@ -88,10 +100,11 @@ export function SearchBar() {
 
       <button
         type="submit"
-        className="focus-ring flex items-center justify-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 sm:ml-1"
+        aria-label="Search"
+        className="focus-ring flex items-center justify-center gap-2 rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800 sm:ml-1"
       >
         <Search className="h-4 w-4" />
-        <span className="sm:hidden">Search</span>
+        <span className="sm:hidden" aria-hidden="true">Search</span>
       </button>
     </form>
   );

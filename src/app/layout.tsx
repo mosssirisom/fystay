@@ -55,8 +55,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-3 focus-visible:left-3 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-brand-700 focus-visible:px-4 focus-visible:py-2 focus-visible:text-white focus-visible:shadow-lg"
+        >
+          Skip to main content
+        </a>
         <Navbar />
-        <div className="flex flex-1 flex-col">{children}</div>
+        <main id="main-content" className="flex flex-1 flex-col">
+          {children}
+        </main>
         <Footer />
         <Toaster position="top-center" richColors closeButton />
       </body>

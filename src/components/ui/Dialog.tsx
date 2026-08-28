@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +15,7 @@ type DialogProps = {
 
 export function Dialog({ open, onClose, title, className, children }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -26,6 +27,7 @@ export function Dialog({ open, onClose, title, className, children }: DialogProp
   return (
     <dialog
       ref={ref}
+      aria-labelledby={title ? titleId : undefined}
       onClose={onClose}
       onCancel={onClose}
       onClick={(e) => {
@@ -37,7 +39,9 @@ export function Dialog({ open, onClose, title, className, children }: DialogProp
       )}
     >
       <div className="flex items-center justify-between border-b border-border-subtle p-4">
-        <h2 className="text-base font-semibold">{title}</h2>
+        <h2 id={titleId} className="text-base font-semibold">
+          {title}
+        </h2>
         <button
           onClick={onClose}
           aria-label="Close"

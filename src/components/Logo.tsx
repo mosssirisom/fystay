@@ -20,12 +20,12 @@ export function Logo({
       <span
         className={cn("font-[family-name:var(--font-logo)] leading-none", sizeClasses[size])}
       >
-        <span className="text-brand-500">FY</span>
+        <span className="text-brand-600">FY</span>
         <span className="text-[var(--color-ink)]">stay</span>
       </span>
       {withTagline && (
         <span className="mt-1.5 font-[family-name:var(--font-logo)] text-sm">
-          <span className="text-brand-600">stay local.</span>{" "}
+          <span className="text-brand-700">stay local.</span>{" "}
           <span className="text-[var(--color-ink)]">stay fylde.</span>
         </span>
       )}

@@ -33,6 +33,7 @@ export function Avatar({
           src={src}
           alt={name}
           fill
+          sizes={`${size}px`}
           className="object-cover"
           unoptimized={!isOptimizableImage(src)}
         />

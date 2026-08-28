@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ListingForm } from "@/components/ListingForm";
+
+export const metadata: Metadata = {
+  title: "Create a listing",
+};
 
 export default async function NewListingPage() {
   const session = await auth();

@@ -16,6 +16,8 @@ type Props = {
 export function UserMenu({ name, role }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -24,7 +26,10 @@ export function UserMenu({ name, role }: Props) {
       }
     }
     function handleEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
     }
     document.addEventListener("mousedown", handleClick);
     document.addEventListener("keydown", handleEscape);
@@ -34,12 +39,19 @@ export function UserMenu({ name, role }: Props) {
     };
   }, []);
 
+  useEffect(() => {
+    if (open) {
+      menuRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    }
+  }, [open]);
+
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={triggerRef}
         onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls="user-menu-panel"
         className="focus-ring flex items-center gap-2 rounded-full border border-border-subtle py-1 pl-3 pr-1 hover:shadow-[var(--shadow-card)]"
       >
         <span className="hidden text-sm font-medium sm:inline">{name.split(" ")[0]}</span>
@@ -47,7 +59,8 @@ export function UserMenu({ name, role }: Props) {
       </button>
 
       <div
-        role="menu"
+        ref={menuRef}
+        id="user-menu-panel"
         className={cn(
           "absolute right-0 z-20 mt-2 w-56 origin-top-right rounded-xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)]",
           "transition-all duration-150",
@@ -63,13 +76,12 @@ export function UserMenu({ name, role }: Props) {
           </Badge>
         </div>
 
-        <nav className="flex flex-col py-1">
+        <div className="flex flex-col py-1">
           {role === "HOST" && (
             <Link
               href="/host/dashboard"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
-              role="menuitem"
             >
               <LayoutDashboard className="h-4 w-4" /> Host dashboard
             </Link>
@@ -78,17 +90,15 @@ export function UserMenu({ name, role }: Props) {
             href="/bookings"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
-            role="menuitem"
           >
             <Luggage className="h-4 w-4" /> My trips
           </Link>
-        </nav>
+        </div>
 
         <div className="border-t border-border-subtle pt-1">
           <form action={signOutAction}>
             <button
               type="submit"
-              role="menuitem"
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-zinc-700 hover:bg-surface-muted"
             >
               <LogOut className="h-4 w-4" /> Log out

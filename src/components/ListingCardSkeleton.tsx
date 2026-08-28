@@ -20,3 +20,15 @@ export function ListingsGridSkeleton({ count = 8 }: { count?: number }) {
     </div>
   );
 }
+
+export function ListingsCarouselSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="flex gap-6 overflow-hidden">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="w-[46%] shrink-0 sm:w-[31%] lg:w-[23%]">
+          <ListingCardSkeleton />
+        </div>
+      ))}
+    </div>
+  );
+}

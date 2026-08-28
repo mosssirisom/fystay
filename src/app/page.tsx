@@ -7,7 +7,7 @@ import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingCard } from "@/components/ListingCard";
-import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
+import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
 
 const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
@@ -111,14 +111,18 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {filtered.map((listing) => (
-        <ListingCard
+        <div
           key={listing.id}
-          listing={listing}
-          isSaved={savedListingIds.has(listing.id)}
-          isLoggedIn={Boolean(session?.user)}
-        />
+          className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]"
+        >
+          <ListingCard
+            listing={listing}
+            isSaved={savedListingIds.has(listing.id)}
+            isLoggedIn={Boolean(session?.user)}
+          />
+        </div>
       ))}
     </div>
   );
@@ -165,7 +169,7 @@ export default async function Home({
           Hand-picked local places to stay, ready to book today.
         </p>
         <div className="mt-6">
-          <Suspense fallback={<ListingsGridSkeleton />}>
+          <Suspense fallback={<ListingsCarouselSkeleton />}>
             <ListingsGrid searchParams={resolvedSearchParams} />
           </Suspense>
         </div>

@@ -369,7 +369,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
               />
             </Field>
             <Field>
-              <Label htmlFor="bathrooms">Baths</Label>
+              <Label htmlFor="bathrooms">Bathrooms</Label>
               <Input
                 id="bathrooms"
                 required

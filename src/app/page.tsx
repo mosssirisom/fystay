@@ -8,8 +8,23 @@ import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/mark
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
-import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
+import { ListingCard } from "@/components/ListingCard";
+import { ListingsCarouselSkeleton, ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
+import { FilterSheet } from "@/components/FilterSheet";
+import { SortDropdown } from "@/components/SortDropdown";
+import { ResultsViewToggle } from "@/components/ResultsViewToggle";
+import { MapViewPlaceholder } from "@/components/MapViewPlaceholder";
+import {
+  applyListingFilters,
+  hasActiveFilters,
+  parseListingFiltersFromParams,
+  parseSortParam,
+  parseViewParam,
+  sortListings,
+} from "@/lib/listingSearch";
+import { availableAmenityCategories } from "@/lib/amenityCategories";
+import { PROPERTY_TYPES } from "@/lib/propertyType";
 
 const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
 
@@ -41,7 +56,13 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
+async function ListingsGrid({
+  searchParams,
+  showResultsView,
+}: {
+  searchParams: SearchParams;
+  showResultsView: boolean;
+}) {
   const city = typeof searchParams.city === "string" ? searchParams.city : "";
   const checkInParam = typeof searchParams.checkIn === "string" ? searchParams.checkIn : "";
   const checkOutParam = typeof searchParams.checkOut === "string" ? searchParams.checkOut : "";
@@ -100,28 +121,87 @@ async function ListingsGrid({ searchParams }: { searchParams: SearchParams }) {
         )
       : listings;
 
-  const filtered = pets > 0
+  const petFiltered = pets > 0
     ? dateFiltered.filter((listing) => isPetFriendly(listing.amenities))
     : dateFiltered;
 
-  if (filtered.length === 0) {
+  if (!showResultsView) {
+    if (petFiltered.length === 0) {
+      return (
+        <div className="mt-16 flex flex-col items-center gap-3 text-center">
+          <SearchX className="h-8 w-8 text-zinc-300" />
+          <p className="font-medium text-foreground">No stays match your search</p>
+          <p className="max-w-sm text-sm text-zinc-500">
+            Try different dates, a different destination, or fewer guests.
+          </p>
+        </div>
+      );
+    }
+
     return (
-      <div className="mt-16 flex flex-col items-center gap-3 text-center">
-        <SearchX className="h-8 w-8 text-zinc-300" />
-        <p className="font-medium text-foreground">No stays match your search</p>
-        <p className="max-w-sm text-sm text-zinc-500">
-          Try different dates, a different destination, or fewer guests.
-        </p>
-      </div>
+      <ListingsCarousel
+        listings={petFiltered}
+        savedListingIds={savedListingIds}
+        isLoggedIn={Boolean(session?.user)}
+      />
     );
   }
 
+  const availablePropertyTypes = PROPERTY_TYPES.filter((type) =>
+    petFiltered.some((listing) => listing.propertyType === type),
+  );
+  const amenityCategories = availableAmenityCategories(petFiltered).map(({ key, label }) => ({
+    key,
+    label,
+  }));
+
+  const filters = parseListingFiltersFromParams(searchParams, PROPERTY_TYPES);
+  const sort = parseSortParam(searchParams.sort);
+  const view = parseViewParam(searchParams.view);
+
+  const results = sortListings(applyListingFilters(petFiltered, filters), sort);
+
+  const cityCounts = new Map<string, number>();
+  for (const listing of results) {
+    cityCounts.set(listing.city, (cityCounts.get(listing.city) ?? 0) + 1);
+  }
+
   return (
-    <ListingsCarousel
-      listings={filtered}
-      savedListingIds={savedListingIds}
-      isLoggedIn={Boolean(session?.user)}
-    />
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterSheet
+            availablePropertyTypes={availablePropertyTypes}
+            availableAmenityCategories={amenityCategories}
+          />
+          <SortDropdown />
+        </div>
+        <ResultsViewToggle />
+      </div>
+
+      {results.length === 0 ? (
+        <div className="mt-8 flex flex-col items-center gap-3 text-center">
+          <SearchX className="h-8 w-8 text-zinc-300" />
+          <p className="font-medium text-foreground">No stays match your search</p>
+          <p className="max-w-sm text-sm text-zinc-500">
+            Try different dates, a wider price range, or fewer filters.
+          </p>
+        </div>
+      ) : view === "map" ? (
+        <MapViewPlaceholder cityCounts={cityCounts} />
+      ) : (
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+          {results.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              isSaved={savedListingIds.has(listing.id)}
+              isLoggedIn={Boolean(session?.user)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -194,6 +274,11 @@ export default async function Home({
       resolvedSearchParams.infants ||
       resolvedSearchParams.pets,
   );
+  const activeFilters = parseListingFiltersFromParams(resolvedSearchParams, PROPERTY_TYPES);
+  const activeSort = parseSortParam(resolvedSearchParams.sort);
+  const activeView = parseViewParam(resolvedSearchParams.view);
+  const showResultsView =
+    hasActiveSearch || hasActiveFilters(activeFilters, activeSort) || activeView === "map";
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
@@ -223,19 +308,21 @@ export default async function Home({
 
       <div className="mt-10">
         <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-          Popular stays on the Fylde Coast
+          {showResultsView ? "Search results" : "Popular stays on the Fylde Coast"}
         </h2>
         <p className="mt-1 text-sm text-zinc-500">
-          Hand-picked local places to stay, ready to book today.
+          {showResultsView
+            ? "Refine with filters and sorting to find exactly what you're after."
+            : "Hand-picked local places to stay, ready to book today."}
         </p>
         <div className="mt-6">
-          <Suspense fallback={<ListingsCarouselSkeleton />}>
-            <ListingsGrid searchParams={resolvedSearchParams} />
+          <Suspense fallback={showResultsView ? <ListingsGridSkeleton /> : <ListingsCarouselSkeleton />}>
+            <ListingsGrid searchParams={resolvedSearchParams} showResultsView={showResultsView} />
           </Suspense>
         </div>
       </div>
 
-      {!hasActiveSearch && (
+      {!showResultsView && (
         <Suspense fallback={null}>
           <MarketplaceSections />
         </Suspense>

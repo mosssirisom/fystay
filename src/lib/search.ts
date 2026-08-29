@@ -31,3 +31,8 @@ export function parseGuestParam(value: string | string[] | undefined, fallback: 
   const n = typeof value === "string" ? Number(value) : NaN;
   return Number.isInteger(n) && n >= 0 ? n : fallback;
 }
+
+/** Same rule as parseGuestParam, under a name that reads sensibly for bedrooms/bathrooms/rating filters. */
+export function parseIntParam(value: string | string[] | undefined, fallback: number): number {
+  return parseGuestParam(value, fallback);
+}

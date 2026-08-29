@@ -55,6 +55,7 @@ enum ChangeRequestStatus {
 enum PropertyType {
   APARTMENT
   HOUSE
+  HOTEL
   COTTAGE
   VILLA
   STUDIO

@@ -4,6 +4,8 @@ import { ImageOff, Star } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
 import { SaveButton } from "@/components/SaveButton";
+import { averageRating as computeAverageRating } from "@/lib/reviews";
+import { AMENITY_CATEGORIES } from "@/lib/amenityCategories";
 
 export type ListingCardData = {
   id: string;
@@ -12,8 +14,11 @@ export type ListingCardData = {
   country: string;
   pricePerNightCents: number;
   photos: string[];
+  amenities: string[];
   reviews: { rating: number }[];
 };
+
+const MAX_AMENITY_ICONS = 3;
 
 export function ListingCard({
   listing,
@@ -24,10 +29,11 @@ export function ListingCard({
   isSaved?: boolean;
   isLoggedIn?: boolean;
 }) {
-  const averageRating =
-    listing.reviews.length > 0
-      ? listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length
-      : null;
+  const rating = computeAverageRating(listing.reviews);
+  const reviewCount = listing.reviews.length;
+  const keyAmenities = AMENITY_CATEGORIES.filter((category) =>
+    category.test(listing.amenities),
+  ).slice(0, MAX_AMENITY_ICONS);
 
   return (
     <div className="group flex flex-col gap-3">
@@ -62,16 +68,27 @@ export function ListingCard({
       <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-1 rounded-xl">
         <div className="flex items-start justify-between gap-2">
           <p className="truncate font-medium text-foreground">{listing.title}</p>
-          {averageRating !== null && (
+          {rating !== null && (
             <span className="flex shrink-0 items-center gap-1 text-sm text-foreground">
               <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
-              {averageRating.toFixed(1)}
+              {rating.toFixed(1)}
+              {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
             </span>
           )}
         </div>
         <p className="truncate text-sm text-zinc-500">
           {listing.city}, {listing.country}
         </p>
+        {keyAmenities.length > 0 && (
+          <ul className="flex items-center gap-2.5">
+            {keyAmenities.map((category) => (
+              <li key={category.key} className="flex items-center gap-1 text-xs text-zinc-500">
+                <category.icon className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only">{category.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="text-sm text-foreground">
           <span className="font-semibold">{formatPrice(listing.pricePerNightCents)}</span>{" "}
           <span className="text-zinc-500">night</span>

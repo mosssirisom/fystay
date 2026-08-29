@@ -1,10 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  averageRating,
   canReportReview,
   canReviewBooking,
   canRespondToReview,
   computeRatingBreakdown,
 } from "./reviews";
+
+describe("averageRating", () => {
+  it("returns null for no reviews, never a fabricated 0", () => {
+    expect(averageRating([])).toBeNull();
+  });
+
+  it("averages the ratings given", () => {
+    expect(averageRating([{ rating: 5 }, { rating: 3 }])).toBe(4);
+  });
+});
 
 const now = new Date("2026-06-15");
 

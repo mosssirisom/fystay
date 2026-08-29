@@ -13,6 +13,12 @@ export function canReviewBooking(booking: ReviewableBooking, now: Date = new Dat
   );
 }
 
+/** Null when there are no reviews yet - never fabricated as 0. */
+export function averageRating(reviews: { rating: number }[]): number | null {
+  if (reviews.length === 0) return null;
+  return reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+}
+
 /** Only the listing's own host may reply to a review left on it. */
 export function canRespondToReview(params: {
   listingHostId: string;

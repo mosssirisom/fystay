@@ -89,6 +89,7 @@ const LISTINGS = [
     bathrooms: 1,
     amenities: ["Wifi", "Kitchen", "Sea view", "Free parking"],
     placeholderIcon: "waves" as const,
+    cancellationPolicy: "FLEXIBLE" as const,
   },
   {
     title: "Elegant Victorian townhouse in Lytham St Annes",
@@ -103,6 +104,7 @@ const LISTINGS = [
     bathrooms: 2,
     amenities: ["Wifi", "Kitchen", "Garden", "Washer", "Free parking"],
     placeholderIcon: "house" as const,
+    cancellationPolicy: "STRICT" as const,
   },
   {
     title: "Cosy cottage near Fleetwood Marina",
@@ -117,6 +119,9 @@ const LISTINGS = [
     bathrooms: 1,
     amenities: ["Wifi", "Kitchen", "Washer", "Pet friendly"],
     placeholderIcon: "lighthouse" as const,
+    cancellationPolicy: "CUSTOM" as const,
+    customCancellationCutoffDays: 10,
+    customCancellationRefundPercent: 75,
   },
 ];
 

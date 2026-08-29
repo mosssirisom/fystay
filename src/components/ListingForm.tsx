@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { PhotoUploader } from "@/components/PhotoUploader";
+import { resolveCancellationPolicy, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
 
 export type ListingFormValues = {
   title: string;
@@ -24,6 +26,9 @@ export type ListingFormValues = {
   bathrooms: string;
   photos: string[];
   amenities: string;
+  cancellationPolicy: CancellationPolicyKind;
+  customCancellationCutoffDays: string;
+  customCancellationRefundPercent: string;
 };
 
 const emptyValues: ListingFormValues = {
@@ -40,6 +45,15 @@ const emptyValues: ListingFormValues = {
   bathrooms: "1",
   photos: [],
   amenities: "",
+  cancellationPolicy: "MODERATE",
+  customCancellationCutoffDays: "7",
+  customCancellationRefundPercent: "50",
+};
+
+const POLICY_PREVIEWS: Record<Exclude<CancellationPolicyKind, "CUSTOM">, string> = {
+  FLEXIBLE: resolveCancellationPolicy({ cancellationPolicy: "FLEXIBLE" }).description,
+  MODERATE: resolveCancellationPolicy({ cancellationPolicy: "MODERATE" }).description,
+  STRICT: resolveCancellationPolicy({ cancellationPolicy: "STRICT" }).description,
 };
 
 type Props = {
@@ -96,6 +110,13 @@ export function ListingForm({ listingId, initialValues }: Props) {
         .split(",")
         .map((a) => a.trim())
         .filter(Boolean),
+      cancellationPolicy: values.cancellationPolicy,
+      ...(values.cancellationPolicy === "CUSTOM"
+        ? {
+            customCancellationCutoffDays: Number(values.customCancellationCutoffDays),
+            customCancellationRefundPercent: Number(values.customCancellationRefundPercent),
+          }
+        : {}),
     };
 
     const res = await fetch(listingId ? `/api/listings/${listingId}` : "/api/listings", {
@@ -306,6 +327,61 @@ export function ListingForm({ listingId, initialValues }: Props) {
             />
             <FieldHint>Comma separated.</FieldHint>
           </Field>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Cancellation policy</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Field>
+            <Label htmlFor="cancellationPolicy">Refund rules for guest cancellations</Label>
+            <Select
+              id="cancellationPolicy"
+              value={values.cancellationPolicy}
+              onChange={(e) =>
+                update("cancellationPolicy", e.target.value as CancellationPolicyKind)
+              }
+            >
+              <option value="FLEXIBLE">Flexible</option>
+              <option value="MODERATE">Moderate</option>
+              <option value="STRICT">Strict</option>
+              <option value="CUSTOM">Custom</option>
+            </Select>
+            <FieldHint>
+              {values.cancellationPolicy === "CUSTOM"
+                ? "Set your own cutoff and refund percentage below."
+                : POLICY_PREVIEWS[values.cancellationPolicy]}
+            </FieldHint>
+          </Field>
+
+          {values.cancellationPolicy === "CUSTOM" && (
+            <div className="grid grid-cols-2 gap-4">
+              <Field>
+                <Label htmlFor="customCutoff">Full-refund cutoff (days before check-in)</Label>
+                <Input
+                  id="customCutoff"
+                  type="number"
+                  min={0}
+                  max={90}
+                  value={values.customCancellationCutoffDays}
+                  onChange={(e) => update("customCancellationCutoffDays", e.target.value)}
+                />
+              </Field>
+              <Field>
+                <Label htmlFor="customPercent">Refund percentage before cutoff</Label>
+                <Input
+                  id="customPercent"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={values.customCancellationRefundPercent}
+                  onChange={(e) => update("customCancellationRefundPercent", e.target.value)}
+                />
+              </Field>
+            </div>
+          )}
         </CardContent>
       </Card>
 

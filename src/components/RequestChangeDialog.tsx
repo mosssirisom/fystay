@@ -147,12 +147,30 @@ export function RequestChangeDialog({
             </div>
           </div>
 
-          {nights > 0 && priceDeltaCents !== 0 && (
-            <p className="text-sm text-zinc-600">
-              {priceDeltaCents > 0
-                ? `You'll owe an extra ${formatPrice(priceDeltaCents)} if approved.`
-                : `You'll be refunded ${formatPrice(Math.abs(priceDeltaCents))} if approved.`}
-            </p>
+          {nights > 0 && (
+            <div className="flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 text-sm">
+              <div className="flex justify-between text-zinc-600">
+                <span>Original total</span>
+                <span>{formatPrice(currentTotalPriceCents)}</span>
+              </div>
+              <div className="flex justify-between text-zinc-600">
+                <span>New total</span>
+                <span>{formatPrice(newTotalPriceCents)}</span>
+              </div>
+              {priceDeltaCents !== 0 && (
+                <div className="flex justify-between border-t border-border-subtle pt-1.5 font-semibold text-foreground">
+                  <span>{priceDeltaCents > 0 ? "Additional payment" : "Refund due"}</span>
+                  <span>{formatPrice(Math.abs(priceDeltaCents))}</span>
+                </div>
+              )}
+              {priceDeltaCents !== 0 && (
+                <p className="text-xs text-zinc-500">
+                  {priceDeltaCents > 0
+                    ? `You'll owe an extra ${formatPrice(priceDeltaCents)} if approved.`
+                    : `You'll be refunded ${formatPrice(Math.abs(priceDeltaCents))} if approved.`}
+                </p>
+              )}
+            </div>
           )}
 
           {error && <p className="text-sm text-red-600">{error}</p>}

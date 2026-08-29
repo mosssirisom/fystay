@@ -11,7 +11,7 @@ const POLL_INTERVAL_MS = 1500;
 const MAX_POLLS = 12;
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
-type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED";
+type PaymentStatus = "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
 
 export function BookingConfirmation({
   bookingId,

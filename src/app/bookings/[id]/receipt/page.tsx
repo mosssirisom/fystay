@@ -39,8 +39,12 @@ export default async function BookingReceiptPage({
     notFound();
   }
 
-  const wasPaid = booking.paymentStatus === "PAID" || booking.paymentStatus === "REFUNDED";
+  const wasPaid =
+    booking.paymentStatus === "PAID" ||
+    booking.paymentStatus === "PARTIALLY_REFUNDED" ||
+    booking.paymentStatus === "REFUNDED";
   const nightlySubtotalCents = booking.nights * booking.nightlyPriceCents;
+  const refundedAmountCents = booking.refundedAmountCents ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-8">
@@ -143,9 +147,17 @@ export default async function BookingReceiptPage({
                 </div>
               )}
               <div className="flex justify-between border-t border-border-subtle pt-3 text-base font-semibold text-foreground">
-                <span>{booking.paymentStatus === "REFUNDED" ? "Total refunded" : "Total paid"} (GBP)</span>
+                <span>Total charged (GBP)</span>
                 <span>{formatPrice(booking.totalPriceCents)}</span>
               </div>
+              {refundedAmountCents > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>
+                    {booking.paymentStatus === "REFUNDED" ? "Refunded" : "Partially refunded"}
+                  </span>
+                  <span>-{formatPrice(refundedAmountCents)}</span>
+                </div>
+              )}
             </div>
 
             <p className="text-xs text-zinc-400">

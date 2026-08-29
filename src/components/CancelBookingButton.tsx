@@ -3,16 +3,29 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/ui/Dialog";
+import { Dialog } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+import { formatPrice } from "@/lib/format";
 
 export function CancelBookingButton({
   bookingId,
   listingTitle,
+  policyLabel,
+  policyDescription,
+  amountPaidCents,
+  refundCents,
+  nonRefundableCents,
   onCancelled,
   onCancelFailed,
 }: {
   bookingId: string;
   listingTitle: string;
+  policyLabel: string;
+  policyDescription: string;
+  /** All of these are a preview only, computed the same way the server will - the cancel request itself never sends them, and the server recomputes independently. */
+  amountPaidCents: number;
+  refundCents: number;
+  nonRefundableCents: number;
   /** Called immediately on confirm, before the server has responded. */
   onCancelled?: () => void;
   /** Called if the server ultimately rejects the cancellation, to undo the optimistic update. */
@@ -30,7 +43,9 @@ export function CancelBookingButton({
     const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: "POST" });
 
     if (res.ok) {
-      toast.success("Booking cancelled");
+      const data = await res.json().catch(() => null);
+      const refunded = data?.refund?.refundCents ?? 0;
+      toast.success(refunded > 0 ? `Booking cancelled. ${formatPrice(refunded)} refunded.` : "Booking cancelled.");
       router.refresh();
     } else {
       const data = await res.json().catch(() => null);
@@ -48,15 +63,46 @@ export function CancelBookingButton({
         Cancel booking
       </button>
 
-      <ConfirmDialog
-        open={open}
-        onClose={() => setOpen(false)}
-        onConfirm={handleCancel}
-        danger
-        title="Cancel booking"
-        description={`Cancel your stay at "${listingTitle}"? If you already paid, you'll be refunded.`}
-        confirmLabel="Cancel booking"
-      />
+      <Dialog open={open} onClose={() => setOpen(false)} title="Cancel booking">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-zinc-600">
+            Cancel your stay at &quot;{listingTitle}&quot;?
+          </p>
+
+          <div className="rounded-lg bg-surface-muted p-3 text-sm">
+            <p className="font-medium text-foreground">{policyLabel} cancellation policy</p>
+            <p className="mt-0.5 text-zinc-600">{policyDescription}</p>
+          </div>
+
+          {amountPaidCents > 0 && (
+            <dl className="flex flex-col gap-1.5 text-sm">
+              <div className="flex justify-between text-zinc-600">
+                <dt>Amount paid</dt>
+                <dd>{formatPrice(amountPaidCents)}</dd>
+              </div>
+              {nonRefundableCents > 0 && (
+                <div className="flex justify-between text-zinc-600">
+                  <dt>Non-refundable</dt>
+                  <dd>{formatPrice(nonRefundableCents)}</dd>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-border-subtle pt-1.5 font-semibold text-foreground">
+                <dt>{refundCents > 0 ? "Final refund amount" : "Refund amount"}</dt>
+                <dd>{formatPrice(refundCents)}</dd>
+              </div>
+            </dl>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Keep booking
+            </Button>
+            <Button variant="danger" onClick={handleCancel}>
+              Cancel booking
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </>
   );
 }

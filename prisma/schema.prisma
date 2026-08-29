@@ -27,7 +27,23 @@ enum BookingStatus {
 enum PaymentStatus {
   UNPAID
   PAID
+  // Some, but not all, of what was paid has been returned - e.g. a
+  // cancellation under a policy that refunds less than 100%.
+  PARTIALLY_REFUNDED
   REFUNDED
+}
+
+// A host's refund rules for guest-initiated cancellations. Each kind maps to
+// a fixed set of day-before-check-in cutoffs and refund percentages (see
+// src/lib/cancellationPolicy.ts) except CUSTOM, which reads its cutoff and
+// percentage from the two customCancellation* fields below. Deliberately a
+// listing-level choice, not a platform-wide constant, so different hosts can
+// run different policies without a code change.
+enum CancellationPolicyKind {
+  FLEXIBLE
+  MODERATE
+  STRICT
+  CUSTOM
 }
 
 enum ChangeRequestStatus {
@@ -92,6 +108,13 @@ model Listing {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  cancellationPolicy CancellationPolicyKind @default(MODERATE)
+  // Only read when cancellationPolicy is CUSTOM; null otherwise. A null
+  // value under CUSTOM falls back to a sane default (see
+  // resolveCancellationPolicy) rather than failing.
+  customCancellationCutoffDays   Int?
+  customCancellationRefundPercent Int?
+
   hostId   String
   host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings Booking[]
@@ -155,6 +178,11 @@ model Booking {
   stripePaymentIntentId String?
   paidAt     DateTime?
   refundedAt DateTime?
+  // The actual amount returned to the guest on cancellation, per the
+  // listing's cancellation policy at the time. May be less than
+  // totalPriceCents (partial refund) or 0 (no refund) - never assume a
+  // cancelled, previously-paid booking was refunded in full.
+  refundedAmountCents Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,10 +213,21 @@ model BookingChangeRequest {
   requestedCheckIn  DateTime
   requestedCheckOut DateTime
   requestedGuests   Int
-  // requestedTotalPriceCents - the original booking's totalPriceCents at
+  // priceDeltaCents - the original booking's totalPriceCents at
   // request time. Positive: guest owes more. Negative: guest is due a
   // refund. Zero: applied immediately on approval, no payment step.
   priceDeltaCents Int
+
+  // Snapshot of the booking's own values at the moment this request was
+  // created. The booking itself gets overwritten once a change is applied,
+  // so without this snapshot there would be no way to show "before vs
+  // after" once that's happened - originalTotalPriceCents + priceDeltaCents
+  // always equals the requested total, regardless of what the booking looks
+  // like by the time someone reads this request back.
+  originalCheckIn        DateTime
+  originalCheckOut       DateTime
+  originalGuests         Int
+  originalTotalPriceCents Int
 
   stripeSessionId String?    @unique
   paidAt          DateTime?

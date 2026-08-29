@@ -94,6 +94,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       requestedCheckOut: checkOut,
       requestedGuests: parsed.data.guests,
       priceDeltaCents,
+      // Snapshotted now, since the booking itself gets overwritten once this
+      // request is approved and applied - without this, "original vs new"
+      // couldn't be shown accurately after the fact.
+      originalCheckIn: booking.checkIn,
+      originalCheckOut: booking.checkOut,
+      originalGuests: booking.guests,
+      originalTotalPriceCents: booking.totalPriceCents,
     },
   });
 

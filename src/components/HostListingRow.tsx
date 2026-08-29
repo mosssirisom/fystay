@@ -19,12 +19,24 @@ const bookingStatusVariant = {
   REFUNDED: "neutral",
 } as const;
 
-type PendingChangeRequest = {
+const paymentStatusLabel: Record<string, string> = {
+  UNPAID: "Unpaid",
+  PAID: "Paid, not refunded",
+  PARTIALLY_REFUNDED: "Partially refunded",
+  REFUNDED: "Fully refunded",
+};
+
+type ChangeRequestRow = {
   id: string;
+  status: "PENDING" | "APPROVED" | "DECLINED";
   requestedCheckIn: Date;
   requestedCheckOut: Date;
   requestedGuests: number;
   priceDeltaCents: number;
+  originalCheckIn: Date;
+  originalCheckOut: Date;
+  originalGuests: number;
+  originalTotalPriceCents: number;
 };
 
 export function HostListingRow({
@@ -43,13 +55,19 @@ export function HostListingRow({
       checkIn: Date;
       checkOut: Date;
       guests: number;
+      totalPriceCents: number;
       status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
-      changeRequests: PendingChangeRequest[];
+      paymentStatus: "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
+      refundedAmountCents: number | null;
+      changeRequests: ChangeRequestRow[];
     }[];
   };
 }) {
   const [deleted, setDeleted] = useState(false);
   const [handledRequestIds, setHandledRequestIds] = useState<Set<string>>(new Set());
+  const upcomingCount = listing.bookings.filter(
+    (b) => b.status === "PENDING" || b.status === "CONFIRMED",
+  ).length;
 
   function markHandled(requestId: string) {
     setHandledRequestIds((prev) => new Set(prev).add(requestId));
@@ -126,25 +144,49 @@ export function HostListingRow({
               {listing.published ? "Published" : "Unpublished"}
             </Badge>
             <Badge variant="brand">
-              {listing.bookings.length} upcoming booking{listing.bookings.length === 1 ? "" : "s"}
+              {upcomingCount} upcoming booking{upcomingCount === 1 ? "" : "s"}
             </Badge>
           </div>
 
           {listing.bookings.length > 0 && (
             <ul className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-3 text-sm text-zinc-600">
               {listing.bookings.map((booking) => {
-                const pendingRequest = booking.changeRequests[0];
+                const pendingRequest = booking.changeRequests.find((cr) => cr.status === "PENDING");
+                const approvedRequest = booking.changeRequests.find((cr) => cr.status === "APPROVED");
                 const showRequest = pendingRequest && !handledRequestIds.has(pendingRequest.id);
+                const isCancelled = booking.status === "CANCELLED" || booking.status === "REFUNDED";
                 return (
                   <li key={booking.id} className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span>
                         {booking.checkIn.toLocaleDateString()} –{" "}
                         {booking.checkOut.toLocaleDateString()} · {booking.guests} guest
-                        {booking.guests > 1 ? "s" : ""}
+                        {booking.guests > 1 ? "s" : ""} · {formatPrice(booking.totalPriceCents)}
                       </span>
                       <Badge variant={bookingStatusVariant[booking.status]}>{booking.status}</Badge>
+                      {approvedRequest && <Badge variant="warning">Modified</Badge>}
                     </div>
+
+                    {approvedRequest && (
+                      <p className="text-xs text-zinc-500">
+                        Originally {approvedRequest.originalCheckIn.toLocaleDateString()} –{" "}
+                        {approvedRequest.originalCheckOut.toLocaleDateString()} ·{" "}
+                        {approvedRequest.originalGuests} guest
+                        {approvedRequest.originalGuests > 1 ? "s" : ""} ·{" "}
+                        {formatPrice(approvedRequest.originalTotalPriceCents)} &rarr; now{" "}
+                        {formatPrice(approvedRequest.originalTotalPriceCents + approvedRequest.priceDeltaCents)}
+                      </p>
+                    )}
+
+                    {isCancelled && (
+                      <p className="text-xs text-zinc-500">
+                        {paymentStatusLabel[booking.paymentStatus]}
+                        {booking.refundedAmountCents
+                          ? ` · ${formatPrice(booking.refundedAmountCents)} refunded`
+                          : ""}
+                      </p>
+                    )}
+
                     {showRequest && (
                       <div className="flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>

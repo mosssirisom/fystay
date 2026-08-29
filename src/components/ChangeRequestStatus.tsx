@@ -15,6 +15,7 @@ export function ChangeRequestStatus({
   requestedCheckOut,
   requestedGuests,
   priceDeltaCents,
+  originalTotalPriceCents,
   paidAt,
   onWithdrawn,
   onWithdrawFailed,
@@ -26,6 +27,8 @@ export function ChangeRequestStatus({
   requestedCheckOut: Date;
   requestedGuests: number;
   priceDeltaCents: number;
+  /** The booking's total at the moment this request was made - stays accurate even after the booking itself is later mutated. */
+  originalTotalPriceCents: number;
   paidAt: Date | null;
   /** Called immediately when the guest withdraws, before the server confirms. */
   onWithdrawn?: () => void;
@@ -68,6 +71,24 @@ export function ChangeRequestStatus({
   }
 
   const dateLabel = `${requestedCheckIn.toLocaleDateString()} – ${requestedCheckOut.toLocaleDateString()} · ${requestedGuests} guest${requestedGuests > 1 ? "s" : ""}`;
+  const newTotalPriceCents = originalTotalPriceCents + priceDeltaCents;
+
+  const priceSummary = priceDeltaCents !== 0 && (
+    <div className="flex flex-col gap-1 border-t border-border-subtle pt-2 text-zinc-600">
+      <div className="flex justify-between">
+        <span>Original total</span>
+        <span>{formatPrice(originalTotalPriceCents)}</span>
+      </div>
+      <div className="flex justify-between">
+        <span>New total</span>
+        <span>{formatPrice(newTotalPriceCents)}</span>
+      </div>
+      <div className="flex justify-between font-semibold text-foreground">
+        <span>{priceDeltaCents > 0 ? "Additional payment" : "Refund due"}</span>
+        <span>{formatPrice(Math.abs(priceDeltaCents))}</span>
+      </div>
+    </div>
+  );
 
   if (status === "PENDING") {
     return (
@@ -77,6 +98,7 @@ export function ChangeRequestStatus({
           <span className="text-zinc-600">Awaiting host response</span>
         </div>
         <p className="text-zinc-600">{dateLabel}</p>
+        {priceSummary}
         <button
           onClick={withdraw}
           disabled={loading}
@@ -107,6 +129,7 @@ export function ChangeRequestStatus({
           <Badge variant="success">Change approved</Badge>
         </div>
         <p className="text-zinc-600">{dateLabel}</p>
+        {priceSummary}
         <p className="text-zinc-600">
           Pay {formatPrice(priceDeltaCents)} to confirm these new dates.
         </p>

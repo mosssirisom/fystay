@@ -4,22 +4,33 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { httpUrlSchema } from "@/lib/validation";
 
-const updateListingSchema = z.object({
-  title: z.string().min(3).max(120).optional(),
-  description: z.string().min(10).max(5000).optional(),
-  city: z.string().min(1).max(100).optional(),
-  country: z.string().min(1).max(100).optional(),
-  address: z.string().max(200).optional(),
-  pricePerNightCents: z.number().int().positive().optional(),
-  cleaningFeeCents: z.number().int().min(0).optional(),
-  maxGuests: z.number().int().min(1).max(50).optional(),
-  bedrooms: z.number().int().min(0).max(50).optional(),
-  beds: z.number().int().min(1).max(50).optional(),
-  bathrooms: z.number().int().min(0).max(50).optional(),
-  photos: z.array(httpUrlSchema).min(1).optional(),
-  amenities: z.array(z.string()).optional(),
-  published: z.boolean().optional(),
-});
+const updateListingSchema = z
+  .object({
+    title: z.string().min(3).max(120).optional(),
+    description: z.string().min(10).max(5000).optional(),
+    city: z.string().min(1).max(100).optional(),
+    country: z.string().min(1).max(100).optional(),
+    address: z.string().max(200).optional(),
+    pricePerNightCents: z.number().int().positive().optional(),
+    cleaningFeeCents: z.number().int().min(0).optional(),
+    maxGuests: z.number().int().min(1).max(50).optional(),
+    bedrooms: z.number().int().min(0).max(50).optional(),
+    beds: z.number().int().min(1).max(50).optional(),
+    bathrooms: z.number().int().min(0).max(50).optional(),
+    photos: z.array(httpUrlSchema).min(1).optional(),
+    amenities: z.array(z.string()).optional(),
+    published: z.boolean().optional(),
+    cancellationPolicy: z.enum(["FLEXIBLE", "MODERATE", "STRICT", "CUSTOM"]).optional(),
+    customCancellationCutoffDays: z.number().int().min(0).max(90).optional(),
+    customCancellationRefundPercent: z.number().int().min(0).max(100).optional(),
+  })
+  .refine(
+    (data) =>
+      data.cancellationPolicy !== "CUSTOM" ||
+      (data.customCancellationCutoffDays !== undefined &&
+        data.customCancellationRefundPercent !== undefined),
+    { message: "A custom cancellation policy needs a cutoff and a refund percentage" },
+  );
 
 export async function GET(
   _request: Request,

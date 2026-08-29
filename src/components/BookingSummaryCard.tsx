@@ -8,12 +8,14 @@ import { isOptimizableImage } from "@/lib/image";
 const paymentStatusLabel: Record<string, string> = {
   UNPAID: "Unpaid",
   PAID: "Paid",
+  PARTIALLY_REFUNDED: "Partially refunded",
   REFUNDED: "Refunded",
 };
 
 const paymentStatusVariant: Record<string, BadgeProps["variant"]> = {
   UNPAID: "warning",
   PAID: "success",
+  PARTIALLY_REFUNDED: "warning",
   REFUNDED: "neutral",
 };
 
@@ -56,7 +58,7 @@ export function BookingSummaryCard({
   guestName?: string | null;
   guestEmail?: string | null;
   guestPhone?: string | null;
-  paymentStatus?: "UNPAID" | "PAID" | "REFUNDED";
+  paymentStatus?: "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
 }) {
   const nightlySubtotalCents = nights * nightlyPriceCents;
 

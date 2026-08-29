@@ -7,6 +7,7 @@ import { ImageOff } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { canReviewBooking } from "@/lib/reviews";
 import { canCancelBooking, canRequestBookingChange } from "@/lib/changeRequests";
+import { previewCancellation, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { StarRating } from "@/components/ui/StarRating";
@@ -39,6 +40,7 @@ type ChangeRequestData = {
   requestedCheckOut: Date;
   requestedGuests: number;
   priceDeltaCents: number;
+  originalTotalPriceCents: number;
   paidAt: Date | null;
 };
 
@@ -51,6 +53,7 @@ export function BookingCard({
     reference: string;
     listingId: string;
     status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
+    paymentStatus: "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
     checkIn: Date;
     checkOut: Date;
     guests: number;
@@ -64,6 +67,9 @@ export function BookingCard({
       pricePerNightCents: number;
       cleaningFeeCents: number;
       maxGuests: number;
+      cancellationPolicy: CancellationPolicyKind;
+      customCancellationCutoffDays: number | null;
+      customCancellationRefundPercent: number | null;
       bookings: { id: string; checkIn: Date; checkOut: Date }[];
     };
   };
@@ -157,6 +163,7 @@ export function BookingCard({
           requestedCheckOut={effectiveChangeRequest.requestedCheckOut}
           requestedGuests={effectiveChangeRequest.requestedGuests}
           priceDeltaCents={effectiveChangeRequest.priceDeltaCents}
+          originalTotalPriceCents={effectiveChangeRequest.originalTotalPriceCents}
           paidAt={effectiveChangeRequest.paidAt}
           onWithdrawn={() => setChangeRequestWithdrawn(true)}
           onWithdrawFailed={() => setChangeRequestWithdrawn(false)}
@@ -190,6 +197,12 @@ export function BookingCard({
               <CancelBookingButton
                 bookingId={booking.id}
                 listingTitle={booking.listing.title}
+                {...previewCancellation({
+                  listing: booking.listing,
+                  wasPaid: booking.paymentStatus === "PAID",
+                  totalPriceCents: booking.totalPriceCents,
+                  checkIn: booking.checkIn,
+                })}
                 onCancelled={() => setOptimisticStatus("CANCELLED")}
                 onCancelFailed={() => setOptimisticStatus(null)}
               />

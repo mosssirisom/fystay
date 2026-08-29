@@ -31,7 +31,6 @@ test.describe("customer booking dashboard", () => {
   let confirmedId: string;
   let pendingId: string;
   let completedId: string;
-  let refundedId: string;
 
   test.beforeAll(async () => {
     const host = await prisma.user.findUniqueOrThrow({ where: { email: "host@fystay.dev" } });
@@ -114,7 +113,7 @@ test.describe("customer booking dashboard", () => {
     });
     completedId = completed.id;
 
-    const refunded = await prisma.booking.create({
+    await prisma.booking.create({
       data: {
         reference: generateBookingReference(),
         listingId,
@@ -132,7 +131,6 @@ test.describe("customer booking dashboard", () => {
         refundedAt: new Date(),
       },
     });
-    refundedId = refunded.id;
   });
 
   test.afterAll(async () => {
@@ -175,8 +173,11 @@ test.describe("customer booking dashboard", () => {
     await expect(main.getByRole("heading", { name: listingTitle })).toBeVisible();
     await expect(main.getByText("Confirmed", { exact: true })).toBeVisible();
     await expect(main.getByText("1 Fixture Street, DashboardTestCity")).toBeVisible();
-    await expect(main.getByText("Total (GBP)")).toBeVisible();
-    await expect(main.getByText("£220")).toBeVisible();
+    // Scoped to the total row itself: the (closed, so invisible, but still
+    // present in the DOM) cancel dialog also previews this booking's paid
+    // and refund amounts, both of which happen to be the same £220 figure.
+    const totalRow = main.getByText("Total (GBP)", { exact: true }).locator("..");
+    await expect(totalRow.getByText("£220")).toBeVisible();
     await expect(main.getByText("Jamie Guest")).toBeVisible();
 
     await expect(main.getByRole("link", { name: "View property" })).toBeVisible();
@@ -223,7 +224,7 @@ test.describe("customer booking dashboard", () => {
 
     await page.goto(`/bookings/${confirmedId}/receipt`);
     const main = page.locator("#main-content");
-    await expect(main.getByText("Total paid (GBP)")).toBeVisible();
+    await expect(main.getByText("Total charged (GBP)")).toBeVisible();
     await expect(main.getByText("£220")).toBeVisible();
     await expect(main.getByText("Jamie Guest")).toBeVisible();
 

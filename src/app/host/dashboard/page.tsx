@@ -19,9 +19,12 @@ export default async function HostDashboardPage() {
   const listings = await prisma.listing.findMany({
     where: { hostId: session.user.id },
     include: {
+      // Upcoming bookings plus recently cancelled ones, so a host can see
+      // what got cancelled (and any refund) without them ever disappearing
+      // from the dashboard the moment they're no longer active.
       bookings: {
-        where: { status: { in: ["PENDING", "CONFIRMED"] } },
-        include: { changeRequests: { where: { status: "PENDING" } } },
+        where: { status: { in: ["PENDING", "CONFIRMED", "CANCELLED", "REFUNDED"] } },
+        include: { changeRequests: { orderBy: { createdAt: "desc" } } },
         orderBy: { checkIn: "asc" },
       },
     },

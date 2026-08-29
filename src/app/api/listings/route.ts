@@ -5,21 +5,32 @@ import { auth } from "@/auth";
 import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
 import { httpUrlSchema } from "@/lib/validation";
 
-const createListingSchema = z.object({
-  title: z.string().min(3).max(120),
-  description: z.string().min(10).max(5000),
-  city: z.string().min(1).max(100),
-  country: z.string().min(1).max(100),
-  address: z.string().max(200).optional(),
-  pricePerNightCents: z.number().int().positive(),
-  cleaningFeeCents: z.number().int().min(0).default(0),
-  maxGuests: z.number().int().min(1).max(50),
-  bedrooms: z.number().int().min(0).max(50),
-  beds: z.number().int().min(1).max(50),
-  bathrooms: z.number().int().min(0).max(50),
-  photos: z.array(httpUrlSchema).min(1),
-  amenities: z.array(z.string()).default([]),
-});
+const createListingSchema = z
+  .object({
+    title: z.string().min(3).max(120),
+    description: z.string().min(10).max(5000),
+    city: z.string().min(1).max(100),
+    country: z.string().min(1).max(100),
+    address: z.string().max(200).optional(),
+    pricePerNightCents: z.number().int().positive(),
+    cleaningFeeCents: z.number().int().min(0).default(0),
+    maxGuests: z.number().int().min(1).max(50),
+    bedrooms: z.number().int().min(0).max(50),
+    beds: z.number().int().min(1).max(50),
+    bathrooms: z.number().int().min(0).max(50),
+    photos: z.array(httpUrlSchema).min(1),
+    amenities: z.array(z.string()).default([]),
+    cancellationPolicy: z.enum(["FLEXIBLE", "MODERATE", "STRICT", "CUSTOM"]).optional(),
+    customCancellationCutoffDays: z.number().int().min(0).max(90).optional(),
+    customCancellationRefundPercent: z.number().int().min(0).max(100).optional(),
+  })
+  .refine(
+    (data) =>
+      data.cancellationPolicy !== "CUSTOM" ||
+      (data.customCancellationCutoffDays !== undefined &&
+        data.customCancellationRefundPercent !== undefined),
+    { message: "A custom cancellation policy needs a cutoff and a refund percentage" },
+  );
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

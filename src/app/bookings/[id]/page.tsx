@@ -15,6 +15,7 @@ import { BookingSummaryCard } from "@/components/BookingSummaryCard";
 import { RequestChangeDialog } from "@/components/RequestChangeDialog";
 import { CancelBookingButton } from "@/components/CancelBookingButton";
 import { ChangeRequestStatus } from "@/components/ChangeRequestStatus";
+import { previewCancellation } from "@/lib/cancellationPolicy";
 import type { BadgeProps } from "@/components/ui/Badge";
 
 export const metadata: Metadata = { title: "Booking details", robots: { index: false } };
@@ -84,7 +85,10 @@ export default async function BookingDetailPage({
   // A paid (or since-refunded) booking is a real, confirmed reservation, so
   // it's the right moment to reveal the exact address and a direct way to
   // reach the host — neither of which the public listing page shows.
-  const canSeeStayDetails = booking.paymentStatus === "PAID" || booking.paymentStatus === "REFUNDED";
+  const canSeeStayDetails =
+    booking.paymentStatus === "PAID" ||
+    booking.paymentStatus === "PARTIALLY_REFUNDED" ||
+    booking.paymentStatus === "REFUNDED";
   const canModify = canRequestBookingChange(booking, hasPendingChangeRequest);
   const canCancel = canCancelBooking(booking);
   const canRebook =
@@ -158,6 +162,7 @@ export default async function BookingDetailPage({
                   requestedCheckOut={latestChangeRequest.requestedCheckOut}
                   requestedGuests={latestChangeRequest.requestedGuests}
                   priceDeltaCents={latestChangeRequest.priceDeltaCents}
+                  originalTotalPriceCents={latestChangeRequest.originalTotalPriceCents}
                   paidAt={latestChangeRequest.paidAt}
                 />
               )}
@@ -185,6 +190,12 @@ export default async function BookingDetailPage({
                   <CancelBookingButton
                     bookingId={booking.id}
                     listingTitle={booking.listing.title}
+                    {...previewCancellation({
+                      listing: booking.listing,
+                      wasPaid: booking.paymentStatus === "PAID",
+                      totalPriceCents: booking.totalPriceCents,
+                      checkIn: booking.checkIn,
+                    })}
                   />
                 )}
 

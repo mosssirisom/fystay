@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Home, Luggage } from "lucide-react";
@@ -17,8 +17,10 @@ const roleOptions = [
   { value: "HOST" as const, label: "Host my place", icon: Home },
 ];
 
-export function RegisterForm() {
+function RegisterFormInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,11 +56,11 @@ export function RegisterForm() {
     setLoading(false);
 
     if (result?.error) {
-      router.push("/login");
+      router.push(callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login");
       return;
     }
 
-    router.push(role === "HOST" ? "/host/dashboard" : "/");
+    router.push(callbackUrl ?? (role === "HOST" ? "/host/dashboard" : "/"));
     router.refresh();
   }
 
@@ -141,10 +143,21 @@ export function RegisterForm() {
 
       <p className="mt-6 text-center text-sm text-zinc-600">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-brand-700 hover:underline">
+        <Link
+          href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
+          className="font-medium text-brand-700 hover:underline"
+        >
           Log in
         </Link>
       </p>
     </div>
+  );
+}
+
+export function RegisterForm() {
+  return (
+    <Suspense>
+      <RegisterFormInner />
+    </Suspense>
   );
 }

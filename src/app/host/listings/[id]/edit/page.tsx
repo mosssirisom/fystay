@@ -43,6 +43,7 @@ export default async function EditListingPage({
           description: listing.description,
           city: listing.city,
           country: listing.country,
+          propertyType: listing.propertyType,
           address: listing.address ?? "",
           pricePerNight: (listing.pricePerNightCents / 100).toString(),
           cleaningFee: listing.cleaningFeeCents > 0 ? (listing.cleaningFeeCents / 100).toString() : "",

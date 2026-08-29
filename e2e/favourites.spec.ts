@@ -1,0 +1,148 @@
+import { test, expect } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
+import { generateBookingReference } from "../src/lib/bookingReference";
+
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file, so assume the environment already has DATABASE_URL set
+}
+
+const prisma = new PrismaClient();
+
+test.describe("favourites / wishlist", () => {
+  let hostId: string;
+  let guestId: string;
+
+  test.beforeAll(async () => {
+    const host = await prisma.user.findUniqueOrThrow({ where: { email: "host@fystay.dev" } });
+    const guest = await prisma.user.findUniqueOrThrow({ where: { email: "guest@fystay.dev" } });
+    hostId = host.id;
+    guestId = guest.id;
+  });
+
+  test.afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  async function createListing() {
+    return prisma.listing.create({
+      data: {
+        title: `E2E fixture: favourites listing ${generateBookingReference()}`,
+        description: "Temporary listing for the favourites/wishlist flow tests.",
+        city: "FavouritesTestCity",
+        country: "England",
+        propertyType: "VILLA",
+        pricePerNightCents: 12000,
+        maxGuests: 4,
+        photos: [],
+        amenities: [],
+        hostId,
+      },
+    });
+  }
+
+  test("a logged-out visitor gets a friendly sign-in/create-account prompt, not a silent redirect", async ({
+    page,
+  }) => {
+    const listing = await createListing();
+
+    try {
+      await page.goto(`/listings/${listing.id}`);
+      await page.getByRole("button", { name: "Save to wishlist" }).click();
+
+      const dialog = page.getByRole("dialog", { name: "Save this property" });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByText(/Sign in or create a free account/)).toBeVisible();
+      await expect(dialog.getByRole("link", { name: "Log in" })).toBeVisible();
+      await expect(dialog.getByRole("link", { name: "Create account" })).toBeVisible();
+
+      // The listing was never silently saved against no one.
+      const saved = await prisma.savedListing.findMany({ where: { listingId: listing.id } });
+      expect(saved).toHaveLength(0);
+
+      // Following "Log in" takes them to the real login page, preserving
+      // where they were so they land back on the property after signing in.
+      await dialog.getByRole("link", { name: "Log in" }).click();
+      await page.waitForURL(/\/login\?callbackUrl=/);
+    } finally {
+      await prisma.savedListing.deleteMany({ where: { listingId: listing.id } });
+      await prisma.listing.delete({ where: { id: listing.id } });
+    }
+  });
+
+  test("a signed-up guest lands back on the property they were trying to save", async ({ page }) => {
+    const listing = await createListing();
+    const email = `e2e-favourite-signup-${generateBookingReference()}@fystay.dev`.toLowerCase();
+
+    try {
+      await page.goto(`/listings/${listing.id}`);
+      await page.getByRole("button", { name: "Save to wishlist" }).click();
+      await page.getByRole("dialog", { name: "Save this property" }).getByRole("link", { name: "Create account" }).click();
+      await page.waitForURL(/\/register\?callbackUrl=/);
+
+      await page.fill("#name", "New Favourite Fan");
+      await page.fill("#email", email);
+      await page.fill("#password", "newfanpass123");
+      await page.getByRole("button", { name: "Sign up" }).click();
+
+      await page.waitForURL(new RegExp(`/listings/${listing.id}$`));
+    } finally {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (user) {
+        await prisma.savedListing.deleteMany({ where: { userId: user.id } });
+        await prisma.user.delete({ where: { id: user.id } });
+      }
+      await prisma.savedListing.deleteMany({ where: { listingId: listing.id } });
+      await prisma.listing.delete({ where: { id: listing.id } });
+    }
+  });
+
+  test("a logged-in guest can save from the property page and see it on My Favourites with its type, then remove it", async ({
+    page,
+  }) => {
+    const listing = await createListing();
+    await prisma.savedListing.deleteMany({ where: { userId: guestId, listingId: listing.id } });
+
+    try {
+      await page.goto("/login");
+      await page.fill("#email", "guest@fystay.dev");
+      await page.fill("#password", "guestpass123");
+      await page.click("button[type=submit]");
+      await page.waitForURL("/");
+
+      await page.goto(`/listings/${listing.id}`);
+      await page.getByRole("button", { name: "Save to wishlist" }).click();
+      await expect(page.getByRole("button", { name: "Remove from wishlist" })).toBeVisible();
+
+      await page.goto("/wishlist");
+      await expect(page.getByRole("heading", { name: "My Favourites" })).toBeVisible();
+      await expect(page.getByText(listing.title)).toBeVisible();
+      await expect(page.getByText("FavouritesTestCity, England")).toBeVisible();
+      await expect(page.getByText("Villa", { exact: true })).toBeVisible();
+      await expect(page.getByText("£120")).toBeVisible();
+
+      // Clicking through the card returns to the property page.
+      await page.getByText(listing.title).click();
+      await page.waitForURL(new RegExp(`/listings/${listing.id}$`));
+
+      // Real, DB-backed persistence: reloading the property page still
+      // shows it saved (not a local-only, per-tab flag).
+      await expect(page.getByRole("button", { name: "Remove from wishlist" })).toBeVisible();
+
+      // Remove it via the explicit Remove button on the favourites page.
+      await page.goto("/wishlist");
+      await page.getByRole("button", { name: "Remove", exact: true }).click();
+      await expect(page.getByText("Removed from wishlist")).toBeVisible();
+      await expect(page.getByText("No saved stays yet")).toBeVisible();
+
+      const remaining = await prisma.savedListing.findMany({
+        where: { userId: guestId, listingId: listing.id },
+      });
+      expect(remaining).toHaveLength(0);
+    } finally {
+      await prisma.savedListing.deleteMany({ where: { userId: guestId, listingId: listing.id } });
+      await prisma.listing.delete({ where: { id: listing.id } });
+    }
+  });
+});

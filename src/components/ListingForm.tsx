@@ -11,10 +11,12 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { resolveCancellationPolicy, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
+import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL, type PropertyType } from "@/lib/propertyType";
 
 export type ListingFormValues = {
   title: string;
   description: string;
+  propertyType: PropertyType;
   city: string;
   country: string;
   address: string;
@@ -34,6 +36,7 @@ export type ListingFormValues = {
 const emptyValues: ListingFormValues = {
   title: "",
   description: "",
+  propertyType: "APARTMENT",
   city: "",
   country: "",
   address: "",
@@ -96,6 +99,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
     const payload = {
       title: values.title,
       description: values.description,
+      propertyType: values.propertyType,
       city: values.city,
       country: values.country,
       address: values.address || undefined,
@@ -164,6 +168,20 @@ export function ListingForm({ listingId, initialValues }: Props) {
               value={values.description}
               onChange={(e) => update("description", e.target.value)}
             />
+          </Field>
+          <Field>
+            <Label htmlFor="propertyType">Property type</Label>
+            <Select
+              id="propertyType"
+              value={values.propertyType}
+              onChange={(e) => update("propertyType", e.target.value as PropertyType)}
+            >
+              {PROPERTY_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {PROPERTY_TYPE_LABEL[type]}
+                </option>
+              ))}
+            </Select>
           </Field>
         </CardContent>
       </Card>

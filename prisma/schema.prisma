@@ -52,6 +52,15 @@ enum ChangeRequestStatus {
   DECLINED
 }
 
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  COTTAGE
+  VILLA
+  STUDIO
+  OTHER
+}
+
 // PUBLISHED reviews are the only ones any read path should ever return.
 // REMOVED exists so a future admin-moderation action has somewhere to land
 // without deleting the row outright (preserving the report history that led
@@ -110,6 +119,7 @@ model Listing {
   city        String
   country     String
   address     String?
+  propertyType PropertyType @default(OTHER)
   pricePerNightCents Int
   // A flat, once-per-stay fee (housekeeping between guests), separate from
   // the nightly rate. Zero means the host hasn't set one, in which case the

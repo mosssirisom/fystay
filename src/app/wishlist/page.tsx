@@ -7,10 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere } from "@/lib/availability";
 import { Card } from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
-import { ListingCard } from "@/components/ListingCard";
+import { WishlistItem } from "@/components/WishlistItem";
+import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
 import { cn } from "@/lib/cn";
 
-export const metadata: Metadata = { title: "Wishlist", robots: { index: false } };
+export const metadata: Metadata = { title: "My Favourites", robots: { index: false } };
 
 export default async function WishlistPage() {
   const session = await auth();
@@ -38,7 +39,7 @@ export default async function WishlistPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-      <h1 className="text-2xl font-bold">Wishlist</h1>
+      <h1 className="text-2xl font-bold">My Favourites</h1>
 
       {listings.length === 0 ? (
         <Card className="mt-8 flex flex-col items-center gap-3 p-12 text-center">
@@ -54,7 +55,11 @@ export default async function WishlistPage() {
       ) : (
         <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
           {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} isSaved isLoggedIn />
+            <WishlistItem
+              key={listing.id}
+              listing={listing}
+              propertyTypeLabel={PROPERTY_TYPE_LABEL[listing.propertyType]}
+            />
           ))}
         </div>
       )}

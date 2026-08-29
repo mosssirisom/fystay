@@ -1,9 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog } from "@/components/ui/Dialog";
+import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
 export function SaveButton({
@@ -18,7 +21,9 @@ export function SaveButton({
   className?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [saved, setSaved] = useState(initialSaved);
+  const [promptOpen, setPromptOpen] = useState(false);
   // Guards against a second click firing a request while one is already in
   // flight, without blocking the instant visual toggle on the first click.
   const pendingRef = useRef(false);
@@ -29,7 +34,9 @@ export function SaveButton({
     if (pendingRef.current) return;
 
     if (!isLoggedIn) {
-      router.push("/login");
+      // Never fail silently: a logged-out tap gets an explicit prompt to
+      // sign in or create an account, not a surprise redirect.
+      setPromptOpen(true);
       return;
     }
 
@@ -58,23 +65,52 @@ export function SaveButton({
     router.refresh();
   }
 
+  const callbackUrl = pathname || "/";
+
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-pressed={saved}
-      aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
-      className={cn(
-        "focus-ring flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:scale-105",
-        className,
-      )}
-    >
-      <Heart
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-pressed={saved}
+        aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
         className={cn(
-          "h-4.5 w-4.5 transition-transform",
-          saved ? "scale-110 fill-red-500 text-red-500" : "text-zinc-600",
+          "focus-ring flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:scale-105 active:scale-95",
+          className,
         )}
-      />
-    </button>
+      >
+        <Heart
+          className={cn(
+            "h-5 w-5 transition-transform",
+            saved ? "scale-110 fill-red-500 text-red-500" : "text-zinc-600",
+          )}
+        />
+      </button>
+
+      <Dialog open={promptOpen} onClose={() => setPromptOpen(false)} title="Save this property">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-zinc-600">
+            Sign in or create a free account to save properties to your wishlist and find them
+            again on any device.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Link
+              href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              onClick={() => setPromptOpen(false)}
+              className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto")}
+            >
+              Create account
+            </Link>
+            <Link
+              href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              onClick={() => setPromptOpen(false)}
+              className={cn(buttonVariants(), "w-full sm:w-auto")}
+            >
+              Log in
+            </Link>
+          </div>
+        </div>
+      </Dialog>
+    </>
   );
 }

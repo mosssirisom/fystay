@@ -56,7 +56,7 @@ export function ListingCard({
           listingId={listing.id}
           initialSaved={isSaved}
           isLoggedIn={isLoggedIn}
-          className="absolute right-2.5 top-2.5 z-10 h-9 w-9 bg-white/80 shadow-[var(--shadow-card)] backdrop-blur-sm hover:bg-white"
+          className="absolute right-2.5 top-2.5 z-10 h-10 w-10 bg-white/80 shadow-[var(--shadow-card)] backdrop-blur-sm hover:bg-white"
         />
       </div>
       <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-1 rounded-xl">

@@ -9,6 +9,7 @@ const createListingSchema = z
   .object({
     title: z.string().min(3).max(120),
     description: z.string().min(10).max(5000),
+    propertyType: z.enum(["APARTMENT", "HOUSE", "COTTAGE", "VILLA", "STUDIO", "OTHER"]).optional(),
     city: z.string().min(1).max(100),
     country: z.string().min(1).max(100),
     address: z.string().max(200).optional(),

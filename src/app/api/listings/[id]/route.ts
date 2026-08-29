@@ -8,6 +8,7 @@ const updateListingSchema = z
   .object({
     title: z.string().min(3).max(120).optional(),
     description: z.string().min(10).max(5000).optional(),
+    propertyType: z.enum(["APARTMENT", "HOUSE", "COTTAGE", "VILLA", "STUDIO", "OTHER"]).optional(),
     city: z.string().min(1).max(100).optional(),
     country: z.string().min(1).max(100).optional(),
     address: z.string().max(200).optional(),

@@ -12,6 +12,33 @@ import { Button } from "@/components/ui/Button";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { resolveCancellationPolicy, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL, type PropertyType } from "@/lib/propertyType";
+import { cn } from "@/lib/cn";
+
+function AmenityCheckbox({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "focus-ring rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+        active
+          ? "border-brand-600 bg-brand-50 text-brand-800"
+          : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 
 export type ListingFormValues = {
   title: string;
@@ -27,7 +54,7 @@ export type ListingFormValues = {
   beds: string;
   bathrooms: string;
   photos: string[];
-  amenities: string;
+  amenities: string[];
   cancellationPolicy: CancellationPolicyKind;
   customCancellationCutoffDays: string;
   customCancellationRefundPercent: string;
@@ -47,11 +74,50 @@ const emptyValues: ListingFormValues = {
   beds: "1",
   bathrooms: "1",
   photos: [],
-  amenities: "",
+  amenities: [],
   cancellationPolicy: "MODERATE",
   customCancellationCutoffDays: "7",
   customCancellationRefundPercent: "50",
 };
+
+// A curated checklist covering the amenities guests actually filter by
+// (worded to match the regex categories in amenityCategories.ts, so ticking
+// one here is guaranteed to be found by that filter) plus other common
+// short-stay amenities. Anything a host has that isn't on this list still
+// has a home in the free-text "Other amenities" field below it.
+const AMENITY_OPTIONS = [
+  "Wifi",
+  "Free parking",
+  "Kitchen",
+  "Washer",
+  "Dryer",
+  "Air conditioning",
+  "Heating",
+  "TV",
+  "Pool",
+  "Hot tub",
+  "Gym",
+  "Pet friendly",
+  "Wheelchair accessible",
+  "Sea view",
+  "Garden",
+  "Balcony",
+  "BBQ grill",
+  "Fireplace",
+  "Dedicated workspace",
+  "EV charger",
+];
+
+function splitAmenities(amenities: string[]): { selected: string[]; custom: string } {
+  const selected: string[] = [];
+  const custom: string[] = [];
+  for (const amenity of amenities) {
+    const match = AMENITY_OPTIONS.find((option) => option.toLowerCase() === amenity.toLowerCase());
+    if (match) selected.push(match);
+    else custom.push(amenity);
+  }
+  return { selected, custom: custom.join(", ") };
+}
 
 const POLICY_PREVIEWS: Record<Exclude<CancellationPolicyKind, "CUSTOM">, string> = {
   FLEXIBLE: resolveCancellationPolicy({ cancellationPolicy: "FLEXIBLE" }).description,
@@ -67,12 +133,24 @@ type Props = {
 export function ListingForm({ listingId, initialValues }: Props) {
   const router = useRouter();
   const [values, setValues] = useState<ListingFormValues>(initialValues ?? emptyValues);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
+    () => splitAmenities(initialValues?.amenities ?? []).selected,
+  );
+  const [customAmenities, setCustomAmenities] = useState<string>(
+    () => splitAmenities(initialValues?.amenities ?? []).custom,
+  );
   const [pastedUrl, setPastedUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   function update<K extends keyof ListingFormValues>(key: K, value: ListingFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function toggleAmenity(amenity: string) {
+    setSelectedAmenities((prev) =>
+      prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity],
+    );
   }
 
   function addPastedUrl() {
@@ -110,10 +188,15 @@ export function ListingForm({ listingId, initialValues }: Props) {
       beds: Number(values.beds),
       bathrooms: Number(values.bathrooms),
       photos: values.photos,
-      amenities: values.amenities
-        .split(",")
-        .map((a) => a.trim())
-        .filter(Boolean),
+      amenities: Array.from(
+        new Set([
+          ...selectedAmenities,
+          ...customAmenities
+            .split(",")
+            .map((a) => a.trim())
+            .filter(Boolean),
+        ]),
+      ),
       cancellationPolicy: values.cancellationPolicy,
       ...(values.cancellationPolicy === "CUSTOM"
         ? {
@@ -336,14 +419,28 @@ export function ListingForm({ listingId, initialValues }: Props) {
             </details>
           </Field>
           <Field>
-            <Label htmlFor="amenities">Amenities</Label>
-            <Input
-              id="amenities"
-              value={values.amenities}
-              onChange={(e) => update("amenities", e.target.value)}
-              placeholder="Wifi, Kitchen, Free parking"
-            />
-            <FieldHint>Comma separated.</FieldHint>
+            <Label>Amenities</Label>
+            <div className="flex flex-wrap gap-2">
+              {AMENITY_OPTIONS.map((amenity) => (
+                <AmenityCheckbox
+                  key={amenity}
+                  active={selectedAmenities.includes(amenity)}
+                  onClick={() => toggleAmenity(amenity)}
+                >
+                  {amenity}
+                </AmenityCheckbox>
+              ))}
+            </div>
+            <div className="mt-3">
+              <Label htmlFor="customAmenities">Other amenities</Label>
+              <Input
+                id="customAmenities"
+                value={customAmenities}
+                onChange={(e) => setCustomAmenities(e.target.value)}
+                placeholder="Sea view, Garden, EV charger"
+              />
+              <FieldHint>Comma separated - for anything not listed above.</FieldHint>
+            </div>
           </Field>
         </CardContent>
       </Card>

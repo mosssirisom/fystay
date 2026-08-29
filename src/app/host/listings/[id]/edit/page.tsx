@@ -52,7 +52,7 @@ export default async function EditListingPage({
           beds: listing.beds.toString(),
           bathrooms: listing.bathrooms.toString(),
           photos: listing.photos,
-          amenities: listing.amenities.join(", "),
+          amenities: listing.amenities,
           cancellationPolicy: listing.cancellationPolicy,
           customCancellationCutoffDays: (listing.customCancellationCutoffDays ?? 7).toString(),
           customCancellationRefundPercent: (

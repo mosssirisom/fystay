@@ -27,6 +27,12 @@ test("host can create, edit, and delete a listing", async ({ page }) => {
   );
   await page.getByRole("button", { name: "Add", exact: true }).click();
 
+  // Amenity checkboxes plus the free-text "Other" field must both actually
+  // persist, not just visually toggle.
+  await page.getByRole("button", { name: "Wifi", exact: true }).click();
+  await page.getByRole("button", { name: "Pet friendly", exact: true }).click();
+  await page.getByPlaceholder("Sea view, Garden, EV charger").fill("Ping pong table");
+
   await page.getByRole("button", { name: "Create listing" }).click();
   await page.waitForURL("/host/dashboard");
   // Each listing row also renders a (hidden) delete-confirmation dialog
@@ -37,6 +43,24 @@ test("host can create, edit, and delete a listing", async ({ page }) => {
   const row = page.locator(".p-4").filter({ hasText: uniqueTitle });
   await row.getByRole("link", { name: "Edit" }).click();
   await page.waitForURL(/\/host\/listings\/.+\/edit/);
+
+  // The ticked amenities and custom text should come back pre-populated
+  // from the database, proving the checkboxes genuinely saved.
+  await expect(page.getByRole("button", { name: "Wifi", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: "Pet friendly", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: "Kitchen", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await expect(page.getByPlaceholder("Sea view, Garden, EV charger")).toHaveValue(
+    "Ping pong table",
+  );
 
   await page.fill("#title", updatedTitle);
   await page.getByRole("button", { name: "Save changes" }).click();

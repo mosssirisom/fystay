@@ -12,3 +12,91 @@ export function canReviewBooking(booking: ReviewableBooking, now: Date = new Dat
     !booking.review
   );
 }
+
+/** Only the listing's own host may reply to a review left on it. */
+export function canRespondToReview(params: {
+  listingHostId: string;
+  currentUserId: string;
+}): boolean {
+  return params.listingHostId === params.currentUserId;
+}
+
+/** A guest can report any review but their own, and at most once each. */
+export function canReportReview(params: {
+  reviewAuthorId: string;
+  currentUserId: string;
+  alreadyReported: boolean;
+}): boolean {
+  return params.reviewAuthorId !== params.currentUserId && !params.alreadyReported;
+}
+
+export const REVIEW_CATEGORIES = [
+  "cleanliness",
+  "accuracy",
+  "communication",
+  "location",
+  "value",
+] as const;
+
+export type ReviewCategory = (typeof REVIEW_CATEGORIES)[number];
+
+export type RatableReview = {
+  rating: number;
+  cleanlinessRating?: number | null;
+  accuracyRating?: number | null;
+  communicationRating?: number | null;
+  locationRating?: number | null;
+  valueRating?: number | null;
+};
+
+export type RatingBreakdown = {
+  count: number;
+  /** Null when there are no reviews yet - never fabricated as 0. */
+  average: number | null;
+  /** Count of reviews at each star value, 5 down to 1. */
+  starCounts: Record<1 | 2 | 3 | 4 | 5, number>;
+  /** Each category's average, or null if no review rated that category. */
+  categoryAverages: Record<ReviewCategory, number | null>;
+};
+
+const CATEGORY_FIELD: Record<ReviewCategory, keyof RatableReview> = {
+  cleanliness: "cleanlinessRating",
+  accuracy: "accuracyRating",
+  communication: "communicationRating",
+  location: "locationRating",
+  value: "valueRating",
+};
+
+/**
+ * The single source of truth for turning a listing's reviews into the
+ * summary shown at the top of the property page (overall average, the
+ * star-count breakdown) and the per-category averages shown alongside it.
+ * A category average only counts reviews that actually rated that category,
+ * never defaulting a missing rating to 0.
+ */
+export function computeRatingBreakdown(reviews: RatableReview[]): RatingBreakdown {
+  const starCounts: RatingBreakdown["starCounts"] = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  for (const review of reviews) {
+    const rounded = Math.min(5, Math.max(1, Math.round(review.rating))) as 1 | 2 | 3 | 4 | 5;
+    starCounts[rounded] += 1;
+  }
+
+  const average =
+    reviews.length === 0
+      ? null
+      : reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+  const categoryAverages = Object.fromEntries(
+    REVIEW_CATEGORIES.map((category) => {
+      const field = CATEGORY_FIELD[category];
+      const values = reviews
+        .map((r) => r[field])
+        .filter((v): v is number => typeof v === "number");
+      const categoryAverage =
+        values.length === 0 ? null : values.reduce((sum, v) => sum + v, 0) / values.length;
+      return [category, categoryAverage];
+    }),
+  ) as Record<ReviewCategory, number | null>;
+
+  return { count: reviews.length, average, starCounts, categoryAverages };
+}

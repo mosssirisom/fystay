@@ -65,7 +65,9 @@ test("guest can leave a review for a completed stay", async ({ page }) => {
     // can match another booking of the same listing, e.g. the seeded demo review.)
     await page.locator(".p-4").first().getByRole("button", { name: "Leave a review" }).click();
 
-    await page.getByRole("radio", { name: "5 stars" }).click();
+    // Scoped to the overall rating: each optional category picker
+    // (Cleanliness, Accuracy, ...) has its own identically-labelled radios.
+    await page.getByRole("radiogroup", { name: "Overall rating" }).getByRole("radio", { name: "5 stars" }).click();
     await page.locator("textarea").fill(comment);
     await page.getByRole("button", { name: "Submit review" }).click();
 

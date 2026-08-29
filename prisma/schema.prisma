@@ -52,6 +52,22 @@ enum ChangeRequestStatus {
   DECLINED
 }
 
+// PUBLISHED reviews are the only ones any read path should ever return.
+// REMOVED exists so a future admin-moderation action has somewhere to land
+// without deleting the row outright (preserving the report history that led
+// to it). There's no UI to set this yet - it's here so a later moderation
+// task doesn't need another migration.
+enum ReviewStatus {
+  PUBLISHED
+  REMOVED
+}
+
+enum ReviewReportStatus {
+  OPEN
+  DISMISSED
+  ACTIONED
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -67,6 +83,7 @@ model User {
   reviews  Review[]
   savedListings SavedListing[]
   passwordResetTokens PasswordResetToken[]
+  reviewReports ReviewReport[]
 }
 
 // A single-use, time-limited token for the "forgot password" flow. Only a
@@ -245,9 +262,24 @@ model BookingChangeRequest {
 
 model Review {
   id        String   @id @default(cuid())
+  // Overall rating - always required. The five below are each optional:
+  // a guest may rate as many or as few aspects of the stay as they like.
   rating    Int
   comment   String
   createdAt DateTime @default(now())
+
+  cleanlinessRating   Int?
+  accuracyRating      Int?
+  communicationRating Int?
+  locationRating      Int?
+  valueRating         Int?
+
+  // The host's reply, shown under the review. Nullable/unset until the host
+  // responds; re-savable, so respondedAt reflects the most recent edit.
+  hostResponse    String?
+  hostRespondedAt DateTime?
+
+  status ReviewStatus @default(PUBLISHED)
 
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
@@ -255,11 +287,37 @@ model Review {
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  // One review per completed stay.
+  // One review per completed stay - this FK is also what makes every review
+  // in the system a "verified stay": there is no path to create a Review
+  // that isn't tied to a real Booking by this same guest.
   bookingId String  @unique
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
+  reports ReviewReport[]
+
   @@index([listingId])
+}
+
+// A guest's flag on a review for moderation attention. Reporting is real
+// (POST /api/reviews/[id]/report); acting on a report (dismissing it,
+// setting the review's status to REMOVED, or surfacing it in an admin queue)
+// is not yet built, but the data those later features need already exists.
+model ReviewReport {
+  id        String             @id @default(cuid())
+  reason    String
+  details   String?
+  status    ReviewReportStatus @default(OPEN)
+  createdAt DateTime           @default(now())
+
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  reporterId String
+  reporter   User   @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  // A guest can flag a given review at most once.
+  @@unique([reviewId, reporterId])
+  @@index([reviewId])
 }
 
 model SavedListing {

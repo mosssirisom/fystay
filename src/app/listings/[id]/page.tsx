@@ -9,6 +9,7 @@ import { BookingWidget } from "@/components/BookingWidget";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
+import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
 import { SaveButton } from "@/components/SaveButton";
 import { Avatar } from "@/components/ui/Avatar";
@@ -28,7 +29,8 @@ const getListing = cache(async (id: string) => {
         select: { startDate: true, endDate: true },
       },
       reviews: {
-        include: { author: { select: { name: true } } },
+        where: { status: "PUBLISHED" },
+        include: { author: { select: { id: true, name: true } } },
         orderBy: { createdAt: "desc" },
       },
     },
@@ -85,6 +87,20 @@ export default async function ListingDetailPage({
         }),
       )
     : false;
+
+  const reportedReviewIds = session?.user
+    ? new Set(
+        (
+          await prisma.reviewReport.findMany({
+            where: {
+              reporterId: session.user.id,
+              reviewId: { in: listing.reviews.map((r) => r.id) },
+            },
+            select: { reviewId: true },
+          })
+        ).map((r) => r.reviewId),
+      )
+    : new Set<string>();
 
   const stats = [
     { icon: Users, label: `${listing.maxGuests} guest${listing.maxGuests > 1 ? "s" : ""}` },
@@ -174,7 +190,21 @@ export default async function ListingDetailPage({
             </>
           )}
 
-          <ReviewList reviews={listing.reviews} />
+          {listing.reviews.length > 0 && (
+            <>
+              <hr className="my-6 border-border-subtle" />
+              <h2 className="text-lg font-semibold text-foreground">Reviews</h2>
+              <div className="mt-4">
+                <ReviewSummary reviews={listing.reviews} />
+              </div>
+              <ReviewList
+                reviews={listing.reviews}
+                hostName={listing.host.name}
+                viewerId={session?.user?.id}
+                reportedReviewIds={reportedReviewIds}
+              />
+            </>
+          )}
         </div>
 
         <div id="booking-widget">

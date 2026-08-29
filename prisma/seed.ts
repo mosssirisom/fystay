@@ -201,6 +201,11 @@ async function main() {
       listingId: reviewedListing.id,
       authorId: guest.id,
       rating: 5,
+      cleanlinessRating: 5,
+      accuracyRating: 5,
+      communicationRating: 5,
+      locationRating: 5,
+      valueRating: 4,
       comment:
         "Wonderful stay right by the seafront. Spotless, comfortable, and the host was brilliant. Would book again in a heartbeat.",
     },

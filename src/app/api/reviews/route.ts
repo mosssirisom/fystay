@@ -4,10 +4,17 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { canReviewBooking } from "@/lib/reviews";
 
+const categoryRating = z.number().int().min(1).max(5).optional();
+
 const createReviewSchema = z.object({
   bookingId: z.string().min(1),
   rating: z.number().int().min(1).max(5),
   comment: z.string().min(10).max(2000),
+  cleanlinessRating: categoryRating,
+  accuracyRating: categoryRating,
+  communicationRating: categoryRating,
+  locationRating: categoryRating,
+  valueRating: categoryRating,
 });
 
 export async function POST(request: Request) {
@@ -47,6 +54,11 @@ export async function POST(request: Request) {
     data: {
       rating: parsed.data.rating,
       comment: parsed.data.comment,
+      cleanlinessRating: parsed.data.cleanlinessRating,
+      accuracyRating: parsed.data.accuracyRating,
+      communicationRating: parsed.data.communicationRating,
+      locationRating: parsed.data.locationRating,
+      valueRating: parsed.data.valueRating,
       listingId: booking.listingId,
       authorId: session.user.id,
       bookingId: booking.id,

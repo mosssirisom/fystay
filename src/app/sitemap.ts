@@ -3,15 +3,21 @@ import { prisma } from "@/lib/prisma";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-// Without this, the sitemap is generated once at build time and never
-// reflects listings created/unpublished afterward.
-export const revalidate = 3600;
+// Rendered per-request rather than prerendered at build time: a build
+// machine isn't guaranteed the same database access as the deployed
+// serverless functions, so a build-time query here would make the whole
+// site's build fragile on something unrelated to the actual code.
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const listings = await prisma.listing.findMany({
-    where: { published: true },
-    select: { id: true, updatedAt: true },
-  });
+  // A sitemap is non-critical: if the database is briefly unreachable,
+  // degrade to just the homepage entry rather than failing the request.
+  const listings = await prisma.listing
+    .findMany({
+      where: { published: true },
+      select: { id: true, updatedAt: true },
+    })
+    .catch(() => []);
 
   return [
     {

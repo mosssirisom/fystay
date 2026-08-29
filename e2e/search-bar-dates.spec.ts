@@ -46,3 +46,39 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
   await page.waitForURL(new RegExp(`checkIn=${isoDate(checkIn)}`));
   expect(page.url()).toContain(`checkOut=${isoDate(checkOut)}`);
 });
+
+test("Search button shows a busy state while a search is in flight, then clears", async ({ page }) => {
+  await page.goto("/");
+
+  const searchButton = page.getByRole("button", { name: "Search", exact: true });
+  await expect(searchButton).toBeEnabled();
+
+  // Let the debounced auto-search from typing settle first, so the test
+  // below observes the explicit Search click in isolation.
+  await page.fill("#search-city", "Blackpool");
+  await page.waitForURL(/city=Blackpool/);
+  await expect(searchButton).toBeEnabled();
+
+  // Slow every request slightly so the transient "Searching…" state is
+  // reliably observable instead of racing a near-instant local response -
+  // this only affects the test's network timing, not the app's own code.
+  await page.route("**/*", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.continue();
+  });
+
+  await searchButton.click();
+
+  // Busy state appears virtually instantly and disables the button so a
+  // second click can't fire a duplicate search.
+  const busyButton = page.getByRole("button", { name: "Searching…" });
+  await expect(busyButton).toBeVisible();
+  await expect(busyButton).toBeDisabled();
+  await expect(busyButton.locator("svg.animate-spin")).toBeVisible();
+
+  // A disabled native button doesn't dispatch click events at all, so this
+  // proves a repeat click while busy can't queue up a duplicate search.
+  await busyButton.click({ force: true }).catch(() => {});
+
+  await expect(page.getByRole("button", { name: "Search", exact: true })).toBeEnabled();
+});

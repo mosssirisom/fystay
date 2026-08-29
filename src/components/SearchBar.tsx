@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { MapPin, Search } from "lucide-react";
+import { Loader2, MapPin, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { parseGuestParam, type GuestCounts } from "@/lib/search";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
@@ -39,7 +39,7 @@ function buildSearchQuery(city: string, range: DateRange | undefined, guestCount
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [isSearching, startTransition] = useTransition();
 
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const [range, setRange] = useState<DateRange | undefined>(() => {
@@ -73,6 +73,9 @@ export function SearchBar() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Guards against Enter-key resubmission in browsers that don't already
+    // block implicit submission via a disabled submit button.
+    if (isSearching) return;
     startTransition(() => {
       router.push(`/?${buildSearchQuery(city, range, guestCounts)}`);
     });
@@ -115,10 +118,16 @@ export function SearchBar() {
 
       <button
         type="submit"
-        className="focus-ring flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-800 sm:w-auto sm:shrink-0 sm:py-2.5"
+        disabled={isSearching}
+        aria-busy={isSearching}
+        className="focus-ring flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-90 sm:w-auto sm:shrink-0 sm:py-2.5"
       >
-        <Search className="h-4 w-4" />
-        Search
+        {isSearching ? (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        ) : (
+          <Search className="h-4 w-4" aria-hidden />
+        )}
+        <span aria-live="polite">{isSearching ? "Searching…" : "Search"}</span>
       </button>
     </form>
   );

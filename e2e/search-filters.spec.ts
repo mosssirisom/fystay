@@ -128,17 +128,29 @@ test("minimum rating filter excludes listings with no qualifying reviews", async
 });
 
 test("sorting by price low to high genuinely reorders results", async ({ page }) => {
-  await page.goto("/?sort=price_asc");
+  // Asserts the relative order of the three known seeded listings rather
+  // than the exact full result set: this page shows every published
+  // listing with no city/other filter, so under fullyParallel test runs
+  // against the shared dev database it can transiently include another
+  // spec's own temporary fixture listing too. That's not what this test is
+  // checking - it only cares that price sorting genuinely reorders results.
+  async function assertPriceOrder(url: string, expectedOrder: string[]) {
+    await page.goto(url);
+    const titles = page.locator("main p.truncate.font-medium");
+    await expect(titles.first()).toBeVisible();
+    const allTitles = await titles.allTextContents();
+    const indices = expectedOrder.map((title) => allTitles.indexOf(title));
+    expect(indices, `expected every listing in ${JSON.stringify(expectedOrder)} to be present, got ${JSON.stringify(allTitles)}`).not.toContain(-1);
+    expect(indices).toEqual([...indices].sort((a, b) => a - b));
+  }
 
-  const titles = page.locator("main p.truncate.font-medium");
-  await expect(titles).toHaveText([
+  await assertPriceOrder("/?sort=price_asc", [
     "Cosy cottage near Fleetwood Marina",
     "Seafront apartment overlooking Blackpool promenade",
     "Elegant Victorian townhouse in Lytham St Annes",
   ]);
 
-  await page.goto("/?sort=price_desc");
-  await expect(titles).toHaveText([
+  await assertPriceOrder("/?sort=price_desc", [
     "Elegant Victorian townhouse in Lytham St Annes",
     "Seafront apartment overlooking Blackpool promenade",
     "Cosy cottage near Fleetwood Marina",

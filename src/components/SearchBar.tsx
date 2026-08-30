@@ -4,19 +4,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { Loader2, MapPin, Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { parseGuestParam, type GuestCounts } from "@/lib/search";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { SearchDateRangeField } from "@/components/SearchDateRangeField";
+import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 
 // How long to wait after the last change before auto-searching, so typing
 // a city or clicking +/- on guests a few times in a row doesn't fire a
 // request per keystroke/click.
 const SEARCH_DEBOUNCE_MS = 350;
-
-const fieldClasses =
-  "focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-sm text-foreground placeholder:text-zinc-500";
 
 function parseDateParam(value: string | null): Date | undefined {
   if (!value) return undefined;
@@ -42,6 +40,11 @@ export function SearchBar() {
   const [isSearching, startTransition] = useTransition();
 
   const [city, setCity] = useState(searchParams.get("city") ?? "");
+  // Set only when the "Where" field's selection was a specific hotel/property
+  // from the autocomplete dropdown, so Search can route straight to that
+  // listing instead of a city-filtered results page. Any further free typing
+  // clears it, since the field no longer reflects that exact selection.
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [range, setRange] = useState<DateRange | undefined>(() => {
     const from = parseDateParam(searchParams.get("checkIn"));
     const to = parseDateParam(searchParams.get("checkOut"));
@@ -56,8 +59,13 @@ export function SearchBar() {
 
   // Search live as fields change, debounced, so results update without
   // waiting for an explicit "Search" click. The results grid's own Suspense
-  // fallback (a skeleton) is what shows the "searching" state.
+  // fallback (a skeleton) is what shows the "searching" state. Skipped while
+  // a specific hotel/property is selected: the field holds that hotel's
+  // name rather than a real city, so a city-filtered auto-search would find
+  // nothing - Search instead routes straight to that listing.
   useEffect(() => {
+    if (selectedListingId) return;
+
     const nextQuery = buildSearchQuery(city, range, guestCounts);
     if (nextQuery === searchParams.toString()) return;
 
@@ -69,7 +77,7 @@ export function SearchBar() {
 
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- router/searchParams/startTransition are stable
-  }, [city, range, guestCounts]);
+  }, [city, range, guestCounts, selectedListingId]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,8 +85,17 @@ export function SearchBar() {
     // block implicit submission via a disabled submit button.
     if (isSearching) return;
     startTransition(() => {
-      router.push(`/?${buildSearchQuery(city, range, guestCounts)}`);
+      if (selectedListingId) {
+        router.push(`/listings/${selectedListingId}`);
+      } else {
+        router.push(`/?${buildSearchQuery(city, range, guestCounts)}`);
+      }
     });
+  }
+
+  function handleCityChange(next: string) {
+    setCity(next);
+    setSelectedListingId(null);
   }
 
   return (
@@ -89,22 +106,21 @@ export function SearchBar() {
       )}
     >
       <div className="flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle">
-        <label
-          htmlFor="search-city"
-          className="flex flex-1 cursor-text items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-surface-muted sm:py-1.5"
-        >
-          <MapPin className="h-4 w-4 shrink-0 text-zinc-400" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-[11px] font-semibold text-foreground">Where</span>
-            <input
-              id="search-city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Search destinations"
-              className={fieldClasses}
-            />
-          </span>
-        </label>
+        <DestinationAutocomplete
+          id="search-city"
+          value={city}
+          onChange={handleCityChange}
+          onSelect={(payload) => {
+            if (payload.type === "destination") {
+              setCity(payload.city);
+              setSelectedListingId(null);
+            } else {
+              setCity(payload.title);
+              setSelectedListingId(payload.listingId);
+            }
+          }}
+          className="flex-1"
+        />
 
         <SearchDateRangeField range={range} onChange={setRange} className="flex-1" />
 

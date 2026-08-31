@@ -2,9 +2,8 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import { auth } from "@/auth";
 import { UserMenu } from "@/components/UserMenu";
+import { GuestMenu } from "@/components/GuestMenu";
 import { Logo } from "@/components/Logo";
-import { buttonVariants } from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
 
 export async function Navbar() {
   const session = await auth();
@@ -23,17 +22,7 @@ export async function Navbar() {
           {session?.user ? (
             <UserMenu name={session.user.name ?? "Account"} role={session.user.role} />
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="px-3 py-2 text-sm font-medium text-zinc-700 hover:text-brand-700"
-              >
-                Log in
-              </Link>
-              <Link href="/register" className={cn(buttonVariants({ size: "sm" }))}>
-                Sign up
-              </Link>
-            </>
+            <GuestMenu />
           )}
         </nav>
       </div>

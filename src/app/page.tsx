@@ -4,11 +4,13 @@ import { Lock, MapPin, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
+import { HeroBanner } from "@/components/HeroBanner";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
 import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
+import { firstName, timeOfDayGreeting } from "@/lib/greeting";
 
 const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
 
@@ -90,69 +92,96 @@ async function MarketplaceSections() {
 }
 
 export default async function Home() {
+  const session = await auth();
+  const greetingName = session?.user?.name ? firstName(session.user.name) : null;
+
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-      <div className="mx-auto mb-6 max-w-2xl text-center">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-          Stay local. Book with FY Stay.
-        </h1>
-        <p className="mt-2 text-sm text-zinc-500 sm:text-base">
-          Discover independent accommodation across Blackpool and the Fylde Coast. A local
-          alternative to the big booking platforms.
-        </p>
-      </div>
-      <Suspense>
-        <SearchBar liveUpdate={false} />
-      </Suspense>
-
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-center">
-        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-          Now covering
-        </span>
-        {FYLDE_COAST_AREAS.map((area) => (
-          <Badge key={area} variant="neutral">
-            {area}
-          </Badge>
-        ))}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-          Popular stays on the Fylde Coast
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Hand-picked local places to stay, ready to book today.
-        </p>
-        <div className="mt-6">
-          <Suspense fallback={<ListingsCarouselSkeleton />}>
-            <ListingsGrid searchParams={{}} showResultsView={false} />
-          </Suspense>
+    <>
+      {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
+          container below so it spans the entire viewport width. */}
+      <section className="relative h-[220px] w-full overflow-hidden sm:h-[300px]">
+        <HeroBanner className="absolute inset-0 h-full w-full" />
+        <div className="absolute left-4 top-4 sm:left-8 sm:top-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)]">
+            <MapPin className="h-4 w-4 text-brand-700" aria-hidden />
+            Blackpool, Fylde Coast
+          </span>
         </div>
-      </div>
+      </section>
 
-      <Suspense fallback={null}>
-        <MarketplaceSections />
-      </Suspense>
-
-      <div className="mt-14 border-t border-border-subtle pt-10">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why book with FY Stay?</h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            A more personal, more local way to book a stay on the Fylde Coast.
-          </p>
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
+        {/* Pulled up over the banner's bottom edge so the search card reads
+            as sitting on top of the scene, the way a native app's home
+            screen often overlaps its hero photo with a content sheet. */}
+        <div className="relative z-10 -mt-14 rounded-3xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-popover)] sm:-mt-20 sm:p-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+              {greetingName
+                ? `Good ${timeOfDayGreeting()}, ${greetingName}`
+                : "Stay local. Book with FY Stay."}
+            </h1>
+            <p className="mt-2 text-sm text-zinc-500 sm:text-base">
+              {greetingName
+                ? "What would you like to do today?"
+                : "Discover independent accommodation across Blackpool and the Fylde Coast. A local alternative to the big booking platforms."}
+            </p>
+          </div>
+          <div className="mt-6">
+            <Suspense>
+              <SearchBar liveUpdate={false} />
+            </Suspense>
+          </div>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="flex items-start gap-3">
-              <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">{title}</p>
-                <p className="mt-0.5 text-sm text-zinc-500">{description}</p>
-              </div>
-            </div>
+
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-center">
+          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+            Now covering
+          </span>
+          {FYLDE_COAST_AREAS.map((area) => (
+            <Badge key={area} variant="neutral">
+              {area}
+            </Badge>
           ))}
         </div>
+
+        <div className="mt-10">
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+            Popular stays on the Fylde Coast
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Hand-picked local places to stay, ready to book today.
+          </p>
+          <div className="mt-6">
+            <Suspense fallback={<ListingsCarouselSkeleton />}>
+              <ListingsGrid searchParams={{}} showResultsView={false} />
+            </Suspense>
+          </div>
+        </div>
+
+        <Suspense fallback={null}>
+          <MarketplaceSections />
+        </Suspense>
+
+        <div className="mt-14 border-t border-border-subtle pt-10">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why book with FY Stay?</h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              A more personal, more local way to book a stay on the Fylde Coast.
+            </p>
+          </div>
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
+              <div key={title} className="flex items-start gap-3">
+                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{title}</p>
+                  <p className="mt-0.5 text-sm text-zinc-500">{description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -44,7 +44,18 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
 
   await page.getByRole("button", { name: "Search" }).click();
   await page.waitForURL(new RegExp(`checkIn=${isoDate(checkIn)}`));
+  expect(page.url()).toContain("/search?");
   expect(page.url()).toContain(`checkOut=${isoDate(checkOut)}`);
+});
+
+test("pressing Search on the homepage navigates to the dedicated results page", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Stay local. Book with FY Stay." })).toBeVisible();
+
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Search results" })).toBeVisible();
+  expect(page.url()).toContain("/search");
 });
 
 test("Search button shows a busy state while a search is in flight, then clears", async ({ page }) => {
@@ -53,11 +64,12 @@ test("Search button shows a busy state while a search is in flight, then clears"
   const searchButton = page.getByRole("button", { name: "Search", exact: true });
   await expect(searchButton).toBeEnabled();
 
-  // Let the debounced auto-search from typing settle first, so the test
-  // below observes the explicit Search click in isolation.
+  // The homepage's field doesn't auto-navigate as you type (that only
+  // happens on the /search results page itself), so typing alone shouldn't
+  // have moved the page yet.
   await page.fill("#search-city", "Blackpool");
-  await page.waitForURL(/city=Blackpool/);
   await expect(searchButton).toBeEnabled();
+  expect(page.url()).not.toContain("city=Blackpool");
 
   // Slow every request slightly so the transient "Searching…" state is
   // reliably observable instead of racing a near-instant local response -
@@ -81,4 +93,6 @@ test("Search button shows a busy state while a search is in flight, then clears"
   await busyButton.click({ force: true }).catch(() => {});
 
   await expect(page.getByRole("button", { name: "Search", exact: true })).toBeEnabled();
+  // Landed on the dedicated results page, not still on the homepage.
+  await page.waitForURL(/\/search\?.*city=Blackpool/);
 });

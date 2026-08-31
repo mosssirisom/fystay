@@ -1,11 +1,12 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Select } from "@/components/ui/Select";
 import { SORT_OPTIONS, parseSortParam } from "@/lib/listingSearch";
 
 export function SortDropdown() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentSort = parseSortParam(searchParams.get("sort") ?? undefined);
 
@@ -13,7 +14,7 @@ export function SortDropdown() {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "recommended") params.delete("sort");
     else params.set("sort", value);
-    router.push(`/?${params.toString()}`, { scroll: false });
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (

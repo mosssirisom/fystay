@@ -16,6 +16,10 @@ import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 // request per keystroke/click.
 const SEARCH_DEBOUNCE_MS = 350;
 
+// A search always lands on the dedicated results page, matching how other
+// booking sites separate the marketing homepage from search results.
+const SEARCH_RESULTS_PATH = "/search";
+
 function parseDateParam(value: string | null): Date | undefined {
   if (!value) return undefined;
   const date = new Date(value);
@@ -34,7 +38,7 @@ function buildSearchQuery(city: string, range: DateRange | undefined, guestCount
   return params.toString();
 }
 
-export function SearchBar() {
+export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSearching, startTransition] = useTransition();
@@ -57,27 +61,30 @@ export function SearchBar() {
     pets: parseGuestParam(searchParams.get("pets") ?? undefined, 0),
   });
 
-  // Search live as fields change, debounced, so results update without
-  // waiting for an explicit "Search" click. The results grid's own Suspense
-  // fallback (a skeleton) is what shows the "searching" state. Skipped while
-  // a specific hotel/property is selected: the field holds that hotel's
-  // name rather than a real city, so a city-filtered auto-search would find
+  // On the results page, search live as fields change, debounced, so
+  // results update without waiting for an explicit "Search" click - the
+  // results grid's own Suspense fallback (a skeleton) is what shows the
+  // "searching" state. On the homepage this is disabled (liveUpdate=false):
+  // typing there shouldn't navigate away to the results page on every
+  // keystroke, only an explicit Search press should. Also skipped while a
+  // specific hotel/property is selected: the field holds that hotel's name
+  // rather than a real city, so a city-filtered auto-search would find
   // nothing - Search instead routes straight to that listing.
   useEffect(() => {
-    if (selectedListingId) return;
+    if (!liveUpdate || selectedListingId) return;
 
     const nextQuery = buildSearchQuery(city, range, guestCounts);
     if (nextQuery === searchParams.toString()) return;
 
     const timeout = setTimeout(() => {
       startTransition(() => {
-        router.push(`/?${nextQuery}`, { scroll: false });
+        router.push(`${SEARCH_RESULTS_PATH}?${nextQuery}`, { scroll: false });
       });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- router/searchParams/startTransition are stable
-  }, [city, range, guestCounts, selectedListingId]);
+  }, [city, range, guestCounts, selectedListingId, liveUpdate]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,7 +95,7 @@ export function SearchBar() {
       if (selectedListingId) {
         router.push(`/listings/${selectedListingId}`);
       } else {
-        router.push(`/?${buildSearchQuery(city, range, guestCounts)}`);
+        router.push(`${SEARCH_RESULTS_PATH}?${buildSearchQuery(city, range, guestCounts)}`);
       }
     });
   }

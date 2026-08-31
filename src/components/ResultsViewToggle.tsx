@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { List, Map } from "lucide-react";
 import { parseViewParam } from "@/lib/listingSearch";
 import { cn } from "@/lib/cn";
 
 export function ResultsViewToggle() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const view = parseViewParam(searchParams.get("view") ?? undefined);
 
@@ -14,7 +15,7 @@ export function ResultsViewToggle() {
     const params = new URLSearchParams(searchParams.toString());
     if (next === "list") params.delete("view");
     else params.set("view", next);
-    router.push(`/?${params.toString()}`, { scroll: false });
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (

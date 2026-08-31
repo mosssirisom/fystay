@@ -61,7 +61,7 @@ test("Blackpool + under £150 + parking genuinely narrows results to matching li
   });
 
   try {
-    await page.goto("/?city=Blackpool&adults=2&maxPrice=150&amenities=parking");
+    await page.goto("/search?city=Blackpool&adults=2&maxPrice=150&amenities=parking");
 
     await expect(page.getByRole("heading", { name: "Search results" })).toBeVisible();
     // The real seeded Blackpool listing (£75/night, parking) genuinely matches.
@@ -95,7 +95,7 @@ test("property type filter, applied through the filter sheet, narrows real resul
   });
 
   try {
-    await page.goto("/?city=Blackpool");
+    await page.goto("/search?city=Blackpool");
     await expect(page.getByText(hotel.title)).toBeVisible();
     await expect(
       page.getByText("Seafront apartment overlooking Blackpool promenade"),
@@ -117,7 +117,7 @@ test("property type filter, applied through the filter sheet, narrows real resul
 });
 
 test("minimum rating filter excludes listings with no qualifying reviews", async ({ page }) => {
-  await page.goto("/?minRating=4");
+  await page.goto("/search?minRating=4");
 
   // Only the seeded listing with a genuine 5-star review qualifies.
   await expect(
@@ -144,13 +144,13 @@ test("sorting by price low to high genuinely reorders results", async ({ page })
     expect(indices).toEqual([...indices].sort((a, b) => a - b));
   }
 
-  await assertPriceOrder("/?sort=price_asc", [
+  await assertPriceOrder("/search?sort=price_asc", [
     "Cosy cottage near Fleetwood Marina",
     "Seafront apartment overlooking Blackpool promenade",
     "Elegant Victorian townhouse in Lytham St Annes",
   ]);
 
-  await assertPriceOrder("/?sort=price_desc", [
+  await assertPriceOrder("/search?sort=price_desc", [
     "Elegant Victorian townhouse in Lytham St Annes",
     "Seafront apartment overlooking Blackpool promenade",
     "Cosy cottage near Fleetwood Marina",
@@ -160,7 +160,7 @@ test("sorting by price low to high genuinely reorders results", async ({ page })
 test("list/map view toggle switches the results presentation without losing filters", async ({
   page,
 }) => {
-  await page.goto("/?city=Blackpool");
+  await page.goto("/search?city=Blackpool");
   await expect(page.getByRole("button", { name: "Map" })).toBeVisible();
 
   await page.getByRole("button", { name: "Map" }).click();

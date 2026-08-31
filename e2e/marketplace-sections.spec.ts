@@ -43,9 +43,9 @@ test("browse-by-category sections only appear once real data supports them", asy
     await expect(page.getByRole("heading", { name: "Popular in Blackpool" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Beach stays" })).toBeVisible();
 
-    // A search filter should hide the category rows entirely; they're only
-    // for browsing the default homepage, not layered on top of results.
-    await page.goto("/?city=Blackpool");
+    // The dedicated results page never renders these browse-by-category
+    // rows at all; they're only for the homepage.
+    await page.goto("/search?city=Blackpool");
     await expect(page.getByRole("heading", { name: "Popular in Blackpool" })).toHaveCount(0);
   } finally {
     await prisma.listing.delete({ where: { id: extraBlackpool.id } });

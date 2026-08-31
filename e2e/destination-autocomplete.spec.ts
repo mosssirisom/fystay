@@ -52,7 +52,12 @@ test("typing a destination shows a real destination suggestion and selecting it 
   await option.click();
   await expect(input).toHaveValue("Blackpool");
   await expect(listbox(page)).toBeHidden();
-  await page.waitForURL(/city=Blackpool/);
+
+  // Selecting a suggestion on the homepage doesn't auto-navigate by itself
+  // (only the results page live-updates as fields change) - Search still
+  // uses the selected structured value.
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.waitForURL(/\/search\?.*city=Blackpool/);
 });
 
 test("typing part of a hotel name shows it and selecting it routes straight to that listing", async ({
@@ -135,8 +140,10 @@ test("keyboard navigation highlights and Enter selects without submitting an inc
   await expect(input).toHaveValue("Blackpool");
   await expect(listbox(page)).toBeHidden();
   // Enter chose the highlighted suggestion rather than submitting the form
-  // with a raw, un-selected "Blackp" value.
-  await page.waitForURL(/city=Blackpool/);
+  // with a raw, un-selected "Blackp" value - confirmed by then pressing
+  // Search and landing on a search for the selected "Blackpool", not "Blackp".
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.waitForURL(/\/search\?.*city=Blackpool/);
 });
 
 test("dropdown stays within the viewport on a narrow mobile screen", async ({ page }) => {

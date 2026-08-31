@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
@@ -50,6 +50,7 @@ export function FilterSheet({
   availableAmenityCategories: AmenityCategorySummary[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
 
@@ -119,7 +120,7 @@ export function FilterSheet({
     else params.delete("minRating");
 
     setOpen(false);
-    router.push(`/?${params.toString()}`, { scroll: false });
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   const draftHasFilters =

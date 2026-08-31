@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   applyListingFilters,
-  hasActiveFilters,
   parseListingFiltersFromParams,
   parseSortParam,
   parseViewParam,
@@ -169,16 +168,5 @@ describe("parseSortParam / parseViewParam", () => {
     expect(parseViewParam(undefined)).toBe("list");
     expect(parseViewParam("anything-else")).toBe("list");
     expect(parseViewParam("map")).toBe("map");
-  });
-});
-
-describe("hasActiveFilters", () => {
-  it("is false with no filters and the default sort", () => {
-    expect(hasActiveFilters({}, "recommended")).toBe(false);
-  });
-
-  it("is true when any filter or a non-default sort is set", () => {
-    expect(hasActiveFilters({ minPriceCents: 1000 }, "recommended")).toBe(true);
-    expect(hasActiveFilters({}, "price_asc")).toBe(true);
   });
 });

@@ -153,17 +153,3 @@ export function parseSortParam(value: string | string[] | undefined): SortKey {
 export function parseViewParam(value: string | string[] | undefined): "list" | "map" {
   return value === "map" ? "map" : "list";
 }
-
-/** True if any filter/sort/view param is active - not just the core destination/dates/guests search. */
-export function hasActiveFilters(filters: ListingFilters, sort: SortKey): boolean {
-  return (
-    Boolean(filters.propertyTypes?.length) ||
-    filters.minPriceCents !== undefined ||
-    filters.maxPriceCents !== undefined ||
-    filters.minBedrooms !== undefined ||
-    filters.minBathrooms !== undefined ||
-    Boolean(filters.amenityCategories?.length) ||
-    filters.minRating !== undefined ||
-    sort !== "recommended"
-  );
-}

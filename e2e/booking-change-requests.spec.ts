@@ -143,10 +143,17 @@ test("guest can request a date change, host approves, and guest pays the differe
     expect(finalBooking.totalPriceCents).toBe(33000);
     expect(finalBooking.checkOut.toISOString().slice(0, 10)).toBe(isoDate(newCheckOut));
   } finally {
-    await hostContext.close();
+    // DB cleanup first and unguarded: it's what actually matters for later
+    // tests/retries. hostContext.close() is best-effort after - if the
+    // browser already crashed and closing it throws, that must never
+    // block the real cleanup above (this is exactly what happened in a
+    // prior CI run: a crashed context skipped cleanup, leaving an
+    // orphaned fixture listing that then collided with the automatic
+    // retry's own freshly-created one of the same title).
     await prisma.bookingChangeRequest.deleteMany({ where: { bookingId: booking.id } });
     await prisma.booking.deleteMany({ where: { listingId: listing.id } });
     await prisma.listing.delete({ where: { id: listing.id } });
     await prisma.$disconnect();
+    await hostContext.close().catch(() => {});
   }
 });

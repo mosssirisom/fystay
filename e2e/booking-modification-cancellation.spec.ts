@@ -287,9 +287,15 @@ test.describe("booking modification and cancellation", () => {
       await expect(listingRow.getByText("Fully refunded")).toBeVisible();
       await expect(listingRow.getByText("£220 refunded")).toBeVisible();
     } finally {
-      await hostContext.close();
+      // DB cleanup first and unguarded: it's what actually matters for
+      // later tests/retries. hostContext.close() is best-effort after -
+      // if the browser already crashed and closing it throws, that must
+      // never block the real cleanup above (a prior CI run hit exactly
+      // this: a crashed context skipped cleanup, leaving an orphaned
+      // fixture listing that then collided with the automatic retry).
       await prisma.booking.deleteMany({ where: { listingId: listing.id } });
       await prisma.listing.delete({ where: { id: listing.id } });
+      await hostContext.close().catch(() => {});
     }
   });
 });

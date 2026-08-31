@@ -197,11 +197,14 @@ test.describe("reviews and ratings", () => {
       });
       expect(secondReportRes.status()).toBe(409);
     } finally {
-      await secondGuestContext.close();
+      // DB cleanup first and unguarded, hostContext.close() best-effort
+      // after - see the comment on the equivalent pattern in
+      // booking-change-requests.spec.ts for why the order matters.
       await prisma.reviewReport.deleteMany({ where: { reviewId: review.id } });
       await prisma.review.delete({ where: { id: review.id } });
       await prisma.booking.delete({ where: { id: booking.id } });
       await prisma.listing.delete({ where: { id: listing.id } });
+      await secondGuestContext.close().catch(() => {});
       await prisma.user.delete({ where: { id: secondGuest.id } });
     }
   });

@@ -3,10 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, ImageOff, MessageSquare, PencilLine } from "lucide-react";
+import { CalendarDays, ImageOff, MessageSquare, PencilLine, Star } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { DeleteListingButton } from "@/components/DeleteListingButton";
-import { ChangeRequestActions } from "@/components/ChangeRequestActions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { isOptimizableImage } from "@/lib/image";
@@ -18,6 +17,11 @@ const bookingStatusVariant = {
   COMPLETED: "brand",
   REFUNDED: "neutral",
 } as const;
+
+// A listing can accumulate dozens of confirmed future bookings; dumping
+// every one inline turns the dashboard into an unreadable wall of rows, so
+// only a handful show by default with a toggle to reveal the rest.
+const INITIAL_VISIBLE_BOOKINGS = 3;
 
 const paymentStatusLabel: Record<string, string> = {
   UNPAID: "Unpaid",
@@ -39,8 +43,16 @@ type ChangeRequestRow = {
   originalTotalPriceCents: number;
 };
 
+export type HostListingStats = {
+  avgRating: number | null;
+  reviewCount: number;
+  occupancyRate: number | null;
+  revenueThisMonthCents: number;
+};
+
 export function HostListingRow({
   listing,
+  stats,
 }: {
   listing: {
     id: string;
@@ -62,23 +74,17 @@ export function HostListingRow({
       changeRequests: ChangeRequestRow[];
     }[];
   };
+  stats: HostListingStats;
 }) {
   const [deleted, setDeleted] = useState(false);
-  const [handledRequestIds, setHandledRequestIds] = useState<Set<string>>(new Set());
+  const [showAllBookings, setShowAllBookings] = useState(false);
   const upcomingCount = listing.bookings.filter(
     (b) => b.status === "PENDING" || b.status === "CONFIRMED",
   ).length;
-
-  function markHandled(requestId: string) {
-    setHandledRequestIds((prev) => new Set(prev).add(requestId));
-  }
-  function unmarkHandled(requestId: string) {
-    setHandledRequestIds((prev) => {
-      const next = new Set(prev);
-      next.delete(requestId);
-      return next;
-    });
-  }
+  const visibleBookings = showAllBookings
+    ? listing.bookings
+    : listing.bookings.slice(0, INITIAL_VISIBLE_BOOKINGS);
+  const hiddenCount = listing.bookings.length - visibleBookings.length;
 
   if (deleted) return null;
 
@@ -146,21 +152,45 @@ export function HostListingRow({
             </div>
           </div>
 
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={listing.published ? "success" : "neutral"}>
               {listing.published ? "Published" : "Unpublished"}
             </Badge>
             <Badge variant="brand">
               {upcomingCount} upcoming booking{upcomingCount === 1 ? "" : "s"}
             </Badge>
+            {stats.avgRating !== null && (
+              <span className="inline-flex items-center gap-1 text-sm text-zinc-600">
+                <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
+                {stats.avgRating.toFixed(1)}
+                <span className="text-zinc-400">({stats.reviewCount})</span>
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 rounded-xl bg-surface-muted p-3 text-sm sm:grid-cols-3">
+            <div>
+              <p className="text-xs text-zinc-500">Revenue this month</p>
+              <p className="font-semibold text-foreground">{formatPrice(stats.revenueThisMonthCents)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-zinc-500">Occupancy (next 30d)</p>
+              <p className="font-semibold text-foreground">
+                {stats.occupancyRate === null ? "—" : `${stats.occupancyRate}%`}
+              </p>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <p className="text-xs text-zinc-500">Rating</p>
+              <p className="font-semibold text-foreground">
+                {stats.avgRating === null ? "No reviews yet" : `${stats.avgRating.toFixed(1)} / 5`}
+              </p>
+            </div>
           </div>
 
           {listing.bookings.length > 0 && (
             <ul className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-3 text-sm text-zinc-600">
-              {listing.bookings.map((booking) => {
-                const pendingRequest = booking.changeRequests.find((cr) => cr.status === "PENDING");
+              {visibleBookings.map((booking) => {
                 const approvedRequest = booking.changeRequests.find((cr) => cr.status === "APPROVED");
-                const showRequest = pendingRequest && !handledRequestIds.has(pendingRequest.id);
                 const isCancelled = booking.status === "CANCELLED" || booking.status === "REFUNDED";
                 return (
                   <li key={booking.id} className="flex flex-col gap-1.5">
@@ -193,37 +223,19 @@ export function HostListingRow({
                           : ""}
                       </p>
                     )}
-
-                    {showRequest && (
-                      <div className="flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="font-medium text-foreground">Guest requested a change</p>
-                          <p>
-                            New dates: {pendingRequest.requestedCheckIn.toLocaleDateString()} –{" "}
-                            {pendingRequest.requestedCheckOut.toLocaleDateString()} ·{" "}
-                            {pendingRequest.requestedGuests} guest
-                            {pendingRequest.requestedGuests > 1 ? "s" : ""}
-                          </p>
-                          {pendingRequest.priceDeltaCents !== 0 && (
-                            <p>
-                              {pendingRequest.priceDeltaCents > 0
-                                ? `Guest will owe an extra ${formatPrice(pendingRequest.priceDeltaCents)}`
-                                : `Guest will be refunded ${formatPrice(Math.abs(pendingRequest.priceDeltaCents))}`}
-                            </p>
-                          )}
-                        </div>
-                        <ChangeRequestActions
-                          bookingId={booking.id}
-                          requestId={pendingRequest.id}
-                          onOptimisticStart={() => markHandled(pendingRequest.id)}
-                          onError={() => unmarkHandled(pendingRequest.id)}
-                        />
-                      </div>
-                    )}
                   </li>
                 );
               })}
             </ul>
+          )}
+
+          {hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAllBookings(true)}
+              className="focus-ring mt-2 text-sm font-medium text-brand-700 hover:underline"
+            >
+              Show {hiddenCount} more reservation{hiddenCount === 1 ? "" : "s"}
+            </button>
           )}
         </div>
       </div>

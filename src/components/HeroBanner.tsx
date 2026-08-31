@@ -1,3 +1,5 @@
+import { cn } from "@/lib/cn";
+
 /**
  * A generated, on-brand coastal scene (pier, tower silhouette, sea) used as
  * the homepage's full-bleed hero backdrop. Deliberately not a hotlinked
@@ -12,7 +14,15 @@ export function HeroBanner({ className }: { className?: string }) {
     <svg
       viewBox="0 0 1440 420"
       preserveAspectRatio="xMidYMid slice"
-      className={className}
+      width="100%"
+      height="100%"
+      // The browser's default "clip to box" rule for SVG only applies to a
+      // *nested* <svg>, not the root one - since preserveAspectRatio=slice
+      // deliberately scales this scene wider than its box to fill it, the
+      // un-clipped root svg was pushing real horizontal overflow onto the
+      // whole page (the wrapping section's own overflow-hidden didn't
+      // catch it), so this has to clip itself explicitly.
+      className={cn("overflow-hidden", className)}
       aria-hidden
     >
       <defs>

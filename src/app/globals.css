@@ -72,6 +72,25 @@
   border-color: var(--border-subtle);
 }
 
+/* Defense in depth against horizontal page scroll: no legitimate part of
+   this layout needs the page itself to scroll sideways (components that
+   scroll horizontally, like the listings carousel, do so in their own
+   overflow-x-auto container), so guard against any future element - a
+   badge, an SVG, a fixed-width child - accidentally pushing the whole
+   page wider than the viewport. overflow-x: clip (not hidden): hidden
+   still permits scrolling into the clipped area via script, only the
+   actual scrollbar is suppressed; clip disallows scrolling in that axis
+   outright. overscroll-behavior-x: none additionally turns off the
+   horizontal elastic "rubber-band" touch affordance at the page edges.
+   Neither property was the fix for the real mobile bug this app shipped
+   with (see the comment on ListingsCarousel for that) - they're a
+   standard, cheap safety net on top of it. */
+html,
+body {
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

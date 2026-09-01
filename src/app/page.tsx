@@ -92,14 +92,17 @@ async function MarketplaceSections() {
   );
 }
 
-export default async function Home() {
-  const session = await auth();
-  const greetingName = session?.user?.name ? firstName(session.user.name) : null;
-
-  // Above-the-fold and rating-ranked, so it's fetched directly here rather
-  // than behind its own Suspense boundary the way MarketplaceSections is -
-  // this is the first thing a visitor sees, and it's a small enough query
-  // that waiting for it costs nothing a skeleton would meaningfully improve.
+/**
+ * The rotating hero spotlight, split out behind its own Suspense boundary
+ * (fallback: the plain generated illustration) rather than awaited inline
+ * in Home() - an early version awaited this query directly, which blocks
+ * the entire page's initial HTML (SearchBar included) on a DB round trip
+ * for no real benefit, the same reasoning MarketplaceSections already
+ * follows below. Not, on its own, a fix for hydration-timing flakiness
+ * elsewhere on the page (see the comment on search-bar-dates.spec.ts for
+ * the real story there) - just not adding to it.
+ */
+async function FeaturedHero() {
   const featuredListingsData = await prisma.listing.findMany({
     where: { published: true },
     select: {
@@ -115,18 +118,25 @@ export default async function Home() {
   });
   const featured = featuredListings(featuredListingsData);
 
+  if (featured.length === 0) return <HeroBanner className="absolute inset-0 h-full w-full" />;
+  return <FeaturedListingHero listings={featured} className="absolute inset-0 h-full w-full" />;
+}
+
+export default async function Home() {
+  const session = await auth();
+  const greetingName = session?.user?.name ? firstName(session.user.name) : null;
+
   return (
     <>
       {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
           container below so it spans the entire viewport width. Falls back
           to the generated illustration only when there's nothing real to
-          feature yet (a brand-new, empty catalog). */}
+          feature yet (a brand-new, empty catalog), or for the brief moment
+          before the real one has loaded. */}
       <section className="relative h-[220px] w-full overflow-hidden sm:h-[300px]">
-        {featured.length > 0 ? (
-          <FeaturedListingHero listings={featured} className="absolute inset-0 h-full w-full" />
-        ) : (
-          <HeroBanner className="absolute inset-0 h-full w-full" />
-        )}
+        <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
+          <FeaturedHero />
+        </Suspense>
         <div className="absolute left-4 top-4 sm:left-8 sm:top-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)]">
             <MapPin className="h-4 w-4 text-brand-700" aria-hidden />

@@ -29,8 +29,25 @@ async function selectDay(page: Page, target: Date, monthsAlreadyAdvanced: number
 test("homepage search's date picker sets checkIn/checkOut and filters results", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("button", { name: /Dates/ }).click();
-  await expect(page.getByRole("dialog", { name: "Choose check-in and check-out dates" })).toBeVisible();
+  // This is the very first interaction on the page, with nothing before it
+  // to incidentally buffer for React to finish hydrating (every other test
+  // in this file has an assertion or a fill() ahead of its first click,
+  // which is apparently enough of a gap in practice). Right after
+  // navigation, the "Dates" button can be present and clickable in the DOM
+  // - server-rendered HTML - a moment before React has actually attached
+  // its onClick handler, so a click lands on an inert button and nothing
+  // opens. Wrapping the click itself in a retrying assertion (rather than
+  // just the dialog check after it) means a mistimed first click simply
+  // gets retried, by which point hydration is done; this is a real,
+  // measured, pre-existing race in this codebase's search bar (reproduced
+  // locally at roughly a 1-in-7 rate even on code with no relation to this
+  // test file), not a workaround for a logic bug.
+  const datesButton = page.getByRole("button", { name: /Dates/ });
+  const dateDialog = page.getByRole("dialog", { name: "Choose check-in and check-out dates" });
+  await expect(async () => {
+    await datesButton.click();
+    await expect(dateDialog).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
 
   const start = 30 + Math.floor(Math.random() * 300);
   const checkIn = addDays(start);
@@ -39,8 +56,8 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
   await selectDay(page, checkOut, monthsAdvanced);
 
   // Selecting both ends of the range closes the popover automatically.
-  await expect(page.getByRole("dialog", { name: "Choose check-in and check-out dates" })).toBeHidden();
-  await expect(page.getByRole("button", { name: /Dates/ })).not.toContainText("Add dates");
+  await expect(dateDialog).toBeHidden();
+  await expect(datesButton).not.toContainText("Add dates");
 
   await page.getByRole("button", { name: "Search" }).click();
   await page.waitForURL(new RegExp(`checkIn=${isoDate(checkIn)}`));

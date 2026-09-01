@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   beachStaysSection,
+  featuredListings,
   groupByCity,
   isBeachStay,
   recentlyAddedSection,
+  type FeaturableListing,
   type MarketplaceListing,
 } from "./marketplace";
 
@@ -113,5 +115,73 @@ describe("recentlyAddedSection", () => {
     ];
     const section = recentlyAddedSection(listings, { now });
     expect(section?.listings.map((l) => l.id)).toEqual(["new-2", "new-1"]);
+  });
+});
+
+function featurable(overrides: Partial<FeaturableListing> & { id: string }): FeaturableListing {
+  return {
+    title: `Listing ${overrides.id}`,
+    city: "Blackpool",
+    country: "England",
+    pricePerNightCents: 10000,
+    photos: ["data:image/svg+xml,placeholder"],
+    reviews: [],
+    ...overrides,
+  };
+}
+
+describe("featuredListings", () => {
+  it("excludes listings with no photos", () => {
+    const listings = [
+      featurable({ id: "has-photo" }),
+      featurable({ id: "no-photo", photos: [] }),
+    ];
+    expect(featuredListings(listings).map((l) => l.id)).toEqual(["has-photo"]);
+  });
+
+  it("ranks by average rating, highest first", () => {
+    const listings = [
+      featurable({ id: "low", reviews: [{ rating: 3 }] }),
+      featurable({ id: "high", reviews: [{ rating: 5 }] }),
+      featurable({ id: "mid", reviews: [{ rating: 4 }] }),
+    ];
+    expect(featuredListings(listings).map((l) => l.id)).toEqual(["high", "mid", "low"]);
+  });
+
+  it("sorts a listing with no reviews yet last, not first", () => {
+    const listings = [
+      featurable({ id: "unrated", reviews: [] }),
+      featurable({ id: "rated", reviews: [{ rating: 1 }] }),
+    ];
+    expect(featuredListings(listings).map((l) => l.id)).toEqual(["rated", "unrated"]);
+  });
+
+  it("breaks a rating tie by review count", () => {
+    const listings = [
+      featurable({ id: "few-reviews", reviews: [{ rating: 5 }] }),
+      featurable({ id: "many-reviews", reviews: [{ rating: 5 }, { rating: 5 }, { rating: 5 }] }),
+    ];
+    expect(featuredListings(listings).map((l) => l.id)).toEqual(["many-reviews", "few-reviews"]);
+  });
+
+  it("caps the result at maxFeatured", () => {
+    const listings = Array.from({ length: 8 }, (_, i) => featurable({ id: `${i}` }));
+    expect(featuredListings(listings, 3)).toHaveLength(3);
+  });
+
+  it("carries through the first photo, price, and computed rating", () => {
+    const listings = [
+      featurable({
+        id: "1",
+        photos: ["photo-a.jpg", "photo-b.jpg"],
+        pricePerNightCents: 15000,
+        reviews: [{ rating: 4 }, { rating: 2 }],
+      }),
+    ];
+    const [result] = featuredListings(listings);
+    expect(result.photo).toBe("photo-a.jpg");
+    expect(result.pricePerNightCents).toBe(15000);
+    expect(result.rating).toBe(3);
+    expect(result.reviewCount).toBe(2);
   });
 });

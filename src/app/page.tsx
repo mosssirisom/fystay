@@ -5,11 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { HeroBanner } from "@/components/HeroBanner";
+import { FeaturedListingHero } from "@/components/FeaturedListingHero";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
-import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
+import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { firstName, timeOfDayGreeting } from "@/lib/greeting";
 
 const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
@@ -95,12 +96,37 @@ export default async function Home() {
   const session = await auth();
   const greetingName = session?.user?.name ? firstName(session.user.name) : null;
 
+  // Above-the-fold and rating-ranked, so it's fetched directly here rather
+  // than behind its own Suspense boundary the way MarketplaceSections is -
+  // this is the first thing a visitor sees, and it's a small enough query
+  // that waiting for it costs nothing a skeleton would meaningfully improve.
+  const featuredListingsData = await prisma.listing.findMany({
+    where: { published: true },
+    select: {
+      id: true,
+      title: true,
+      city: true,
+      country: true,
+      pricePerNightCents: true,
+      photos: true,
+      reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  const featured = featuredListings(featuredListingsData);
+
   return (
     <>
       {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
-          container below so it spans the entire viewport width. */}
+          container below so it spans the entire viewport width. Falls back
+          to the generated illustration only when there's nothing real to
+          feature yet (a brand-new, empty catalog). */}
       <section className="relative h-[220px] w-full overflow-hidden sm:h-[300px]">
-        <HeroBanner className="absolute inset-0 h-full w-full" />
+        {featured.length > 0 ? (
+          <FeaturedListingHero listings={featured} className="absolute inset-0 h-full w-full" />
+        ) : (
+          <HeroBanner className="absolute inset-0 h-full w-full" />
+        )}
         <div className="absolute left-4 top-4 sm:left-8 sm:top-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)]">
             <MapPin className="h-4 w-4 text-brand-700" aria-hidden />

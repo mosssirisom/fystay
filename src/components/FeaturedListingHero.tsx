@@ -106,20 +106,18 @@ export function FeaturedListingHero({
               <p className="truncate text-base font-semibold text-white sm:text-lg">
                 {listing.title}
               </p>
-              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-white/90">
-                <span>
-                  {listing.city}, {listing.country}
-                </span>
+              {/* Just city + price - the country (always "England" here)
+                  and a separate rating chip only added words without
+                  adding information a first glance at the photo needs. */}
+              <div className="mt-1 flex items-center gap-2 text-sm text-white/90">
+                <span>{listing.city}</span>
                 <span aria-hidden>·</span>
                 <span className="font-medium">{formatPrice(listing.pricePerNightCents)}/night</span>
                 {listing.rating !== null && (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span className="flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 fill-accent-400 text-accent-400" />
-                      {listing.rating.toFixed(1)}
-                    </span>
-                  </>
+                  <span className="ml-auto flex items-center gap-1 text-white">
+                    <Star className="h-3.5 w-3.5 fill-accent-400 text-accent-400" />
+                    {listing.rating.toFixed(1)}
+                  </span>
                 )}
               </div>
             </div>

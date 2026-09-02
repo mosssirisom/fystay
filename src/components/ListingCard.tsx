@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff, MapPin, Star } from "lucide-react";
+import { ImageOff, MapPin, Star, Users } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
 import { SaveButton } from "@/components/SaveButton";
@@ -16,6 +16,8 @@ export type ListingCardData = {
   pricePerNightCents: number;
   photos: string[];
   amenities: string[];
+  maxGuests: number;
+  bedrooms: number;
   reviews: { rating: number }[];
 };
 
@@ -86,6 +88,12 @@ export function ListingCard({
           <span className="truncate">
             {listing.city}, {listing.country}
           </span>
+        </p>
+        <p className="flex items-center gap-1 text-xs text-zinc-500">
+          <Users className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
+          <span aria-hidden>·</span>
+          {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
         </p>
         {keyAmenities.length > 0 && (
           <ul className="flex items-center gap-2.5">

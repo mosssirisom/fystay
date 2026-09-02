@@ -45,7 +45,7 @@ export function Dialog({ open, onClose, title, className, children }: DialogProp
         <button
           onClick={onClose}
           aria-label="Close"
-          className="focus-ring rounded-full p-1.5 text-zinc-500 hover:bg-surface-muted"
+          className="focus-ring flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-surface-muted"
         >
           <X className="h-4 w-4" />
         </button>

@@ -161,7 +161,12 @@ export async function ListingsGrid({
       ) : view === "map" ? (
         <MapViewPlaceholder cityCounts={cityCounts} />
       ) : (
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+        // Single column below sm: two half-width cards on a phone left
+        // titles clipped and photos too small to judge a place by. One
+        // full-width card per row is the same shape guests already get in
+        // the homepage carousel. Tablet/desktop breakpoints (sm/lg) are
+        // unchanged from before.
+        <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4">
           {results.map((listing) => (
             <ListingCard
               key={listing.id}

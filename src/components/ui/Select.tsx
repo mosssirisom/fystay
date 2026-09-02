@@ -11,7 +11,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            "focus-ring h-10 w-full appearance-none rounded-lg border border-border-subtle bg-surface px-3 pr-9 text-sm text-foreground",
+            // text-base below sm: see Input.tsx - prevents iOS Safari's
+            // auto-zoom-on-focus for any field with a computed font-size
+            // under 16px.
+            "focus-ring h-10 w-full appearance-none rounded-lg border border-border-subtle bg-surface px-3 pr-9 text-base text-foreground sm:text-sm",
             "transition-colors hover:border-zinc-300",
             className,
           )}

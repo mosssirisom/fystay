@@ -237,8 +237,15 @@ export function DestinationAutocomplete({
             onChange={(e) => handleChange(e.target.value)}
             onFocus={handleFocus}
             onKeyDown={handleKeyDown}
-            placeholder="Search destinations, cities or hotels"
-            className="focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-sm text-foreground placeholder:text-zinc-500"
+            // Short enough to render in full at the mobile 16px size this
+            // field now uses (see the className below) - the longer
+            // original wording used to fit at 14px but clipped once bumped
+            // to 16px to stop iOS Safari's zoom-on-focus.
+            placeholder="City, town or hotel name"
+            // text-base below sm: see ui/Input.tsx - prevents iOS Safari's
+            // auto-zoom-on-focus for any field with a computed font-size
+            // under 16px.
+            className="focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-base text-foreground placeholder:text-zinc-500 sm:text-sm"
           />
         </span>
       </label>

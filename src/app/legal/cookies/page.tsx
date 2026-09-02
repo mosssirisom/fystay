@@ -15,33 +15,40 @@ export default function CookiePolicyPage() {
           run the site - we don&apos;t use any analytics, advertising, or third-party tracking
           cookies today.
         </p>
-        <table className="mt-2 w-full border-collapse overflow-hidden rounded-xl border border-border-subtle text-left text-sm">
-          <thead>
-            <tr className="bg-surface-muted">
-              <th className="border-b border-border-subtle px-3 py-2 font-semibold text-foreground">Cookie</th>
-              <th className="border-b border-border-subtle px-3 py-2 font-semibold text-foreground">Purpose</th>
-              <th className="border-b border-border-subtle px-3 py-2 font-semibold text-foreground">Duration</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border-b border-border-subtle px-3 py-2 align-top">Session cookie</td>
-              <td className="border-b border-border-subtle px-3 py-2 align-top">
-                Keeps you signed in to your account. Strictly necessary - the site can&apos;t
-                function without it once you&apos;ve logged in.
-              </td>
-              <td className="border-b border-border-subtle px-3 py-2 align-top">Until you log out, or expires automatically</td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2 align-top">Cookie notice preference</td>
-              <td className="px-3 py-2 align-top">
-                Remembers that you&apos;ve seen and dismissed the cookie notice, so it doesn&apos;t
-                show again on your next visit.
-              </td>
-              <td className="px-3 py-2 align-top">Stored on your device until cleared</td>
-            </tr>
-          </tbody>
-        </table>
+        {/* This table's three columns (one holding full sentences) don't fit
+            a phone width without either scrolling or squeezing every cell
+            into an unreadable wrap - overflow-x-auto on the wrapper keeps
+            the table's own layout intact and lets a phone swipe sideways
+            instead. */}
+        <div className="mt-2 overflow-x-auto rounded-xl border border-border-subtle">
+          <table className="w-full min-w-[560px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="bg-surface-muted">
+                <th className="border-b border-border-subtle px-3 py-2 font-semibold text-foreground">Cookie</th>
+                <th className="border-b border-border-subtle px-3 py-2 font-semibold text-foreground">Purpose</th>
+                <th className="border-b border-border-subtle px-3 py-2 font-semibold text-foreground">Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border-b border-border-subtle px-3 py-2 align-top">Session cookie</td>
+                <td className="border-b border-border-subtle px-3 py-2 align-top">
+                  Keeps you signed in to your account. Strictly necessary - the site can&apos;t
+                  function without it once you&apos;ve logged in.
+                </td>
+                <td className="border-b border-border-subtle px-3 py-2 align-top">Until you log out, or expires automatically</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 align-top">Cookie notice preference</td>
+                <td className="px-3 py-2 align-top">
+                  Remembers that you&apos;ve seen and dismissed the cookie notice, so it doesn&apos;t
+                  show again on your next visit.
+                </td>
+                <td className="px-3 py-2 align-top">Stored on your device until cleared</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </LegalSection>
 
       <LegalSection heading="Payment">

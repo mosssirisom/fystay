@@ -50,7 +50,7 @@ export function GuestMenu() {
         aria-expanded={open}
         aria-controls="guest-menu-panel"
         aria-label="Account menu"
-        className="focus-ring flex items-center gap-2 rounded-full border border-border-subtle py-1.5 pl-3 pr-1.5 text-zinc-600 hover:shadow-[var(--shadow-card)]"
+        className="focus-ring flex items-center gap-2 rounded-full border border-border-subtle py-2 pl-3 pr-1.5 text-zinc-600 hover:shadow-[var(--shadow-card)]"
       >
         <Menu className="h-4 w-4" />
         <CircleUserRound className="h-7 w-7 text-zinc-400" strokeWidth={1.5} />

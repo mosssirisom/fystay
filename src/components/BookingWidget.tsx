@@ -176,8 +176,14 @@ export function BookingWidget({
     // reviews, so a sticky position there would just make it awkwardly
     // pin itself over content while scrolling past, for no benefit -
     // MobileBookingBar is what gives mobile guests a fast way back to it.
-    <Card className="overflow-hidden p-0 shadow-[var(--shadow-popover)] lg:sticky lg:top-24">
-      <div className="h-1.5 w-full bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
+    <Card className="p-0 shadow-[var(--shadow-popover)] lg:sticky lg:top-24">
+      {/* rounded-t-2xl on the strip itself (matching the Card's own
+          rounded-2xl) rather than overflow-hidden on the Card - the Card
+          also hosts the Guests popover and the date-range calendar, both
+          absolutely positioned and taller than the card, which an
+          overflow-hidden ancestor would clip instead of letting them float
+          over the page. */}
+      <div className="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
       <CardContent className="p-5 sm:p-6">
         <div className="flex items-baseline justify-between gap-2">
           <p className="text-2xl font-bold text-brand-800">

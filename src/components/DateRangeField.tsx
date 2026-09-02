@@ -68,7 +68,7 @@ export function DateRangeField({
         <div
           role="dialog"
           aria-label="Choose check-in and check-out dates"
-          className="absolute left-1/2 top-full z-20 mt-2 w-max -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
+          className="absolute left-1/2 top-full z-20 mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
         >
           <DayPicker
             mode="range"

@@ -254,7 +254,11 @@ export function FilterSheet({
           </Field>
         </div>
 
-        <div className="sticky bottom-0 -mx-5 -mb-5 mt-6 flex items-center justify-between gap-3 border-t border-border-subtle bg-surface px-5 py-4">
+        {/* pb includes the iPhone home-indicator safe area: this bar sits
+            flush against the bottom edge of a full-height mobile sheet, so
+            without it "Show results" would land partly under the
+            indicator instead of a comfortable thumb's reach above it. */}
+        <div className="sticky bottom-0 -mx-5 -mb-5 mt-6 flex items-center justify-between gap-3 border-t border-border-subtle bg-surface px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
           <button
             type="button"
             onClick={resetDraft}

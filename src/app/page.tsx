@@ -153,13 +153,6 @@ export default async function Home() {
           aria-hidden
         />
 
-        <div className="absolute left-4 top-4 z-30 sm:left-8 sm:top-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)] backdrop-blur-sm">
-            <MapPin className="h-4 w-4 text-brand-700" aria-hidden />
-            Blackpool, Fylde Coast
-          </span>
-        </div>
-
         <div className="absolute inset-x-4 top-20 z-30 max-w-xl sm:inset-x-8 sm:top-28 lg:top-32">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-400 sm:text-sm">
             {greetingName ? "Welcome back" : "Fylde Coast accommodation, booked direct"}

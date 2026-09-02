@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Lock, MapPin, Star } from "lucide-react";
+import { Lock, MapPin, MessageCircle, Star, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
@@ -17,19 +17,32 @@ const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Clevele
 
 const TRUST_POINTS = [
   {
+    icon: Users,
+    title: "Local hosts, not a franchise",
+    description:
+      "Every stay is listed and managed by an individual host based on the Fylde Coast - never a resold listing or an absent management company.",
+  },
+  {
     icon: MapPin,
-    title: "Local Fylde Coast hosts",
-    description: "Every stay is listed directly by a real local host, not resold from elsewhere.",
+    title: "Genuinely local properties",
+    description:
+      "Apartments, cottages and guest houses across Blackpool, Lytham St Annes, Fleetwood, Cleveleys and Bispham - real places on this coast, not imported inventory.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Direct access to your host",
+    description:
+      "Once you've booked, your host's contact details are right there on your booking - no call centre standing between you and the person who actually knows the place.",
   },
   {
     icon: Star,
     title: "Genuine guest reviews",
-    description: "Reviews can only be left by guests once they've completed a paid stay.",
+    description: "Only a guest who's completed a paid stay can leave a review, so every rating reflects a real stay.",
   },
   {
     icon: Lock,
-    title: "Secure payments",
-    description: "Bookings are paid through Stripe's encrypted checkout, so we never see your card details.",
+    title: "Secure, transparent booking",
+    description: "Payments run through Stripe's encrypted checkout with the full price shown upfront - we never see your card details.",
   },
 ];
 
@@ -223,12 +236,13 @@ export default async function Home() {
 
         <div className="mt-14 border-t border-border-subtle pt-10">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why book with FY Stay?</h2>
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why FYstay?</h2>
             <p className="mt-1 text-sm text-zinc-500">
-              A more personal, more local way to book a stay on the Fylde Coast.
+              FYstay is built around one coastline, not spread thin across the world - everything
+              here is designed for booking a stay on the Fylde Coast, and nowhere else.
             </p>
           </div>
-          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
               <div key={title} className="flex items-start gap-3">
                 <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />

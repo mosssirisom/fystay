@@ -27,9 +27,10 @@ export function HeroBanner({ className }: { className?: string }) {
     >
       <defs>
         <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#042f2c" />
-          <stop offset="55%" stopColor="#0f766e" />
-          <stop offset="100%" stopColor="#0d9488" />
+          <stop offset="0%" stopColor="#031f1c" />
+          <stop offset="45%" stopColor="#0f766e" />
+          <stop offset="80%" stopColor="#14b8a6" />
+          <stop offset="100%" stopColor="#2dd4bf" />
         </linearGradient>
         <radialGradient id="hero-sun" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fde68a" stopOpacity="0.95" />
@@ -40,11 +41,33 @@ export function HeroBanner({ className }: { className?: string }) {
           <stop offset="0%" stopColor="#115e59" />
           <stop offset="100%" stopColor="#042f2c" />
         </linearGradient>
+        <linearGradient id="hero-sand" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#134e4a" />
+          <stop offset="100%" stopColor="#042f2c" />
+        </linearGradient>
       </defs>
 
       <rect width="1440" height="420" fill="url(#hero-sky)" />
       <circle cx="1120" cy="150" r="150" fill="url(#hero-sun)" />
       <circle cx="1120" cy="150" r="46" fill="#fef3c7" fillOpacity="0.9" />
+
+      {/* Soft, hand-drawn clouds - kept low-opacity so they read as
+          atmosphere rather than competing with the headline text laid over
+          this scene. */}
+      <g fill="#f0fdfa" fillOpacity="0.16">
+        <ellipse cx="220" cy="90" rx="90" ry="26" />
+        <ellipse cx="300" cy="75" rx="60" ry="20" />
+        <ellipse cx="740" cy="60" rx="110" ry="24" />
+        <ellipse cx="840" cy="80" rx="70" ry="18" />
+      </g>
+
+      {/* A pair of gulls - the kind of small, hand-crafted detail a stock
+          photo wouldn't have, reinforcing that this is a distinct FYstay
+          illustration rather than generic coastal imagery. */}
+      <g stroke="#f0fdfa" strokeOpacity="0.55" strokeWidth="3" strokeLinecap="round" fill="none">
+        <path d="M980 110q14-16 28 0q14-16 28 0" />
+        <path d="M1050 150q10-11 20 0q10-11 20 0" />
+      </g>
 
       {/* Sea */}
       <rect y="300" width="1440" height="120" fill="url(#hero-sea)" />
@@ -62,6 +85,11 @@ export function HeroBanner({ className }: { className?: string }) {
         strokeOpacity="0.18"
         strokeWidth="3"
       />
+
+      {/* Beach foreground: a dark strip along the very bottom edge grounds
+          the scene and doubles as extra contrast for the search card that
+          overlaps this hero from below (see page.tsx). */}
+      <rect y="392" width="1440" height="28" fill="url(#hero-sand)" />
 
       {/* Pier: deck line + support struts running into the sea */}
       <g stroke="#042f2c" strokeWidth="4" strokeLinecap="round">

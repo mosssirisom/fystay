@@ -132,40 +132,70 @@ export default async function Home() {
           container below so it spans the entire viewport width. Falls back
           to the generated illustration only when there's nothing real to
           feature yet (a brand-new, empty catalog), or for the brief moment
-          before the real one has loaded. */}
-      <section className="relative h-[220px] w-full overflow-hidden sm:h-[300px]">
+          before the real one has loaded. Tall enough to carry a real
+          marketing headline over the photo, not just a caption strip. */}
+      <section className="relative h-[420px] w-full overflow-hidden sm:h-[500px] lg:h-[580px]">
         <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
           <FeaturedHero />
         </Suspense>
-        <div className="absolute left-4 top-4 sm:left-8 sm:top-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)]">
+
+        {/* Brand vignette over the photo/illustration - teal-tinted rather
+            than a flat black scrim, so the hero reads as distinctly FYstay
+            before a single word of text renders. Darker at the top (for the
+            headline) and bottom (for the featured-listing caption and the
+            search card's edge), lighter through the middle so the photo
+            still shows through. z-10: explicit, so it reliably paints above
+            the backdrop (FeaturedHero/HeroBanner, unpositioned) but below
+            the hero's own text layers (z-20+ - see FeaturedListingHero for
+            why an explicit z is needed there too). */}
+        <div
+          className="absolute inset-0 z-10 bg-gradient-to-b from-brand-950/75 via-brand-950/15 to-brand-950/80"
+          aria-hidden
+        />
+
+        <div className="absolute left-4 top-4 z-30 sm:left-8 sm:top-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)] backdrop-blur-sm">
             <MapPin className="h-4 w-4 text-brand-700" aria-hidden />
             Blackpool, Fylde Coast
           </span>
+        </div>
+
+        <div className="absolute inset-x-4 top-20 z-30 max-w-xl sm:inset-x-8 sm:top-28 lg:top-32">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-400 sm:text-sm">
+            {greetingName ? "Welcome back" : "Fylde Coast accommodation, booked direct"}
+          </p>
+          <h1 className="mt-2 text-3xl font-bold leading-tight text-white [text-shadow:0_2px_20px_rgb(0_0_0_/_0.35)] sm:text-5xl lg:text-6xl">
+            {greetingName ? `Good ${timeOfDayGreeting()}, ${greetingName}` : "Stay local. Stay Fylde Coast."}
+          </h1>
+          <p className="mt-3 max-w-md text-sm text-white/90 sm:text-base">
+            {greetingName
+              ? "What would you like to do today?"
+              : "Independent apartments, cottages and guest houses from real local hosts — no resellers, just the coast."}
+          </p>
         </div>
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
         {/* Pulled up over the banner's bottom edge so the search card reads
             as sitting on top of the scene, the way a native app's home
-            screen often overlaps its hero photo with a content sheet. */}
-        <div className="relative z-10 -mt-14 rounded-3xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-popover)] sm:-mt-20 sm:p-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-              {greetingName
-                ? `Good ${timeOfDayGreeting()}, ${greetingName}`
-                : "Stay local. Book with FY Stay."}
-            </h1>
-            <p className="mt-2 text-sm text-zinc-500 sm:text-base">
-              {greetingName
-                ? "What would you like to do today?"
-                : "Discover independent accommodation across Blackpool and the Fylde Coast. A local alternative to the big booking platforms."}
+            screen often overlaps its hero photo with a content sheet. The
+            headline/subtext now live on the hero image itself (see the
+            <section> above) so this card can stay focused on the one thing
+            it needs to convert: the search bar. The gradient strip along
+            the top is a small signature touch - most booking sites don't
+            do it - to keep the card feeling distinctly FYstay rather than a
+            plain white panel. */}
+        <div className="relative z-10 -mt-14 overflow-hidden rounded-3xl border border-border-subtle bg-surface shadow-[var(--shadow-popover)] sm:-mt-20">
+          <div className="h-1.5 w-full bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
+          <div className="p-5 sm:p-8">
+            <p className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-400 sm:text-left">
+              Search stays on the Fylde Coast
             </p>
-          </div>
-          <div className="mt-6">
-            <Suspense>
-              <SearchBar liveUpdate={false} />
-            </Suspense>
+            <div className="mt-3">
+              <Suspense>
+                <SearchBar liveUpdate={false} />
+              </Suspense>
+            </div>
           </div>
         </div>
 

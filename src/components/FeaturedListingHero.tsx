@@ -45,7 +45,18 @@ export function FeaturedListingHero({
 
   return (
     <div className={cn("relative", className)} aria-label="Featured stays" role="group">
-      <Link key={listing.id} href={`/listings/${listing.id}`} className="absolute inset-0 block animate-hero-fade-in">
+      {/* z-20 on both the slide and the dots below: page.tsx layers a
+          page-wide brand vignette over this whole hero at z-10 (for the
+          marketing headline's contrast), which - being a later sibling of
+          this component's root, with an explicit z-index of its own -
+          would otherwise paint above this photo and its caption/dots
+          entirely, not just tint them. An explicit z-20 here keeps this
+          slide's own content above that vignette. */}
+      <Link
+        key={listing.id}
+        href={`/listings/${listing.id}`}
+        className="absolute inset-0 z-20 block animate-hero-fade-in"
+      >
         <Image
           src={listing.photo}
           alt={listing.title}
@@ -55,7 +66,7 @@ export function FeaturedListingHero({
           className="object-cover"
           unoptimized={!isOptimizableImage(listing.photo)}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-950/70 via-brand-950/10 to-transparent" />
         {/* bottom-20/24 rather than a plain bottom-4/6: the search card
             below overlaps the hero's own bottom 56px (mobile) / 80px
             (desktop) via its negative top margin (see page.tsx), so
@@ -83,7 +94,7 @@ export function FeaturedListingHero({
       </Link>
 
       {count > 1 && (
-        <div className="absolute right-4 top-4 z-10 flex gap-1.5 sm:right-8 sm:top-6">
+        <div className="absolute right-4 top-4 z-20 flex gap-1.5 sm:right-8 sm:top-6">
           {listings.map((l, i) => (
             <button
               key={l.id}

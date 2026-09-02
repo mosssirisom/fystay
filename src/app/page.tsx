@@ -135,6 +135,7 @@ async function FeaturedHero() {
       country: true,
       pricePerNightCents: true,
       photos: true,
+      amenities: true,
       reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
     },
     orderBy: { createdAt: "desc" },

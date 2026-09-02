@@ -125,6 +125,7 @@ function featurable(overrides: Partial<FeaturableListing> & { id: string }): Fea
     country: "England",
     pricePerNightCents: 10000,
     photos: ["data:image/svg+xml,placeholder"],
+    amenities: [],
     reviews: [],
     ...overrides,
   };

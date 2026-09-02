@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export const metadata: Metadata = {
   title: "Cancellation policies",
-  description: "The Flexible, Moderate and Strict cancellation policies FYstay hosts can choose from.",
+  description: "The Flexible, Moderate and Strict cancellation policies FYStay hosts can choose from.",
 };
 
 const POLICIES = [

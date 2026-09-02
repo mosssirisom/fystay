@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Why FYstay exists: a local accommodation marketplace built for the Fylde Coast.",
+  description: "Why FYStay exists: a local accommodation marketplace built for the Fylde Coast.",
 };
 
 const VALUES = [
@@ -14,7 +14,7 @@ const VALUES = [
     icon: MapPin,
     title: "Local, not corporate",
     description:
-      "Every stay on FYstay is listed directly by a real host on the Fylde Coast - not resold or aggregated from a big chain.",
+      "Every stay on FYStay is listed directly by a real host on the Fylde Coast - not resold or aggregated from a big chain.",
   },
   {
     icon: Star,
@@ -33,9 +33,9 @@ const VALUES = [
 export default function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
-      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">About FYstay</h1>
+      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">About FYStay</h1>
       <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-        FYstay is a booking platform for independent accommodation across Blackpool and the Fylde
+        FYStay is a booking platform for independent accommodation across Blackpool and the Fylde
         Coast - a local alternative to the big booking platforms. We built it because the area is
         full of great, independently-run places to stay that deserve a straightforward way to
         reach guests directly, without disappearing into a global marketplace alongside thousands

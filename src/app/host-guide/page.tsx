@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "Host guide",
-  description: "How to list and manage a property on FYstay, the Fylde Coast's local accommodation marketplace.",
+  description: "How to list and manage a property on FYStay, the Fylde Coast's local accommodation marketplace.",
 };
 
 const STEPS = [
@@ -40,11 +40,11 @@ export default function HostGuidePage() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
       <Link href="/host" className="text-sm font-medium text-brand-700 hover:underline">
-        ← Why host with FYstay
+        ← Why host with FYStay
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-foreground sm:text-3xl">Host guide</h1>
       <p className="mt-2 text-sm text-zinc-500">
-        A quick walkthrough of listing your property and managing bookings on FYstay.
+        A quick walkthrough of listing your property and managing bookings on FYStay.
       </p>
 
       <div className="mt-8 flex flex-col gap-6">

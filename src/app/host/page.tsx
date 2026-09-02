@@ -15,7 +15,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const title = "List your property on the Fylde Coast";
 const description =
-  "List your Blackpool, Lytham St Annes, Fleetwood, Cleveleys or Bispham property on FYstay. Reach local guests directly, manage bookings from one dashboard, and see exactly what you earn - no unsupported promises, just how it actually works.";
+  "List your Blackpool, Lytham St Annes, Fleetwood, Cleveleys or Bispham property on FYStay. Reach local guests directly, manage bookings from one dashboard, and see exactly what you earn - no unsupported promises, just how it actually works.";
 
 export const metadata: Metadata = {
   title,
@@ -26,11 +26,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * Each reason is written as a direct, factual statement about how FYstay
+ * Each reason is written as a direct, factual statement about how FYStay
  * itself works - never a claim about a competitor's fees, algorithm, or
  * conversion rate, since none of that is something this app could actually
  * support. The contrast with a large global platform is left implicit in
- * what FYstay deliberately doesn't do (no worldwide catalogue, no relay
+ * what FYStay deliberately doesn't do (no worldwide catalogue, no relay
  * between host and guest), not asserted as a fact about anyone else.
  */
 const REASONS = [
@@ -38,13 +38,13 @@ const REASONS = [
     icon: MapPin,
     title: "Local exposure, not a drop in a global ocean",
     description:
-      "FYstay only ever shows guests stays on the Fylde Coast. Your listing sits alongside a handful of other local places, not millions of listings from every country.",
+      "FYStay only ever shows guests stays on the Fylde Coast. Your listing sits alongside a handful of other local places, not millions of listings from every country.",
   },
   {
     icon: Users,
     title: "A genuinely local customer base",
     description:
-      "Every search on FYstay is already scoped to Blackpool, Lytham St Annes, Fleetwood, Cleveleys or Bispham - you're reaching people who've chosen this coast, not hoping to be noticed inside a worldwide catalogue.",
+      "Every search on FYStay is already scoped to Blackpool, Lytham St Annes, Fleetwood, Cleveleys or Bispham - you're reaching people who've chosen this coast, not hoping to be noticed inside a worldwide catalogue.",
   },
   {
     icon: LayoutDashboard,
@@ -62,7 +62,7 @@ const REASONS = [
     icon: PoundSterling,
     title: "Transparent fees, shown upfront",
     description:
-      "You set your own nightly rate and cleaning fee - that's what you earn per booking. FYstay's only charge is a service fee shown to the guest at checkout; it isn't deducted from your payout.",
+      "You set your own nightly rate and cleaning fee - that's what you earn per booking. FYStay's only charge is a service fee shown to the guest at checkout; it isn't deducted from your payout.",
   },
 ];
 
@@ -96,7 +96,7 @@ export default async function BecomeAHostPage() {
     <div className="flex-1">
       {/* Full-bleed gradient hero, same brand-teal palette as the homepage
           hero and the search card's signature strip, so this reads as
-          FYstay's own page rather than a bolted-on marketing microsite. */}
+          FYStay's own page rather than a bolted-on marketing microsite. */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-950 via-brand-800 to-brand-600 px-6 py-16 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-400 sm:text-sm">
@@ -130,7 +130,7 @@ export default async function BecomeAHostPage() {
       <section className="mx-auto w-full max-w-6xl px-6 py-14">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-            Why local hosts choose FYstay
+            Why local hosts choose FYStay
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
             No unsupported promises about bookings or earnings - just how the platform actually

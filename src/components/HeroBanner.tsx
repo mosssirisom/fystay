@@ -62,7 +62,7 @@ export function HeroBanner({ className }: { className?: string }) {
       </g>
 
       {/* A pair of gulls - the kind of small, hand-crafted detail a stock
-          photo wouldn't have, reinforcing that this is a distinct FYstay
+          photo wouldn't have, reinforcing that this is a distinct FYStay
           illustration rather than generic coastal imagery. */}
       <g stroke="#f0fdfa" strokeOpacity="0.55" strokeWidth="3" strokeLinecap="round" fill="none">
         <path d="M980 110q14-16 28 0q14-16 28 0" />

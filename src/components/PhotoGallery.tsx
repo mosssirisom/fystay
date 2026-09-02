@@ -9,7 +9,7 @@ import { isOptimizableImage } from "@/lib/image";
 
 // One large hero plus up to this many stacked thumbnails alongside it - a
 // vertical rail rather than the 2x2 photo mosaic most booking sites use, so
-// the gallery still reads as distinctly FYstay's own even before any text
+// the gallery still reads as distinctly FYStay's own even before any text
 // on the page does.
 const MAX_THUMBNAILS = 3;
 

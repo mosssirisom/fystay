@@ -57,7 +57,7 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
   service fee (`src/lib/pricing.ts`), snapshotted onto the booking at creation time so a later
   change to the listing's rates never rewrites what a guest already agreed to pay.
 - **Payments**: paying creates a Stripe Checkout session itemized by that breakdown; card details
-  never touch FY Stay's servers or database, since the guest enters them on Stripe's own hosted
+  never touch FYStay's servers or database, since the guest enters them on Stripe's own hosted
   page. Only Stripe's server-to-server webhook ever confirms a booking (`checkout.session.completed`),
   never the browser redirect returning from it, so a guest can't fake a successful payment by
   editing the URL. A declined card is Stripe's own hosted page's problem to handle (it keeps the

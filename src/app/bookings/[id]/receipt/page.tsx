@@ -72,7 +72,7 @@ export default async function BookingReceiptPage({
           <CardContent className="flex flex-col gap-6 p-0">
             <div className="flex items-start justify-between gap-4 border-b border-border-subtle pb-4">
               <div>
-                <p className="text-lg font-bold text-foreground">FYstay</p>
+                <p className="text-lg font-bold text-foreground">FYStay</p>
                 <h1 className="text-sm font-semibold text-zinc-500">Payment receipt</h1>
               </div>
               <div className="text-right text-sm text-zinc-500">
@@ -161,7 +161,7 @@ export default async function BookingReceiptPage({
             </div>
 
             <p className="text-xs text-zinc-500">
-              This receipt was generated automatically by FYstay and reflects the amount actually
+              This receipt was generated automatically by FYStay and reflects the amount actually
               charged for booking #{booking.reference}.
             </p>
           </CardContent>

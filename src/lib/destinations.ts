@@ -1,5 +1,5 @@
 /**
- * The Fylde Coast towns FYstay covers - the same set as the homepage's
+ * The Fylde Coast towns FYStay covers - the same set as the homepage's
  * "Now covering" badges, but structured for reuse: today it backs the
  * homepage's "Explore the Fylde Coast" tiles, and is meant to double as the
  * data source for dedicated per-destination landing pages later (e.g.

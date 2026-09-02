@@ -11,7 +11,7 @@ export default function CookiePolicyPage() {
     <LegalPageLayout title="Cookie Policy" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="What we actually use">
         <p>
-          FYstay keeps cookies to a minimum. We only use cookies that are strictly necessary to
+          FYStay keeps cookies to a minimum. We only use cookies that are strictly necessary to
           run the site - we don&apos;t use any analytics, advertising, or third-party tracking
           cookies today.
         </p>
@@ -70,7 +70,7 @@ export default function CookiePolicyPage() {
       <LegalSection heading="Why there's no cookie preference toggle">
         <p>
           UK rules on cookies (PECR) only require your consent for non-essential cookies, such as
-          analytics or advertising. Since FYstay doesn&apos;t use any of those, there&apos;s
+          analytics or advertising. Since FYStay doesn&apos;t use any of those, there&apos;s
           nothing non-essential to ask your permission for - the notice you see is purely
           informational. If that ever changes (for example, if we add analytics in future),
           we&apos;ll update this page and add a proper consent choice before we do.

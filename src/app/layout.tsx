@@ -24,7 +24,7 @@ const fredoka = Fredoka({
 });
 
 // This default only ever renders on a page that hasn't set its own title
-// (see the "%s · FYstay" template below for every other page) - kept
+// (see the "%s · FYStay" template below for every other page) - kept
 // reasonably specific rather than a bare brand name, since a route added
 // later without its own metadata would otherwise fall back to a title with
 // no useful information in it.

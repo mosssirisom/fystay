@@ -9,7 +9,7 @@
 
 export const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-export const SITE_NAME = "FYstay";
+export const SITE_NAME = "FYStay";
 
 /**
  * A listing's own title usually already names its town (hosts write things

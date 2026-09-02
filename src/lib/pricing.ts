@@ -17,7 +17,7 @@ export type BookingPriceBreakdown = {
  * booking exists (the widget, the availability check) and to snapshot a
  * price onto a booking at creation time, so the two can never disagree.
  *
- * taxCents is always 0 today: FY Stay doesn't yet compute jurisdiction-
+ * taxCents is always 0 today: FYStay doesn't yet compute jurisdiction-
  * specific occupancy tax, so it isn't fabricated here. The field exists so
  * the breakdown (and the UI line for it) is ready the moment that logic
  * exists, without another schema change.

@@ -3,15 +3,15 @@ import { CreditCard, Flag, ShieldCheck, Star } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Safety information",
-  description: "How FYstay keeps bookings, payments and stays on the Fylde Coast safe.",
+  description: "How FYStay keeps bookings, payments and stays on the Fylde Coast safe.",
 };
 
 const POINTS = [
   {
     icon: CreditCard,
-    title: "Pay through FYstay, not directly",
+    title: "Pay through FYStay, not directly",
     description:
-      "Always book and pay through FYstay's checkout. It's the only way your booking is protected by a host's cancellation policy and by our support team - never send money to a host directly.",
+      "Always book and pay through FYStay's checkout. It's the only way your booking is protected by a host's cancellation policy and by our support team - never send money to a host directly.",
   },
   {
     icon: Star,
@@ -29,7 +29,7 @@ const POINTS = [
     icon: ShieldCheck,
     title: "Secure account & payments",
     description:
-      "Passwords are stored securely (never in plain text), and payments are handled entirely by Stripe's encrypted checkout - FYstay never sees your full card details.",
+      "Passwords are stored securely (never in plain text), and payments are handled entirely by Stripe's encrypted checkout - FYStay never sees your full card details.",
   },
 ];
 

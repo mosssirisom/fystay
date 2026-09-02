@@ -130,7 +130,7 @@ export async function POST(request: Request) {
     lineItems.push({
       price_data: {
         currency: "gbp",
-        product_data: { name: "FYstay service fee" },
+        product_data: { name: "FYStay service fee" },
         unit_amount: booking.serviceFeeCents,
       },
       quantity: 1,

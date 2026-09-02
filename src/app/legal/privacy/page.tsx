@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
     <LegalPageLayout title="Privacy Policy" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="Who we are">
         <p>
-          FYstay (&quot;we&quot;, &quot;us&quot;) operates fystay.vercel.app, a booking platform
+          FYStay (&quot;we&quot;, &quot;us&quot;) operates fystay.vercel.app, a booking platform
           for independent accommodation on the Fylde Coast. This policy explains what personal
           data we collect, why, and the rights you have over it under UK GDPR and the Data
           Protection Act 2018. For questions or to exercise any of the rights below, contact{" "}

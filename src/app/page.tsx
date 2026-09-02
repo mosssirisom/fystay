@@ -154,7 +154,7 @@ export default async function Home() {
   // real /search?city= URL the homepage's own search bar already uses -
   // not a hypothetical endpoint. Organization's areaServed is the same
   // named-town list as the "Now covering" badges and the Explore section
-  // below, so this only ever states places FYstay actually covers.
+  // below, so this only ever states places FYStay actually covers.
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -198,7 +198,7 @@ export default async function Home() {
         </Suspense>
 
         {/* Brand vignette over the photo/illustration - teal-tinted rather
-            than a flat black scrim, so the hero reads as distinctly FYstay
+            than a flat black scrim, so the hero reads as distinctly FYStay
             before a single word of text renders. Darker at the top (for the
             headline) and bottom (for the featured-listing caption and the
             search card's edge), lighter through the middle so the photo
@@ -278,7 +278,7 @@ export default async function Home() {
         <div className="mt-14">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Explore the Fylde Coast</h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Every FYstay town, one tap away from its own local stays.
+            Every FYStay town, one tap away from its own local stays.
           </p>
           <div className="mt-6">
             <Suspense fallback={<ExploreDestinationsSkeleton />}>
@@ -289,9 +289,9 @@ export default async function Home() {
 
         <div className="mt-14 border-t border-border-subtle pt-10">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why FYstay?</h2>
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why FYStay?</h2>
             <p className="mt-1 text-sm text-zinc-500">
-              FYstay is built around one coastline, not spread thin across the world - everything
+              FYStay is built around one coastline, not spread thin across the world - everything
               here is designed for booking a stay on the Fylde Coast, and nowhere else.
             </p>
           </div>
@@ -326,7 +326,7 @@ export default async function Home() {
                   Own a place on the Fylde Coast?
                 </h2>
                 <p className="mt-1 max-w-md text-sm text-white/80">
-                  List it on FYstay: local exposure, a local customer base, and one simple
+                  List it on FYStay: local exposure, a local customer base, and one simple
                   dashboard to manage it all.
                 </p>
               </div>

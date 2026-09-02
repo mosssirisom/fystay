@@ -53,7 +53,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border-subtle px-6 py-6">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-zinc-500">© {new Date().getFullYear()} FYstay</p>
+          <p className="text-xs text-zinc-500">© {new Date().getFullYear()} FYStay</p>
           <ul className="flex flex-wrap gap-x-4 gap-y-2">
             {legalLinks.map((link) => (
               <li key={link.label}>

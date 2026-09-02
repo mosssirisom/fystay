@@ -69,7 +69,7 @@ function DestinationTile({
 }
 
 /**
- * A geographic index of the towns FYstay covers, each tile filtering
+ * A geographic index of the towns FYStay covers, each tile filtering
  * straight to that town's real search results today - and, since every
  * destination here is keyed by a stable slug, the same list a future
  * dedicated landing page (/destinations/[slug]) for "accommodation in

@@ -10,10 +10,10 @@ import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
+import { ExploreDestinations, ExploreDestinationsSkeleton } from "@/components/ExploreDestinations";
 import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { firstName, timeOfDayGreeting } from "@/lib/greeting";
-
-const FYLDE_COAST_AREAS = ["Blackpool", "Lytham St Annes", "Fleetwood", "Cleveleys", "Bispham"];
+import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 
 const TRUST_POINTS = [
   {
@@ -209,9 +209,9 @@ export default async function Home() {
           <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
             Now covering
           </span>
-          {FYLDE_COAST_AREAS.map((area) => (
-            <Badge key={area} variant="neutral">
-              {area}
+          {FYLDE_COAST_DESTINATIONS.map((destination) => (
+            <Badge key={destination.slug} variant="neutral">
+              {destination.name}
             </Badge>
           ))}
         </div>
@@ -233,6 +233,22 @@ export default async function Home() {
         <Suspense fallback={null}>
           <MarketplaceSections />
         </Suspense>
+
+        {/* A geographic index rather than another listings carousel - each
+            tile is a real, working link to that town's search results
+            today, and doubles as the seed for dedicated per-destination
+            landing pages later (see lib/destinations.ts). */}
+        <div className="mt-14">
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Explore the Fylde Coast</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Every FYstay town, one tap away from its own local stays.
+          </p>
+          <div className="mt-6">
+            <Suspense fallback={<ExploreDestinationsSkeleton />}>
+              <ExploreDestinations />
+            </Suspense>
+          </div>
+        </div>
 
         <div className="mt-14 border-t border-border-subtle pt-10">
           <div className="mx-auto max-w-2xl text-center">

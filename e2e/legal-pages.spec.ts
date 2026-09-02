@@ -36,7 +36,14 @@ test("Terms, Privacy, and Cookie policy pages render real content", async ({ pag
 
   await page.goto("/legal/cookies");
   await expect(page.getByRole("heading", { name: "Cookie Policy" })).toBeVisible();
-  await expect(page.getByText(/strictly necessary/)).toBeVisible();
+  // Scoped to <main>: the site-wide cookie consent banner (rendered as a
+  // sibling of <main>, on every page) uses near-identical wording ("...
+  // strictly necessary cookies...") to this page's own paragraph, so an
+  // unscoped match is ambiguous the moment the banner has had time to
+  // reveal itself post-hydration - a pre-existing race, not new to this
+  // page. Scoping to the page's own content avoids the ambiguity outright
+  // rather than depending on the banner's timing at all.
+  await expect(page.locator("main").getByText(/strictly necessary/)).toBeVisible();
 });
 
 test("cookie notice shows on first visit, and dismissing it persists across reloads", async ({

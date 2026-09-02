@@ -227,30 +227,22 @@ export default async function Home() {
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
-        {/* Pulled up over the banner's bottom edge so the search card reads
-            as sitting on top of the scene, the way a native app's home
-            screen often overlaps its hero photo with a content sheet. The
-            headline/subtext now live on the hero image itself (see the
-            <section> above) so this card can stay focused on the one thing
-            it needs to convert: the search bar. The gradient strip along
-            the top is a small signature touch - most booking sites don't
-            do it - to keep the card feeling distinctly FYstay rather than a
-            plain white panel. */}
-        <div className="relative z-10 -mt-14 overflow-hidden rounded-3xl border border-border-subtle bg-surface shadow-[var(--shadow-popover)] sm:-mt-20">
-          <div className="h-1.5 w-full bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
-          <div className="p-5 sm:p-8">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 sm:text-left">
-              Search stays on the Fylde Coast
-            </p>
-            <div className="mt-3">
-              <Suspense>
-                <SearchBar liveUpdate={false} />
-              </Suspense>
-            </div>
-          </div>
+        {/* Sits just below the hero photo instead of overlapping it - an
+            earlier version pulled this card up over the banner's bottom
+            edge for a "sitting on top of the scene" effect, but that meant
+            it always hid a slice of whatever photo was behind it, however
+            small. SearchBar already carries its own premium styling
+            (rounded pill on sm+, its own border and shadow - see
+            SearchBar.tsx), so it doesn't need a second card wrapped around
+            it here - one clean layer reads more premium than a bigger boxy
+            one stacked on top of it, and the full photo stays visible. */}
+        <div className="mt-6 sm:mt-8">
+          <Suspense>
+            <SearchBar liveUpdate={false} />
+          </Suspense>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-center">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-center">
           <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Now covering
           </span>

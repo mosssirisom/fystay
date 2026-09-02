@@ -219,9 +219,9 @@ export function DestinationAutocomplete({
     <div ref={containerRef} className={cn("relative", className)}>
       <label
         htmlFor={id}
-        className="flex flex-1 cursor-text items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-surface-muted sm:py-1.5"
+        className="flex flex-1 cursor-text items-center gap-2.5 rounded-xl px-3 py-2.5 hover:bg-surface-muted sm:py-1.5"
       >
-        <MapPin className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+        <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
         <span className="min-w-0 flex-1">
           <span className="block text-[11px] font-semibold text-foreground">Where</span>
           <input

@@ -109,7 +109,13 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5",
+        // The outer shape carries most of the "premium" weight here: a
+        // generous rounded card that flattens into a full pill once there's
+        // room (sm+), a soft resting shadow that lifts on hover, and a
+        // brand-teal focus ring when any field inside is focused - so the
+        // whole bar reads as one cohesive, interactive surface rather than
+        // four unrelated inputs sitting next to each other.
+        "mx-auto flex w-full max-w-4xl flex-col gap-1 rounded-[28px] border border-border-subtle bg-surface p-2 shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0 sm:rounded-full sm:p-2",
       )}
     >
       <div className="flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle">
@@ -126,16 +132,23 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
               setSelectedListingId(payload.listingId);
             }
           }}
-          className="flex-1"
+          className="sm:flex-[1.15]"
         />
 
-        <SearchDateRangeField range={range} onChange={setRange} className="flex-1" />
+        {/* Wider than the other segments: it holds two labelled sub-fields
+            (Check-in/Check-out) rather than one. */}
+        <SearchDateRangeField range={range} onChange={setRange} className="sm:flex-[1.6]" />
 
         <GuestCategoryPicker
           value={guestCounts}
           onChange={setGuestCounts}
           className="flex-1"
-          triggerClassName="px-3 py-2.5 sm:py-1.5"
+          // [&>svg]: recolors just this trigger's own icon to match the
+          // teal used by the Where/Check-in fields, without touching
+          // GuestCategoryPicker's markup - it's also used, unstyled, by the
+          // listing page's booking widget, which this change shouldn't
+          // affect at all.
+          triggerClassName="px-3 py-2.5 sm:py-1.5 [&>svg]:text-brand-600"
         />
       </div>
 
@@ -143,7 +156,7 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
         type="submit"
         disabled={isSearching}
         aria-busy={isSearching}
-        className="focus-ring flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-90 sm:w-auto sm:shrink-0 sm:py-2.5"
+        className="focus-ring mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:mt-0 sm:ml-1 sm:w-auto sm:shrink-0 sm:py-3"
       >
         {isSearching ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />

@@ -42,14 +42,13 @@ export function SearchDateRangeField({
 
   const checkInLabel = range?.from ? format(range.from, "d MMM") : null;
   const checkOutLabel = range?.to ? format(range.to, "d MMM") : null;
-  const value = checkInLabel
-    ? checkOutLabel
-      ? `${checkInLabel} – ${checkOutLabel}`
-      : `${checkInLabel} – Add checkout`
-    : "Add dates";
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div ref={containerRef} className={cn("relative flex items-stretch", className)}>
+      {/* Two labelled halves (Check-in / Check-out) sharing one popover and
+          one underlying range, rather than a single combined "Dates"
+          field - the shape guests expect from a booking search, without
+          changing how dates are actually picked, stored, or submitted. */}
       <button
         ref={triggerRef}
         type="button"
@@ -57,18 +56,41 @@ export function SearchDateRangeField({
         aria-expanded={open}
         aria-controls="date-range-panel"
         onClick={() => setOpen((v) => !v)}
-        className="focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
+        className="focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
       >
-        <CalendarDays className="h-4 w-4 shrink-0 text-zinc-400" />
+        <CalendarDays className="h-4 w-4 shrink-0 text-brand-600" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-semibold text-foreground">Dates</span>
+          <span className="block text-[11px] font-semibold text-foreground">Check-in</span>
           <span
             className={cn(
               "block truncate text-sm",
               checkInLabel ? "text-foreground" : "text-zinc-500",
             )}
           >
-            {value}
+            {checkInLabel ?? "Add date"}
+          </span>
+        </span>
+      </button>
+
+      <div className="my-2 w-px shrink-0 bg-border-subtle" aria-hidden />
+
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls="date-range-panel"
+        onClick={() => setOpen((v) => !v)}
+        className="focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-semibold text-foreground">Check-out</span>
+          <span
+            className={cn(
+              "block truncate text-sm",
+              checkOutLabel ? "text-foreground" : "text-zinc-500",
+            )}
+          >
+            {checkOutLabel ?? "Add date"}
           </span>
         </span>
       </button>
@@ -78,7 +100,7 @@ export function SearchDateRangeField({
           id="date-range-panel"
           role="dialog"
           aria-label="Choose check-in and check-out dates"
-          className="absolute left-1/2 top-full z-20 mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
+          className="animate-dropdown-in absolute left-1/2 top-full z-20 mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
         >
           <DayPicker
             mode="range"

@@ -33,19 +33,20 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
   // to incidentally buffer for React to finish hydrating (every other test
   // in this file has an assertion or a fill() ahead of its first click,
   // which is apparently enough of a gap in practice). Right after
-  // navigation, the "Dates" button can be present and clickable in the DOM
-  // - server-rendered HTML - a moment before React has actually attached
-  // its onClick handler, so a click lands on an inert button and nothing
-  // opens. Wrapping the click itself in a retrying assertion (rather than
-  // just the dialog check after it) means a mistimed first click simply
-  // gets retried, by which point hydration is done; this is a real,
-  // measured, pre-existing race in this codebase's search bar (reproduced
-  // locally at roughly a 1-in-7 rate even on code with no relation to this
-  // test file), not a workaround for a logic bug.
-  const datesButton = page.getByRole("button", { name: /Dates/ });
+  // navigation, the "Check-in" button can be present and clickable in the
+  // DOM - server-rendered HTML - a moment before React has actually
+  // attached its onClick handler, so a click lands on an inert button and
+  // nothing opens. Wrapping the click itself in a retrying assertion
+  // (rather than just the dialog check after it) means a mistimed first
+  // click simply gets retried, by which point hydration is done; this is a
+  // real, measured, pre-existing race in this codebase's search bar
+  // (reproduced locally at roughly a 1-in-7 rate even on code with no
+  // relation to this test file), not a workaround for a logic bug.
+  const checkInButton = page.getByRole("button", { name: /Check-in/ });
+  const checkOutButton = page.getByRole("button", { name: /Check-out/ });
   const dateDialog = page.getByRole("dialog", { name: "Choose check-in and check-out dates" });
   await expect(async () => {
-    await datesButton.click();
+    await checkInButton.click();
     await expect(dateDialog).toBeVisible({ timeout: 1000 });
   }).toPass({ timeout: 10_000 });
 
@@ -57,7 +58,8 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
 
   // Selecting both ends of the range closes the popover automatically.
   await expect(dateDialog).toBeHidden();
-  await expect(datesButton).not.toContainText("Add dates");
+  await expect(checkInButton).not.toContainText("Add date");
+  await expect(checkOutButton).not.toContainText("Add date");
 
   await page.getByRole("button", { name: "Search" }).click();
   await page.waitForURL(new RegExp(`checkIn=${isoDate(checkIn)}`));

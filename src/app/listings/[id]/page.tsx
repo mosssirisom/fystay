@@ -13,8 +13,7 @@ import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
 import { SaveButton } from "@/components/SaveButton";
 import { Avatar } from "@/components/ui/Avatar";
-
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 
 const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
@@ -46,22 +45,23 @@ export async function generateMetadata({
   const listing = await getListing(id);
   if (!listing || !listing.published) return {};
 
+  const title = withCity(listing.title, listing.city);
   const description = `${listing.title} in ${listing.city}, ${listing.country}. ${listing.description.slice(0, 140)}`;
-  const url = `${siteUrl}/listings/${listing.id}`;
+  const url = `${SITE_URL}/listings/${listing.id}`;
 
   return {
-    title: listing.title,
+    title,
     description,
     alternates: { canonical: url },
     openGraph: {
-      title: listing.title,
+      title,
       description,
       url,
       images: listing.photos[0] ? [{ url: listing.photos[0] }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title: listing.title,
+      title,
       description,
       images: listing.photos[0] ? [listing.photos[0]] : undefined,
     },
@@ -115,14 +115,19 @@ export default async function ListingDetailPage({
     name: listing.title,
     description: listing.description,
     image: listing.photos,
-    url: `${siteUrl}/listings/${listing.id}`,
-    brand: { "@type": "Brand", name: "fystay" },
+    url: `${SITE_URL}/listings/${listing.id}`,
+    brand: { "@type": "Brand", name: SITE_NAME },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: listing.city,
+      addressCountry: listing.country,
+    },
     offers: {
       "@type": "Offer",
       price: (listing.pricePerNightCents / 100).toFixed(2),
       priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
-      url: `${siteUrl}/listings/${listing.id}`,
+      url: `${SITE_URL}/listings/${listing.id}`,
     },
     ...(listing.reviews.length > 0
       ? {

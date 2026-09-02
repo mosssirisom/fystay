@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
-export const metadata: Metadata = { title: "Cancellation policies" };
+export const metadata: Metadata = {
+  title: "Cancellation policies",
+  description: "The Flexible, Moderate and Strict cancellation policies FYstay hosts can choose from.",
+};
 
 const POLICIES = [
   {

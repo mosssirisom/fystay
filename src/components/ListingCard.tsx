@@ -6,6 +6,7 @@ import { isOptimizableImage } from "@/lib/image";
 import { SaveButton } from "@/components/SaveButton";
 import { averageRating as computeAverageRating } from "@/lib/reviews";
 import { AMENITY_CATEGORIES } from "@/lib/amenityCategories";
+import { withCity } from "@/lib/seo";
 
 export type ListingCardData = {
   id: string;
@@ -50,7 +51,7 @@ export function ListingCard({
           {listing.photos[0] ? (
             <Image
               src={listing.photos[0]}
-              alt={listing.title}
+              alt={withCity(listing.title, listing.city)}
               fill
               className="object-cover transition duration-300 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

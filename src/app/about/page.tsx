@@ -4,7 +4,10 @@ import { Lock, MapPin, Star } from "lucide-react";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = {
+  title: "About",
+  description: "Why FYstay exists: a local accommodation marketplace built for the Fylde Coast.",
+};
 
 const VALUES = [
   {

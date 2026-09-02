@@ -3,7 +3,10 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
-export const metadata: Metadata = { title: "Host guide" };
+export const metadata: Metadata = {
+  title: "Host guide",
+  description: "How to list and manage a property on FYstay, the Fylde Coast's local accommodation marketplace.",
+};
 
 const STEPS = [
   {

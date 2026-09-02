@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,25 +23,33 @@ const fredoka = Fredoka({
   weight: ["600"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-const description = "Find and book unique places to stay, or host your own.";
+// This default only ever renders on a page that hasn't set its own title
+// (see the "%s · FYstay" template below for every other page) - kept
+// reasonably specific rather than a bare brand name, since a route added
+// later without its own metadata would otherwise fall back to a title with
+// no useful information in it.
+const defaultTitle = `${SITE_NAME} — Local Accommodation on the Fylde Coast`;
+const description =
+  "Book independent apartments, cottages and guest houses across Blackpool and the Fylde Coast - real local hosts, genuine reviews, secure booking.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "fystay: book unique stays",
-    template: "%s · fystay",
+    default: defaultTitle,
+    template: `%s · ${SITE_NAME}`,
   },
   description,
   openGraph: {
-    title: "fystay: book unique stays",
+    title: defaultTitle,
     description,
-    siteName: "fystay",
+    siteName: SITE_NAME,
+    url: SITE_URL,
     type: "website",
+    locale: "en_GB",
   },
   twitter: {
     card: "summary_large_image",
-    title: "fystay: book unique stays",
+    title: defaultTitle,
     description,
   },
 };

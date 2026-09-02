@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
 import type { FeaturedListing } from "@/lib/marketplace";
 import { cn } from "@/lib/cn";
+import { withCity } from "@/lib/seo";
 
 const ROTATE_INTERVAL_MS = 5000;
 
@@ -59,7 +60,7 @@ export function FeaturedListingHero({
       >
         <Image
           src={listing.photo}
-          alt={listing.title}
+          alt={withCity(listing.title, listing.city)}
           fill
           priority={active === 0}
           sizes="100vw"

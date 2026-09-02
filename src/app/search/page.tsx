@@ -8,6 +8,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 export const metadata: Metadata = {
   title: "Search results",
+  description: "Browse available places to stay across Blackpool and the Fylde Coast.",
   // Every combination of filters/sort/dates renders from the same URL
   // shape, none of it worth indexing separately from the homepage.
   robots: { index: false, follow: true },

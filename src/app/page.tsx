@@ -14,6 +14,7 @@ import { ExploreDestinations, ExploreDestinationsSkeleton } from "@/components/E
 import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { firstName, timeOfDayGreeting } from "@/lib/greeting";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const TRUST_POINTS = [
   {
@@ -46,10 +47,16 @@ const TRUST_POINTS = [
   },
 ];
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+const title = "Local Accommodation in Blackpool & the Fylde Coast";
+const description =
+  "Search and book independent apartments, cottages and guest houses across Blackpool and the Fylde Coast. Real local hosts, genuine reviews, secure booking.";
 
 export const metadata: Metadata = {
-  alternates: { canonical: siteUrl },
+  title,
+  description,
+  alternates: { canonical: SITE_URL },
+  openGraph: { title, description, url: SITE_URL, type: "website" },
+  twitter: { card: "summary_large_image", title, description },
 };
 
 /**
@@ -139,8 +146,43 @@ export default async function Home() {
   const session = await auth();
   const greetingName = session?.user?.name ? firstName(session.user.name) : null;
 
+  // WebSite + SearchAction tells Google this site has an internal search it
+  // can offer directly in results (a "sitelinks search box"), targeting the
+  // real /search?city= URL the homepage's own search bar already uses -
+  // not a hypothetical endpoint. Organization's areaServed is the same
+  // named-town list as the "Now covering" badges and the Explore section
+  // below, so this only ever states places FYstay actually covers.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: SITE_URL,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${SITE_URL}/search?city={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "Organization",
+        name: SITE_NAME,
+        url: SITE_URL,
+        areaServed: FYLDE_COAST_DESTINATIONS.map((destination) => ({
+          "@type": "Place",
+          name: destination.name,
+        })),
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
           container below so it spans the entire viewport width. Falls back
           to the generated illustration only when there's nothing real to

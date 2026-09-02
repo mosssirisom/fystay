@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { SITE_NAME } from "@/lib/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "fystay",
-    short_name: "fystay",
-    description: "Find and book unique places to stay, or host your own.",
+    name: `${SITE_NAME} - Accommodation on the Fylde Coast`,
+    short_name: SITE_NAME,
+    description: "Book independent apartments, cottages and guest houses across Blackpool and the Fylde Coast.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

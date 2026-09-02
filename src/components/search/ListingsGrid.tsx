@@ -1,6 +1,6 @@
 import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
+import { blockingBookingWhere, blockingRanges, isRangeAvailable, nightsBetween } from "@/lib/availability";
 import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
 import { auth } from "@/auth";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
@@ -84,6 +84,7 @@ export async function ListingsGrid({
 
   const checkIn = checkInParam ? new Date(checkInParam) : null;
   const checkOut = checkOutParam ? new Date(checkOutParam) : null;
+  const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : undefined;
 
   const dateFiltered =
     checkIn && checkOut
@@ -173,6 +174,7 @@ export async function ListingsGrid({
               listing={listing}
               isSaved={savedListingIds.has(listing.id)}
               isLoggedIn={Boolean(session?.user)}
+              nights={nights}
             />
           ))}
         </div>

@@ -239,7 +239,7 @@ export default async function Home() {
         <div className="relative z-10 -mt-14 overflow-hidden rounded-3xl border border-border-subtle bg-surface shadow-[var(--shadow-popover)] sm:-mt-20">
           <div className="h-1.5 w-full bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
           <div className="p-5 sm:p-8">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-400 sm:text-left">
+            <p className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 sm:text-left">
               Search stays on the Fylde Coast
             </p>
             <div className="mt-3">
@@ -251,7 +251,7 @@ export default async function Home() {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-center">
-          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Now covering
           </span>
           {FYLDE_COAST_DESTINATIONS.map((destination) => (

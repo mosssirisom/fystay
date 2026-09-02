@@ -108,7 +108,7 @@ export function ListingCard({
             <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-zinc-600">
               <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
               {rating.toFixed(1)}
-              {reviewCount > 0 && <span className="text-zinc-400">({reviewCount})</span>}
+              {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
             </span>
           )}
         </div>

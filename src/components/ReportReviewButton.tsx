@@ -29,7 +29,7 @@ export function ReportReviewButton({
   const [reported, setReported] = useState(alreadyReported);
 
   if (reported) {
-    return <span className="shrink-0 text-xs text-zinc-400">Reported</span>;
+    return <span className="shrink-0 text-xs text-zinc-500">Reported</span>;
   }
 
   async function handleSubmit() {
@@ -55,7 +55,7 @@ export function ReportReviewButton({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="focus-ring flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-1 text-xs text-zinc-400 hover:bg-surface-muted hover:text-zinc-600"
+        className="focus-ring flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-1 text-xs text-zinc-500 hover:bg-surface-muted hover:text-zinc-600"
       >
         <Flag className="h-3.5 w-3.5" />
         Report

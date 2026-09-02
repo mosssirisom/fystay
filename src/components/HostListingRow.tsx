@@ -163,7 +163,7 @@ export function HostListingRow({
               <span className="inline-flex items-center gap-1 text-sm text-zinc-600">
                 <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
                 {stats.avgRating.toFixed(1)}
-                <span className="text-zinc-400">({stats.reviewCount})</span>
+                <span className="text-zinc-500">({stats.reviewCount})</span>
               </span>
             )}
           </div>

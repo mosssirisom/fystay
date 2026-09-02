@@ -44,8 +44,8 @@ export async function POST(request: Request) {
   await resend.emails.send({
     from: EMAIL_FROM,
     to: user.email,
-    subject: "Reset your FY Stay password",
-    html: `<p>Someone requested a password reset for your FY Stay account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires in an hour. If you didn't request this, you can safely ignore this email.</p>`,
+    subject: "Reset your FYstay password",
+    html: `<p>Someone requested a password reset for your FYstay account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires in an hour. If you didn't request this, you can safely ignore this email.</p>`,
   });
 
   return NextResponse.json(genericResponse);

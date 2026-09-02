@@ -110,7 +110,7 @@ export default async function BookingDetailPage({
           <p className="mt-1 text-zinc-600">
             {booking.listing.city}, {booking.listing.country}
           </p>
-          <p className="mt-1 text-xs font-medium text-zinc-400">Booking #{booking.reference}</p>
+          <p className="mt-1 text-xs font-medium text-zinc-500">Booking #{booking.reference}</p>
         </div>
         <Badge variant={statusVariant[booking.status]}>
           {statusLabel[booking.status] ?? booking.status}

@@ -11,11 +11,11 @@ export default function PrivacyPolicyPage() {
     <LegalPageLayout title="Privacy Policy" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="Who we are">
         <p>
-          FY Stay (&quot;we&quot;, &quot;us&quot;) operates fystay.vercel.app, a booking platform
+          FYstay (&quot;we&quot;, &quot;us&quot;) operates fystay.vercel.app, a booking platform
           for independent accommodation on the Fylde Coast. This policy explains what personal
           data we collect, why, and the rights you have over it under UK GDPR and the Data
           Protection Act 2018. For questions or to exercise any of the rights below, contact{" "}
-          <a href="mailto:privacy@fystay.co.uk" className="text-brand-700 underline-offset-2 hover:underline">
+          <a href="mailto:privacy@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
             privacy@fystay.co.uk
           </a>
           .
@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
             never your full card number.
           </li>
         </ul>
-        <p>We do not collect any special category data, and we don&apos;t run behavioural advertising or ad-tracking cookies - see our <Link href="/legal/cookies" className="text-brand-700 underline-offset-2 hover:underline">Cookie Policy</Link> for what we do use.</p>
+        <p>We do not collect any special category data, and we don&apos;t run behavioural advertising or ad-tracking cookies - see our <Link href="/legal/cookies" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">Cookie Policy</Link> for what we do use.</p>
       </LegalSection>
 
       <LegalSection heading="Why we use it, and our legal basis">
@@ -111,7 +111,7 @@ export default function PrivacyPolicyPage() {
         </ul>
         <p>
           To exercise any of these, email{" "}
-          <a href="mailto:privacy@fystay.co.uk" className="text-brand-700 underline-offset-2 hover:underline">
+          <a href="mailto:privacy@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
             privacy@fystay.co.uk
           </a>
           . We&apos;ll respond within one month.

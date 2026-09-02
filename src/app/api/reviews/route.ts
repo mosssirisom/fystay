@@ -9,7 +9,10 @@ const categoryRating = z.number().int().min(1).max(5).optional();
 const createReviewSchema = z.object({
   bookingId: z.string().min(1),
   rating: z.number().int().min(1).max(5),
-  comment: z.string().min(10).max(2000),
+  comment: z
+    .string()
+    .min(10, "Reviews need to be at least 10 characters.")
+    .max(2000, "Reviews can't be longer than 2000 characters."),
   cleanlinessRating: categoryRating,
   accuracyRating: categoryRating,
   communicationRating: categoryRating,

@@ -72,8 +72,8 @@ export default async function BookingReceiptPage({
           <CardContent className="flex flex-col gap-6 p-0">
             <div className="flex items-start justify-between gap-4 border-b border-border-subtle pb-4">
               <div>
-                <p className="text-lg font-bold text-foreground">FY Stay</p>
-                <p className="text-sm text-zinc-500">Payment receipt</p>
+                <p className="text-lg font-bold text-foreground">FYstay</p>
+                <h1 className="text-sm font-semibold text-zinc-500">Payment receipt</h1>
               </div>
               <div className="text-right text-sm text-zinc-500">
                 <p>
@@ -84,7 +84,7 @@ export default async function BookingReceiptPage({
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 Property
               </p>
               <p className="mt-1 font-medium text-foreground">{booking.listing.title}</p>
@@ -96,7 +96,7 @@ export default async function BookingReceiptPage({
 
             {(booking.guestName || booking.guestEmail || booking.guestPhone) && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                   Billed to
                 </p>
                 {booking.guestName && <p className="mt-1 text-sm text-foreground">{booking.guestName}</p>}
@@ -160,8 +160,8 @@ export default async function BookingReceiptPage({
               )}
             </div>
 
-            <p className="text-xs text-zinc-400">
-              This receipt was generated automatically by FY Stay and reflects the amount actually
+            <p className="text-xs text-zinc-500">
+              This receipt was generated automatically by FYstay and reflects the amount actually
               charged for booking #{booking.reference}.
             </p>
           </CardContent>

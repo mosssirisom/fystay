@@ -51,7 +51,7 @@ export function CookieConsentBanner() {
         <p className="text-sm text-zinc-600">
           We only use strictly necessary cookies to keep you signed in and run the site - no
           tracking or advertising cookies. See our{" "}
-          <Link href="/legal/cookies" className="text-brand-700 underline-offset-2 hover:underline">
+          <Link href="/legal/cookies" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
             Cookie Policy
           </Link>{" "}
           for details.

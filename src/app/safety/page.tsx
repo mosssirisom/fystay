@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 const POINTS = [
   {
     icon: CreditCard,
-    title: "Pay through FY Stay, not directly",
+    title: "Pay through FYstay, not directly",
     description:
-      "Always book and pay through FY Stay's checkout. It's the only way your booking is protected by a host's cancellation policy and by our support team - never send money to a host directly.",
+      "Always book and pay through FYstay's checkout. It's the only way your booking is protected by a host's cancellation policy and by our support team - never send money to a host directly.",
   },
   {
     icon: Star,
@@ -29,7 +29,7 @@ const POINTS = [
     icon: ShieldCheck,
     title: "Secure account & payments",
     description:
-      "Passwords are stored securely (never in plain text), and payments are handled entirely by Stripe's encrypted checkout - FY Stay never sees your full card details.",
+      "Passwords are stored securely (never in plain text), and payments are handled entirely by Stripe's encrypted checkout - FYstay never sees your full card details.",
   },
 ];
 
@@ -58,7 +58,7 @@ export default function SafetyPage() {
       <p className="mt-10 text-sm text-zinc-500">
         If something feels wrong about a listing, a booking, or a message from another user,
         contact us straight away at{" "}
-        <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline-offset-2 hover:underline">
+        <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           support@fystay.co.uk
         </a>
         .

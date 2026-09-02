@@ -7,10 +7,11 @@ import { signIn } from "next-auth/react";
 import { Home, Luggage } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Field, FieldError, Label } from "@/components/ui/Label";
+import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { SITE_NAME } from "@/lib/seo";
 
 const roleOptions = [
   { value: "GUEST" as const, label: "Book stays", icon: Luggage },
@@ -37,6 +38,21 @@ function RegisterFormInner() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    // Catches the two mistakes a real visitor is actually likely to make
+    // before round-tripping to the server at all. Deliberately not a full
+    // client-side mirror of every server-side rule (e.g. email format) -
+    // the API's own validation messages are human-readable backstops for
+    // anything this doesn't catch.
+    if (!name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     setLoading(true);
 
     const res = await fetch("/api/signup", {
@@ -74,7 +90,7 @@ function RegisterFormInner() {
       <div className="mb-8 flex flex-col items-center text-center">
         <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Create your account</h1>
-        <p className="mt-1 text-sm text-zinc-500">Join fystay in a few seconds</p>
+        <p className="mt-1 text-sm text-zinc-500">Join {SITE_NAME} in a few seconds</p>
       </div>
 
       <Card>
@@ -132,12 +148,18 @@ function RegisterFormInner() {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                invalid={Boolean(error)}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <FieldError>{error}</FieldError>
+              <FieldHint>At least 8 characters.</FieldHint>
             </Field>
+
+            {/* A standalone banner, not tied to any one Field above - the
+                error can be about the name, email or password, and pinning
+                it under the password input regardless (as FieldError would)
+                misled a visitor into thinking their password was the
+                problem when it was really an empty name field. */}
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" loading={loading} className="mt-2 w-full">
               Sign up

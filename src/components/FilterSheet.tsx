@@ -163,7 +163,7 @@ export function FilterSheet({
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
               />
-              <span className="text-zinc-400">–</span>
+              <span className="text-zinc-500">–</span>
               <Input
                 type="number"
                 min={0}

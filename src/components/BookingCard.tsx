@@ -131,7 +131,7 @@ export function BookingCard({
               {booking.checkIn.toLocaleDateString()} – {booking.checkOut.toLocaleDateString()} ·{" "}
               {booking.guests} guest{booking.guests > 1 ? "s" : ""}
             </p>
-            <p className="text-xs text-zinc-400">Booking #{booking.reference}</p>
+            <p className="text-xs text-zinc-500">Booking #{booking.reference}</p>
           </div>
         </div>
 

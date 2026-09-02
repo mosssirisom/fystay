@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Logo } from "@/components/Logo";
+import { SITE_NAME } from "@/lib/seo";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -47,7 +48,7 @@ function LoginFormInner() {
       <div className="mb-8 flex flex-col items-center text-center">
         <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="mt-1 text-sm text-zinc-500">Log in to continue to fystay</p>
+        <p className="mt-1 text-sm text-zinc-500">Log in to continue to {SITE_NAME}</p>
       </div>
 
       <Card>

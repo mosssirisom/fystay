@@ -6,7 +6,10 @@ import { hashResetToken, isResetTokenValid } from "@/lib/passwordReset";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8).max(72),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(72, "Password is too long."),
 });
 
 export async function POST(request: Request) {

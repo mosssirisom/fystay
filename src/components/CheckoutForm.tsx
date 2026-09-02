@@ -126,7 +126,7 @@ export function CheckoutForm({
       </Button>
       <p className="mt-3 hidden items-center justify-center gap-1.5 text-center text-xs text-zinc-500 lg:flex">
         <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-        You&apos;ll pay on Stripe&apos;s secure checkout page. FY Stay never sees or stores your
+        You&apos;ll pay on Stripe&apos;s secure checkout page. FYstay never sees or stores your
         card details.
       </p>
 

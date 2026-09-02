@@ -282,7 +282,7 @@ export function DestinationAutocomplete({
           {!loading && !errored && flatItems.length > 0 && (
             <ul className="flex flex-col gap-0.5">
               {popular && recentSearches.length > 0 && (
-                <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+                <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                   Recent searches
                 </li>
               )}
@@ -384,7 +384,7 @@ function FirstOfGroup({
   return (
     <>
       {label && (
-        <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-400 first:pt-0">
+        <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 first:pt-0">
           {label}
         </li>
       )}

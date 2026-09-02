@@ -7,9 +7,19 @@ import { decideExistingSessionAction } from "@/lib/checkoutSession";
 
 const checkoutSchema = z.object({
   bookingId: z.string().min(1),
-  guestName: z.string().trim().min(1).max(200).optional(),
-  guestEmail: z.string().trim().email().max(200).optional(),
-  guestPhone: z.string().trim().min(1).max(50).optional(),
+  guestName: z.string().trim().min(1, "Please enter your name.").max(200, "Name is too long.").optional(),
+  guestEmail: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address.")
+    .max(200, "Email is too long.")
+    .optional(),
+  guestPhone: z
+    .string()
+    .trim()
+    .min(1, "Please enter a phone number.")
+    .max(50, "Phone number is too long.")
+    .optional(),
 });
 
 export async function POST(request: Request) {
@@ -120,7 +130,7 @@ export async function POST(request: Request) {
     lineItems.push({
       price_data: {
         currency: "gbp",
-        product_data: { name: "FY Stay service fee" },
+        product_data: { name: "FYstay service fee" },
         unit_amount: booking.serviceFeeCents,
       },
       quantity: 1,

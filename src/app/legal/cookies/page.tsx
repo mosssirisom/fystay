@@ -11,7 +11,7 @@ export default function CookiePolicyPage() {
     <LegalPageLayout title="Cookie Policy" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="What we actually use">
         <p>
-          FY Stay keeps cookies to a minimum. We only use cookies that are strictly necessary to
+          FYstay keeps cookies to a minimum. We only use cookies that are strictly necessary to
           run the site - we don&apos;t use any analytics, advertising, or third-party tracking
           cookies today.
         </p>
@@ -59,7 +59,7 @@ export default function CookiePolicyPage() {
             href="https://stripe.com/gb/privacy"
             target="_blank"
             rel="noreferrer"
-            className="text-brand-700 underline-offset-2 hover:underline"
+            className="text-brand-700 underline underline-offset-2 hover:text-brand-800"
           >
             Stripe&apos;s own privacy and cookie policy
           </a>
@@ -70,14 +70,14 @@ export default function CookiePolicyPage() {
       <LegalSection heading="Why there's no cookie preference toggle">
         <p>
           UK rules on cookies (PECR) only require your consent for non-essential cookies, such as
-          analytics or advertising. Since FY Stay doesn&apos;t use any of those, there&apos;s
+          analytics or advertising. Since FYstay doesn&apos;t use any of those, there&apos;s
           nothing non-essential to ask your permission for - the notice you see is purely
           informational. If that ever changes (for example, if we add analytics in future),
           we&apos;ll update this page and add a proper consent choice before we do.
         </p>
         <p>
           See our{" "}
-          <Link href="/legal/privacy" className="text-brand-700 underline-offset-2 hover:underline">
+          <Link href="/legal/privacy" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
             Privacy Policy
           </Link>{" "}
           for how we handle personal data more broadly.

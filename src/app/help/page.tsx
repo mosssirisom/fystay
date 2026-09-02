@@ -16,10 +16,10 @@ const FAQS: { question: string; answer: React.ReactNode }[] = [
     question: "How do I cancel or change a booking?",
     answer: (
       <>
-        Go to <Link href="/bookings" className="text-brand-700 underline-offset-2 hover:underline">My Trips</Link>,
+        Go to <Link href="/bookings" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">My Trips</Link>,
         open the booking, and choose to cancel or request a date change. Any refund is calculated
         automatically from the listing&apos;s cancellation policy - see{" "}
-        <Link href="/cancellation-policies" className="text-brand-700 underline-offset-2 hover:underline">
+        <Link href="/cancellation-policies" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           Cancellation Policies
         </Link>{" "}
         for details.
@@ -41,11 +41,11 @@ const FAQS: { question: string; answer: React.ReactNode }[] = [
     answer: (
       <>
         Create a host account (or switch your existing account to hosting from{" "}
-        <Link href="/register" className="text-brand-700 underline-offset-2 hover:underline">
+        <Link href="/register" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           sign up
         </Link>
         ), then add your first listing from the host dashboard. See our{" "}
-        <Link href="/host-guide" className="text-brand-700 underline-offset-2 hover:underline">
+        <Link href="/host-guide" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           Host guide
         </Link>{" "}
         for a full walkthrough.
@@ -57,7 +57,7 @@ const FAQS: { question: string; answer: React.ReactNode }[] = [
     answer: (
       <>
         Use{" "}
-        <Link href="/forgot-password" className="text-brand-700 underline-offset-2 hover:underline">
+        <Link href="/forgot-password" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           Forgot password
         </Link>{" "}
         on the login page to get a secure reset link sent to your email.
@@ -92,7 +92,7 @@ export default function HelpCenterPage() {
 
       <p className="mt-8 text-sm text-zinc-500">
         Can&apos;t find what you&apos;re looking for? Email us at{" "}
-        <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline-offset-2 hover:underline">
+        <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           support@fystay.co.uk
         </a>
         .

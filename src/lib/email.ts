@@ -7,4 +7,4 @@ export function getResendClient(): Resend | null {
 }
 
 /** The address transactional email is sent from once Resend is configured. */
-export const EMAIL_FROM = process.env.EMAIL_FROM ?? "FY Stay <onboarding@resend.dev>";
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? "FYstay <onboarding@resend.dev>";

@@ -102,11 +102,9 @@ export default async function BookingsPage() {
     return (
       <ul className="flex flex-col gap-4">
         {list.map((booking) => (
-          <BookingCard
-            key={booking.id}
-            booking={booking}
-            latestChangeRequest={booking.changeRequests[0]}
-          />
+          <li key={booking.id}>
+            <BookingCard booking={booking} latestChangeRequest={booking.changeRequests[0]} />
+          </li>
         ))}
       </ul>
     );

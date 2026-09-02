@@ -11,13 +11,13 @@ export default function TermsPage() {
     <LegalPageLayout title="Terms and Conditions" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="1. Who these terms are between">
         <p>
-          These terms govern your use of FY Stay (the &quot;Platform&quot;), a website that lets
+          These terms govern your use of FYstay (the &quot;Platform&quot;), a website that lets
           guests search for and book independent accommodation on the Fylde Coast, and lets hosts
           list their properties for guests to book. By creating an account, browsing listings, or
           making a booking, you agree to these terms.
         </p>
         <p>
-          FY Stay acts as a booking platform connecting guests and hosts. Unless stated otherwise,
+          FYstay acts as a booking platform connecting guests and hosts. Unless stated otherwise,
           the accommodation contract for a stay is between the guest and the host, not with FY
           Stay.
         </p>
@@ -36,7 +36,7 @@ export default function TermsPage() {
         <p>
           When you book a listing, you agree to pay the total price shown at checkout, including
           the nightly rate, any cleaning fee, and any service fee. Payments are processed securely
-          by Stripe; FY Stay does not receive or store your full card details.
+          by Stripe; FYstay does not receive or store your full card details.
         </p>
         <p>
           A booking is confirmed once payment has been successfully processed. You&apos;ll receive
@@ -51,7 +51,7 @@ export default function TermsPage() {
           host-defined Custom policy), shown on the listing page before you book. Refund amounts
           for a cancellation are calculated automatically based on that policy and how far in
           advance you cancel. See our{" "}
-          <Link href="/cancellation-policies" className="text-brand-700 underline-offset-2 hover:underline">
+          <Link href="/cancellation-policies" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
             Cancellation Policies
           </Link>{" "}
           page for full details.
@@ -66,7 +66,7 @@ export default function TermsPage() {
         <p>
           Hosts are responsible for the accuracy of their listings (description, photos, pricing,
           availability, and amenities), for the property being safe and as described, and for
-          honouring confirmed bookings. FY Stay may remove a listing that is inaccurate, unsafe,
+          honouring confirmed bookings. FYstay may remove a listing that is inaccurate, unsafe,
           or breaches these terms.
         </p>
       </LegalSection>
@@ -74,7 +74,7 @@ export default function TermsPage() {
       <LegalSection heading="6. Reviews">
         <p>
           Only a guest who has completed a paid stay at a listing can leave a review for it, so
-          reviews on FY Stay reflect genuine stays. Hosts may publicly respond to a review. Reviews
+          reviews on FYstay reflect genuine stays. Hosts may publicly respond to a review. Reviews
           that are abusive, fraudulent, or unrelated to the stay can be reported and may be
           removed.
         </p>
@@ -91,8 +91,8 @@ export default function TermsPage() {
 
       <LegalSection heading="8. Liability">
         <p>
-          FY Stay provides the Platform to connect guests and hosts but is not the provider of
-          accommodation. To the fullest extent permitted by law, FY Stay is not liable for the
+          FYstay provides the Platform to connect guests and hosts but is not the provider of
+          accommodation. To the fullest extent permitted by law, FYstay is not liable for the
           condition of a listed property, the conduct of a guest or host, or indirect or
           consequential losses arising from a booking. Nothing in these terms limits liability
           that cannot be limited under English law, including for fraud or death or personal
@@ -104,7 +104,7 @@ export default function TermsPage() {
         <p>
           We may update these terms from time to time, for example as the Platform&apos;s features
           change. We&apos;ll update the &quot;Last updated&quot; date above when we do. Continuing
-          to use FY Stay after a change means you accept the updated terms.
+          to use FYstay after a change means you accept the updated terms.
         </p>
       </LegalSection>
 
@@ -118,7 +118,7 @@ export default function TermsPage() {
       <LegalSection heading="11. Contact us">
         <p>
           Questions about these terms can be sent to{" "}
-          <a href="mailto:legal@fystay.co.uk" className="text-brand-700 underline-offset-2 hover:underline">
+          <a href="mailto:legal@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
             legal@fystay.co.uk
           </a>
           .

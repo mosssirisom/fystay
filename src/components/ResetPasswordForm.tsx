@@ -6,7 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Field, FieldError, Label } from "@/components/ui/Label";
+import { Field, FieldError, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -24,6 +24,10 @@ function ResetPasswordFormInner() {
     e.preventDefault();
     setError(null);
 
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords don't match.");
       return;
@@ -78,6 +82,7 @@ function ResetPasswordFormInner() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <FieldHint>At least 8 characters.</FieldHint>
               </Field>
               <Field>
                 <Label htmlFor="confirmPassword">Confirm new password</Label>

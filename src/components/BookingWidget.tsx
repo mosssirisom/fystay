@@ -194,7 +194,7 @@ export function BookingWidget({
             <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-zinc-600">
               <Star className="h-4 w-4 fill-accent-500 text-accent-500" aria-hidden />
               {rating.toFixed(1)}
-              {reviewCount > 0 && <span className="text-zinc-400">({reviewCount})</span>}
+              {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
             </span>
           )}
         </div>

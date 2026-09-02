@@ -44,7 +44,7 @@ export default function HostGuidePage() {
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-foreground sm:text-3xl">Host guide</h1>
       <p className="mt-2 text-sm text-zinc-500">
-        A quick walkthrough of listing your property and managing bookings on FY Stay.
+        A quick walkthrough of listing your property and managing bookings on FYstay.
       </p>
 
       <div className="mt-8 flex flex-col gap-6">

@@ -102,7 +102,7 @@ export function BookingSummaryCard({
 
         {(guestName || guestEmail || guestPhone) && (
           <dl className="grid grid-cols-2 gap-y-1.5 border-t border-border-subtle pt-4 text-sm">
-            <dt className="col-span-2 mb-0.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+            <dt className="col-span-2 mb-0.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Guest details
             </dt>
             {guestName && (

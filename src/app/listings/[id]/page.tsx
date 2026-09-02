@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BedDouble, Bath, DoorOpen, Users } from "lucide-react";
+import { BedDouble, Bath, DoorOpen, MapPin, Star, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, blockingRanges } from "@/lib/availability";
 import { auth } from "@/auth";
@@ -11,9 +11,9 @@ import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
-import { SaveButton } from "@/components/SaveButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
+import { averageRating } from "@/lib/reviews";
 
 const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
@@ -109,6 +109,9 @@ export default async function ListingDetailPage({
     { icon: Bath, label: `${listing.bathrooms} bath${listing.bathrooms === 1 ? "" : "s"}` },
   ];
 
+  const rating = averageRating(listing.reviews);
+  const reviewCount = listing.reviews.length;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -148,30 +151,47 @@ export default async function ListingDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
-          <p className="mt-1 text-zinc-600">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{listing.title}</h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-600">
+          <span className="flex items-center gap-1">
+            <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             {listing.city}, {listing.country}
-          </p>
+          </span>
+          {rating !== null && (
+            <>
+              <span aria-hidden className="text-zinc-300">
+                ·
+              </span>
+              {/* Jumps straight to the full review breakdown below, rather
+                  than repeating it here as inert text. */}
+              <a href="#reviews" className="flex items-center gap-1 font-medium text-foreground hover:underline">
+                <Star className="h-4 w-4 fill-accent-500 text-accent-500" aria-hidden />
+                {rating.toFixed(1)}
+                <span className="font-normal text-zinc-500">
+                  ({reviewCount} review{reviewCount === 1 ? "" : "s"})
+                </span>
+              </a>
+            </>
+          )}
         </div>
-        <SaveButton
-          listingId={listing.id}
-          initialSaved={isSaved}
-          isLoggedIn={Boolean(session?.user)}
-          className="static shrink-0 border border-border-subtle bg-surface"
-        />
       </div>
 
-      <PhotoGallery photos={listing.photos} title={listing.title} />
+      <PhotoGallery
+        photos={listing.photos}
+        title={listing.title}
+        listingId={listing.id}
+        isSaved={isSaved}
+        isLoggedIn={Boolean(session?.user)}
+      />
 
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="flex items-center justify-between gap-4 border-b border-border-subtle pb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border-subtle pb-6">
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {stats.map(({ icon: Icon, label }) => (
                 <span key={label} className="flex items-center gap-2 text-zinc-700">
-                  <Icon className="h-4.5 w-4.5 text-zinc-500" />
+                  <Icon className="h-4.5 w-4.5 text-brand-600" />
                   {label}
                 </span>
               ))}
@@ -179,13 +199,14 @@ export default async function ListingDetailPage({
             <div className="flex shrink-0 items-center gap-3">
               <Avatar name={listing.host.name} />
               <div className="hidden text-sm sm:block">
+                <p className="text-zinc-500">Hosted by</p>
                 <p className="font-medium text-foreground">{listing.host.name}</p>
-                <p className="text-zinc-500">Host</p>
               </div>
             </div>
           </div>
 
-          <p className="mt-6 whitespace-pre-line text-zinc-700">{listing.description}</p>
+          <h2 className="mt-6 text-lg font-semibold text-foreground">About this place</h2>
+          <p className="mt-2 whitespace-pre-line text-zinc-700">{listing.description}</p>
 
           {listing.amenities.length > 0 && (
             <>
@@ -198,7 +219,9 @@ export default async function ListingDetailPage({
           {listing.reviews.length > 0 && (
             <>
               <hr className="my-6 border-border-subtle" />
-              <h2 className="text-lg font-semibold text-foreground">Reviews</h2>
+              <h2 id="reviews" className="scroll-mt-20 text-lg font-semibold text-foreground">
+                Reviews
+              </h2>
               <div className="mt-4">
                 <ReviewSummary reviews={listing.reviews} />
               </div>
@@ -223,6 +246,8 @@ export default async function ListingDetailPage({
               (r) => ({ checkIn: r.checkIn.toISOString(), checkOut: r.checkOut.toISOString() }),
             )}
             isLoggedIn={Boolean(session?.user)}
+            rating={rating}
+            reviewCount={reviewCount}
           />
         </div>
       </div>

@@ -52,8 +52,9 @@ test.describe("photo gallery lightbox", () => {
   }) => {
     await page.goto(`/listings/${listingId}`);
 
-    // The thumbnail grid itself is untouched: still a click target per photo.
-    await page.locator("button.aspect-square").first().click();
+    // Each gallery tile (hero and thumbnails alike) still opens the lightbox
+    // at its own photo, regardless of the gallery's own layout.
+    await page.locator('[data-testid="gallery-tile"]').first().click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -84,7 +85,7 @@ test.describe("photo gallery lightbox", () => {
 
   test("Escape closes the lightbox", async ({ page }) => {
     await page.goto(`/listings/${listingId}`);
-    await page.locator("button.aspect-square").first().click();
+    await page.locator('[data-testid="gallery-tile"]').first().click();
     await expect(page.getByRole("dialog")).toBeVisible();
 
     await page.keyboard.press("Escape");
@@ -101,7 +102,7 @@ test.describe("photo gallery lightbox", () => {
 
     try {
       await page.goto(`/listings/${listingId}`);
-      await page.locator("button.aspect-square").first().click();
+      await page.locator('[data-testid="gallery-tile"]').first().click();
 
       const dialog = page.getByRole("dialog");
       await expect(dialog).toBeVisible();

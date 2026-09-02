@@ -15,10 +15,10 @@ export function MobileBookingBar({ pricePerNightCents }: { pricePerNightCents: n
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border-subtle bg-surface px-4 py-3 [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
-      <p className="text-sm text-foreground">
-        <span className="font-semibold">{formatPrice(pricePerNightCents)}</span>{" "}
-        <span className="text-zinc-500">night</span>
+    <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border-subtle bg-surface px-4 py-3 shadow-[var(--shadow-popover)] [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
+      <p className="text-base text-foreground">
+        <span className="font-bold text-brand-800">{formatPrice(pricePerNightCents)}</span>{" "}
+        <span className="text-sm text-zinc-500">/ night</span>
       </p>
       <Button onClick={scrollToWidget} size="lg">
         Check availability

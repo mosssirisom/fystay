@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type DateRange } from "react-day-picker";
 import { toast } from "sonner";
+import { Lock, MessageCircle, ShieldCheck, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
@@ -21,6 +22,8 @@ type Props = {
   amenities: string[];
   bookedRanges: { checkIn: string; checkOut: string }[];
   isLoggedIn: boolean;
+  rating?: number | null;
+  reviewCount?: number;
 };
 
 export function BookingWidget({
@@ -31,6 +34,8 @@ export function BookingWidget({
   amenities,
   bookedRanges,
   isLoggedIn,
+  rating = null,
+  reviewCount = 0,
 }: Props) {
   const router = useRouter();
   const [range, setRange] = useState<DateRange | undefined>();
@@ -166,12 +171,27 @@ export function BookingWidget({
   const hasDates = Boolean(range?.from && range?.to);
 
   return (
-    <Card className="sticky top-20 p-5">
-      <CardContent className="p-0">
-        <p className="text-lg font-semibold text-foreground">
-          {formatPrice(pricePerNightCents)}{" "}
-          <span className="text-sm font-normal text-zinc-500">night</span>
-        </p>
+    // lg:sticky (not a plain sticky): on the single-column mobile layout
+    // this card sits in normal flow well below the description/amenities/
+    // reviews, so a sticky position there would just make it awkwardly
+    // pin itself over content while scrolling past, for no benefit -
+    // MobileBookingBar is what gives mobile guests a fast way back to it.
+    <Card className="overflow-hidden p-0 shadow-[var(--shadow-popover)] lg:sticky lg:top-24">
+      <div className="h-1.5 w-full bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
+      <CardContent className="p-5 sm:p-6">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="text-2xl font-bold text-brand-800">
+            {formatPrice(pricePerNightCents)}
+            <span className="ml-1 text-sm font-normal text-zinc-500">/ night</span>
+          </p>
+          {rating !== null && (
+            <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-zinc-600">
+              <Star className="h-4 w-4 fill-accent-500 text-accent-500" aria-hidden />
+              {rating.toFixed(1)}
+              {reviewCount > 0 && <span className="text-zinc-400">({reviewCount})</span>}
+            </span>
+          )}
+        </div>
 
         <div className="mt-4 flex flex-col gap-2">
           <DateRangeField range={range} onChange={setRange} disabledRanges={disabledDays} />
@@ -240,11 +260,22 @@ export function BookingWidget({
           </Button>
         )}
 
-        {isLoggedIn && (
-          <p className="mt-3 text-center text-xs text-zinc-500">
-            {availabilityChecked ? "You won't be charged yet" : "We'll confirm your dates are free"}
+        <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-xs text-zinc-500">
+          {isLoggedIn && (
+            <p className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+              {availabilityChecked ? "You won't be charged yet" : "We'll confirm your dates are free"}
+            </p>
+          )}
+          <p className="flex items-center gap-2">
+            <Lock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+            Secure payment via Stripe - we never see your card details
           </p>
-        )}
+          <p className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+            Message your host directly once you&apos;re booked
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

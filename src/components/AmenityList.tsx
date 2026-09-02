@@ -34,7 +34,7 @@ export function AmenityList({ amenities }: { amenities: string[] }) {
         const Icon = iconMap[amenity.toLowerCase()] ?? Check;
         return (
           <li key={amenity} className="flex items-center gap-2.5">
-            <Icon className="h-4.5 w-4.5 shrink-0 text-zinc-500" />
+            <Icon className="h-4.5 w-4.5 shrink-0 text-brand-600" />
             {amenity}
           </li>
         );

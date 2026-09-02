@@ -21,7 +21,16 @@ export default function OpengraphImage() {
           <span style={{ color: "#14b8a6" }}>FY</span>
           <span style={{ color: "#142a3d" }}>Stay</span>
         </div>
-        <div style={{ marginTop: 24, display: "flex", fontSize: 34, fontFamily: "sans-serif" }}>
+        <div
+          style={{
+            marginTop: 24,
+            display: "flex",
+            fontSize: 34,
+            fontFamily: "sans-serif",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
           <span style={{ color: "#14b8a6" }}>Your stay,&nbsp;</span>
           <span style={{ color: "#142a3d" }}>your way</span>
         </div>

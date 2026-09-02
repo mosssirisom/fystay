@@ -34,7 +34,9 @@ export default function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
       <h1 className="text-2xl font-bold text-foreground sm:text-3xl">About FYStay</h1>
-      <p className="mt-2 text-sm font-semibold text-brand-700">Your stay, your way</p>
+      <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-brand-700">
+        Your stay, your way
+      </p>
       <p className="mt-4 text-sm leading-relaxed text-zinc-600">
         FYStay is a booking platform for independent accommodation across Blackpool and the Fylde
         Coast - a local alternative to the big booking platforms. We built it because the area is

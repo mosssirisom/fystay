@@ -31,7 +31,10 @@ export function Logo({
       </span>
       {withTagline && (
         <span
-          className={cn("mt-1.5 font-[family-name:var(--font-logo)] text-sm", taglineClassName)}
+          className={cn(
+            "mt-1.5 font-[family-name:var(--font-logo)] text-sm uppercase tracking-wide",
+            taglineClassName,
+          )}
         >
           <span className="text-brand-700">Your stay,</span>{" "}
           <span className="text-[var(--color-ink)]">your way</span>

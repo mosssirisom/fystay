@@ -126,6 +126,8 @@ function featurable(overrides: Partial<FeaturableListing> & { id: string }): Fea
     pricePerNightCents: 10000,
     photos: ["data:image/svg+xml,placeholder"],
     amenities: [],
+    maxGuests: 2,
+    bedrooms: 1,
     reviews: [],
     ...overrides,
   };

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { TouchEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { BedDouble, ChevronLeft, ChevronRight, MapPin, Users } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
 import type { FeaturedListing } from "@/lib/marketplace";
@@ -14,7 +14,6 @@ import { withCity } from "@/lib/seo";
 
 const ROTATE_INTERVAL_MS = 5000;
 const SWIPE_THRESHOLD_PX = 40;
-const MAX_FEATURE_ICONS = 3;
 
 /**
  * The homepage hero's rotating spotlight: cycles through a handful of the
@@ -78,9 +77,12 @@ export function FeaturedListingHero({
         onTouchEnd={count > 1 ? handleTouchEnd : undefined}
       >
         {listings.map((listing, i) => {
-          const keyFeatures = AMENITY_CATEGORIES.filter((category) =>
+          // Guests and bedrooms are always real (every listing has both),
+          // so they anchor the feature row - a matching amenity tops it up
+          // to 3 without ever promising an amenity that isn't actually there.
+          const topAmenity = AMENITY_CATEGORIES.find((category) =>
             category.test(listing.amenities),
-          ).slice(0, MAX_FEATURE_ICONS);
+          );
 
           return (
             // z-20 on the slide track and the controls below: page.tsx layers
@@ -114,30 +116,38 @@ export function FeaturedListingHero({
                   anything anchored too close to the true bottom edge here
                   would render underneath it. */}
               <div className="absolute inset-x-4 bottom-20 sm:inset-x-8 sm:bottom-24">
-                <p className="truncate text-sm font-semibold text-white sm:text-base">
+                <p className="flex items-center gap-1 text-xs text-white/80 sm:text-sm">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span className="truncate">{listing.city}</span>
+                </p>
+                <p className="mt-1 truncate text-xl font-bold text-white sm:text-2xl">
                   {listing.title}
                 </p>
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-white/75">
-                  <MapPin className="h-3 w-3 shrink-0" aria-hidden />
-                  <span className="truncate">{listing.city}</span>
-                  {keyFeatures.length > 0 && (
-                    <>
-                      <span aria-hidden>·</span>
-                      <span className="flex items-center gap-1.5">
-                        {keyFeatures.map((category) => (
-                          <span key={category.key} title={category.label}>
-                            <category.icon className="h-3 w-3" aria-hidden />
-                            <span className="sr-only">{category.label}</span>
-                          </span>
-                        ))}
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85 sm:text-sm">
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" aria-hidden />
+                      {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <BedDouble className="h-3.5 w-3.5" aria-hidden />
+                      {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
+                    </span>
+                    {topAmenity && (
+                      <span className="flex items-center gap-1">
+                        <topAmenity.icon className="h-3.5 w-3.5" aria-hidden />
+                        {topAmenity.label}
                       </span>
-                    </>
-                  )}
+                    )}
+                  </div>
+                  <p className="shrink-0 text-right text-xs text-white/80 sm:text-sm">
+                    From{" "}
+                    <span className="text-base font-bold text-white sm:text-lg">
+                      {formatPrice(listing.pricePerNightCents)}
+                    </span>{" "}
+                    <span className="text-white/70">/ night</span>
+                  </p>
                 </div>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {formatPrice(listing.pricePerNightCents)}
-                  <span className="ml-1 text-xs font-normal text-white/70">/ night</span>
-                </p>
               </div>
             </Link>
           );

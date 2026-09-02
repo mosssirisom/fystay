@@ -110,6 +110,8 @@ export type FeaturableListing = {
   pricePerNightCents: number;
   photos: string[];
   amenities: string[];
+  maxGuests: number;
+  bedrooms: number;
   reviews: { rating: number }[];
 };
 
@@ -121,6 +123,8 @@ export type FeaturedListing = {
   pricePerNightCents: number;
   photo: string;
   amenities: string[];
+  maxGuests: number;
+  bedrooms: number;
   rating: number | null;
   reviewCount: number;
 };
@@ -148,6 +152,8 @@ export function featuredListings<T extends FeaturableListing>(
       pricePerNightCents: listing.pricePerNightCents,
       photo: listing.photos[0],
       amenities: listing.amenities,
+      maxGuests: listing.maxGuests,
+      bedrooms: listing.bedrooms,
       rating: averageRating(listing.reviews),
       reviewCount: listing.reviews.length,
     }))

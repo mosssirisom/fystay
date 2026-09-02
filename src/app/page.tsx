@@ -220,7 +220,7 @@ export default async function Home() {
               `Good ${timeOfDayGreeting()}, ${greetingName}`
             ) : (
               <>
-                Your stay. <span className="text-accent-400">Your way.</span>
+                Find your stay on the <span className="text-accent-400">Fylde Coast</span>
               </>
             )}
           </h1>

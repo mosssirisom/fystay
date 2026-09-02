@@ -15,7 +15,7 @@ export async function Navbar() {
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
             <Home className="h-5 w-5" strokeWidth={2.5} />
           </span>
-          <Logo size="sm" />
+          <Logo size="sm" withTagline taglineClassName="mt-0 text-[10px] leading-tight" />
         </Link>
 
         <nav className="flex items-center gap-3">

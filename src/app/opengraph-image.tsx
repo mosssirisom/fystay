@@ -22,8 +22,8 @@ export default function OpengraphImage() {
           <span style={{ color: "#142a3d" }}>Stay</span>
         </div>
         <div style={{ marginTop: 24, display: "flex", fontSize: 34, fontFamily: "sans-serif" }}>
-          <span style={{ color: "#14b8a6" }}>Your stay.&nbsp;</span>
-          <span style={{ color: "#142a3d" }}>Your way.</span>
+          <span style={{ color: "#14b8a6" }}>Your stay,&nbsp;</span>
+          <span style={{ color: "#142a3d" }}>your way</span>
         </div>
       </div>
     ),

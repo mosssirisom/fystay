@@ -69,7 +69,9 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
 
 test("pressing Search on the homepage navigates to the dedicated results page", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Your stay. Your way." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Find your stay on the Fylde Coast" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Search", exact: true }).click();
 

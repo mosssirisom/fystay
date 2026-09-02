@@ -9,10 +9,16 @@ const sizeClasses = {
 export function Logo({
   size = "md",
   withTagline = false,
+  taglineClassName,
   className,
 }: {
   size?: keyof typeof sizeClasses;
   withTagline?: boolean;
+  /** Overrides the tagline's own size/spacing - the default (text-sm) suits
+   * the footer's roomier logo block, but a sticky navbar shown on every
+   * page needs it noticeably smaller so the header doesn't grow taller
+   * site-wide. */
+  taglineClassName?: string;
   className?: string;
 }) {
   return (
@@ -24,9 +30,11 @@ export function Logo({
         <span className="text-[var(--color-ink)]">Stay</span>
       </span>
       {withTagline && (
-        <span className="mt-1.5 font-[family-name:var(--font-logo)] text-sm">
-          <span className="text-brand-700">Your stay.</span>{" "}
-          <span className="text-[var(--color-ink)]">Your way.</span>
+        <span
+          className={cn("mt-1.5 font-[family-name:var(--font-logo)] text-sm", taglineClassName)}
+        >
+          <span className="text-brand-700">Your stay,</span>{" "}
+          <span className="text-[var(--color-ink)]">your way</span>
         </span>
       )}
     </span>

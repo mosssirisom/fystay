@@ -216,7 +216,13 @@ export default async function Home() {
             {greetingName ? "Welcome back" : "Fylde Coast accommodation, booked direct"}
           </p>
           <h1 className="mt-2 font-[family-name:var(--font-logo)] text-3xl leading-tight text-white [text-shadow:0_2px_20px_rgb(0_0_0_/_0.35)] sm:text-5xl lg:text-6xl">
-            {greetingName ? `Good ${timeOfDayGreeting()}, ${greetingName}` : "Stay local. Stay Fylde Coast."}
+            {greetingName ? (
+              `Good ${timeOfDayGreeting()}, ${greetingName}`
+            ) : (
+              <>
+                Your stay. <span className="text-accent-400">Your way.</span>
+              </>
+            )}
           </h1>
           <p className="mt-3 max-w-md text-sm text-white/90 sm:text-base">
             {greetingName

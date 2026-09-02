@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 const columns = [
   {
@@ -32,7 +33,10 @@ const legalLinks = [
 export function Footer() {
   return (
     <footer className="border-t border-border-subtle bg-surface-muted">
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 py-12 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 py-12 sm:grid-cols-4">
+        <div className="col-span-2 sm:col-span-1">
+          <Logo size="sm" withTagline />
+        </div>
         {columns.map((col) => (
           <div key={col.heading}>
             <p className="text-sm font-semibold text-foreground">{col.heading}</p>

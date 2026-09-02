@@ -25,8 +25,8 @@ export function Logo({
       </span>
       {withTagline && (
         <span className="mt-1.5 font-[family-name:var(--font-logo)] text-sm">
-          <span className="text-brand-700">stay local.</span>{" "}
-          <span className="text-[var(--color-ink)]">stay fylde.</span>
+          <span className="text-brand-700">Your stay.</span>{" "}
+          <span className="text-[var(--color-ink)]">Your way.</span>
         </span>
       )}
     </span>

@@ -25,7 +25,12 @@ function RegisterFormInner() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"GUEST" | "HOST">("GUEST");
+  // Preselects "Host my place" when arriving from the /host landing page's
+  // "List your property" CTA (?role=host), so a visitor who already read
+  // the host pitch doesn't have to make the same choice twice.
+  const [role, setRole] = useState<"GUEST" | "HOST">(() =>
+    searchParams.get("role")?.toUpperCase() === "HOST" ? "HOST" : "GUEST",
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

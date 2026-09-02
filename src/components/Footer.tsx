@@ -12,7 +12,7 @@ const columns = [
   {
     heading: "Hosting",
     links: [
-      { label: "Host your home", href: "/register" },
+      { label: "Host your home", href: "/host" },
       { label: "Host dashboard", href: "/host/dashboard" },
       { label: "Hosting resources", href: "/host-guide" },
     ],

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Heart, LayoutDashboard, LogOut, Luggage } from "lucide-react";
+import { Heart, Home, LayoutDashboard, LogOut, Luggage } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { signOutAction } from "@/actions/auth";
@@ -100,6 +100,15 @@ export function UserMenu({ name, role }: Props) {
           >
             <Heart className="h-4 w-4" /> Wishlist
           </Link>
+          {role !== "HOST" && (
+            <Link
+              href="/host"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-brand-700 hover:bg-surface-muted"
+            >
+              <Home className="h-4 w-4" /> List your property
+            </Link>
+          )}
         </div>
 
         <div className="border-t border-border-subtle pt-1">

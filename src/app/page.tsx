@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Lock, MapPin, MessageCircle, Star, Users } from "lucide-react";
+import Link from "next/link";
+import { Home as HomeIcon, Lock, MapPin, MessageCircle, Star, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
@@ -9,12 +10,14 @@ import { FeaturedListingHero } from "@/components/FeaturedListingHero";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { Badge } from "@/components/ui/Badge";
+import { buttonVariants } from "@/components/ui/Button";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
 import { ExploreDestinations, ExploreDestinationsSkeleton } from "@/components/ExploreDestinations";
 import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { firstName, timeOfDayGreeting } from "@/lib/greeting";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { cn } from "@/lib/cn";
 
 const TRUST_POINTS = [
   {
@@ -310,6 +313,38 @@ export default async function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* The one host-facing moment on an otherwise guest-facing homepage -
+            a distinct gradient card (same signature-strip idea as the search
+            card above) so it reads as a deliberate second front door, not an
+            afterthought link buried in the footer. Routes to /host, which
+            makes its own role-aware call on where "List your property"
+            should actually go (sign-up vs. straight to a new listing for an
+            existing host). */}
+        <div className="mt-14 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-800 to-brand-600 shadow-[var(--shadow-popover)]">
+          <div className="flex flex-col items-center gap-5 px-6 py-10 text-center sm:flex-row sm:justify-between sm:px-10 sm:text-left">
+            <div className="flex items-start gap-4">
+              <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white sm:flex">
+                <HomeIcon className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <h2 className="text-xl font-bold text-white sm:text-2xl">
+                  Own a place on the Fylde Coast?
+                </h2>
+                <p className="mt-1 max-w-md text-sm text-white/80">
+                  List it on FYstay: local exposure, a local customer base, and one simple
+                  dashboard to manage it all.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/host"
+              className={cn(buttonVariants({ size: "lg" }), "shrink-0 bg-white text-brand-800 hover:bg-white/90")}
+            >
+              List your property
+            </Link>
           </div>
         </div>
       </div>

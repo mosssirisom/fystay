@@ -58,7 +58,7 @@ export default function AboutPage() {
       </div>
 
       <div className="mt-10 flex flex-wrap gap-3">
-        <Link href="/register" className={cn(buttonVariants())}>
+        <Link href="/host" className={cn(buttonVariants())}>
           Host your place
         </Link>
         <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>

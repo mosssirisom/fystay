@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 // combination renders from the same URL shape as the homepage).
 const STATIC_PAGES = [
   "/about",
+  "/host",
   "/help",
   "/safety",
   "/host-guide",

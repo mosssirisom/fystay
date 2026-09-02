@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CircleUserRound, Menu } from "lucide-react";
+import { CircleUserRound, Home, Menu } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -78,6 +78,15 @@ export function GuestMenu() {
           className="block rounded-lg px-3 py-2.5 text-sm text-zinc-700 hover:bg-surface-muted"
         >
           Log in
+        </Link>
+        <div className="my-1 border-t border-border-subtle" />
+        <Link
+          href="/host"
+          onClick={() => setOpen(false)}
+          className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-brand-700 hover:bg-surface-muted"
+        >
+          <Home className="h-4 w-4" aria-hidden />
+          List your property
         </Link>
       </div>
     </div>

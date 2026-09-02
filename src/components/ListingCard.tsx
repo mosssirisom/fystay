@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff, Star } from "lucide-react";
+import { ImageOff, MapPin, Star } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image";
 import { SaveButton } from "@/components/SaveButton";
@@ -36,8 +36,13 @@ export function ListingCard({
   ).slice(0, MAX_AMENITY_ICONS);
 
   return (
-    <div className="group flex flex-col gap-3">
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-surface-muted shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)]">
+    // The lift-on-hover applies to the whole card (image and text together)
+    // rather than just zooming the photo - a plain `hover:` here, not
+    // `group-hover:`, since :hover already bubbles up to this element from
+    // either Link inside it. transition-transform is separate from the
+    // image's own transition so the two don't fight over timing.
+    <div className="group flex flex-col gap-3 transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-brand-50 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)] group-hover:ring-brand-200">
         <Link
           href={`/listings/${listing.id}`}
           className="focus-ring absolute inset-0 block rounded-2xl"
@@ -52,9 +57,9 @@ export function ListingCard({
               unoptimized={!isOptimizableImage(listing.photos[0])}
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-zinc-300">
+            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-brand-300">
               <ImageOff className="h-6 w-6" />
-              <span className="text-xs font-medium text-zinc-400">Photo coming soon</span>
+              <span className="text-xs font-medium text-brand-400">Photo coming soon</span>
             </div>
           )}
         </Link>
@@ -62,22 +67,24 @@ export function ListingCard({
           listingId={listing.id}
           initialSaved={isSaved}
           isLoggedIn={isLoggedIn}
-          className="absolute right-2.5 top-2.5 z-10 h-10 w-10 bg-white/80 shadow-[var(--shadow-card)] backdrop-blur-sm hover:bg-white"
+          className="absolute right-2.5 top-2.5 z-10 h-10 w-10 bg-white/80 shadow-[var(--shadow-card)] backdrop-blur-sm hover:bg-white active:scale-90"
         />
       </div>
-      <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-1 rounded-xl">
-        <div className="flex items-start justify-between gap-2">
-          <p className="truncate font-medium text-foreground">{listing.title}</p>
-          {rating !== null && (
-            <span className="flex shrink-0 items-center gap-1 text-sm text-foreground">
-              <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
-              {rating.toFixed(1)}
-              {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
-            </span>
-          )}
-        </div>
-        <p className="truncate text-sm text-zinc-500">
-          {listing.city}, {listing.country}
+      <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-1.5 rounded-xl">
+        {/* min-h keeps this row the same height whether the title wraps to
+            one line or two, so price/rating rows still line up across a
+            row of cards regardless of title length. */}
+        <p
+          data-testid="listing-card-title"
+          className="line-clamp-2 min-h-[2.5rem] text-[15px] font-semibold leading-snug text-foreground transition-colors duration-200 group-hover:text-brand-800"
+        >
+          {listing.title}
+        </p>
+        <p className="flex items-center gap-1 text-sm text-zinc-500">
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-brand-600" aria-hidden />
+          <span className="truncate">
+            {listing.city}, {listing.country}
+          </span>
         </p>
         {keyAmenities.length > 0 && (
           <ul className="flex items-center gap-2.5">
@@ -89,10 +96,21 @@ export function ListingCard({
             ))}
           </ul>
         )}
-        <p className="text-sm text-foreground">
-          <span className="font-semibold">{formatPrice(listing.pricePerNightCents)}</span>{" "}
-          <span className="text-zinc-500">night</span>
-        </p>
+        <div className="mt-1 flex items-end justify-between gap-2">
+          <p className="flex items-baseline gap-1">
+            <span className="text-base font-bold text-brand-800">
+              {formatPrice(listing.pricePerNightCents)}
+            </span>
+            <span className="text-xs text-zinc-500">/ night</span>
+          </p>
+          {rating !== null && (
+            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-zinc-600">
+              <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
+              {rating.toFixed(1)}
+              {reviewCount > 0 && <span className="text-zinc-400">({reviewCount})</span>}
+            </span>
+          )}
+        </div>
       </Link>
     </div>
   );

@@ -136,7 +136,7 @@ test("sorting by price low to high genuinely reorders results", async ({ page })
   // checking - it only cares that price sorting genuinely reorders results.
   async function assertPriceOrder(url: string, expectedOrder: string[]) {
     await page.goto(url);
-    const titles = page.locator("main p.truncate.font-medium");
+    const titles = page.locator('main [data-testid="listing-card-title"]');
     await expect(titles.first()).toBeVisible();
     const allTitles = await titles.allTextContents();
     const indices = expectedOrder.map((title) => allTitles.indexOf(title));

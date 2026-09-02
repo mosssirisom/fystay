@@ -49,10 +49,21 @@ test.describe("favourites / wishlist", () => {
 
     try {
       await page.goto(`/listings/${listing.id}`);
-      await page.getByRole("button", { name: "Save to wishlist" }).click();
 
+      // This is the very first interaction on a freshly-navigated page, with
+      // nothing before it to incidentally buffer for React to finish
+      // hydrating - the same pre-existing hydration race documented on the
+      // homepage's "Dates" button in search-bar-dates.spec.ts, just landing
+      // on a different first-clicked control here. Wrapping the click in a
+      // retrying assertion means a mistimed first click - landing on the
+      // server-rendered button before its onClick is attached - simply gets
+      // retried once hydration is done, rather than failing the test.
+      const saveButton = page.getByRole("button", { name: "Save to wishlist" });
       const dialog = page.getByRole("dialog", { name: "Save this property" });
-      await expect(dialog).toBeVisible();
+      await expect(async () => {
+        await saveButton.click();
+        await expect(dialog).toBeVisible({ timeout: 1000 });
+      }).toPass({ timeout: 10_000 });
       await expect(dialog.getByText(/Sign in or create a free account/)).toBeVisible();
       await expect(dialog.getByRole("link", { name: "Log in" })).toBeVisible();
       await expect(dialog.getByRole("link", { name: "Create account" })).toBeVisible();

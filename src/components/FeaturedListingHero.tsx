@@ -86,11 +86,12 @@ export function FeaturedListingHero({
 
           return (
             // z-20 on the slide track and the controls below: page.tsx layers
-            // a page-wide brand vignette over this whole hero at z-10 (for
-            // the marketing headline's contrast), which - being a later
-            // sibling of this component's root, with an explicit z-index of
-            // its own - would otherwise paint above this photo and its
-            // caption/controls entirely, not just tint them.
+            // a page-wide brand vignette over this whole hero at z-10 (so
+            // the pagination dots stay legible over a busy photo), which -
+            // being a later sibling of this component's root, with an
+            // explicit z-index of its own - would otherwise paint above
+            // this photo and its caption/controls entirely, not just tint
+            // them.
             <Link
               key={listing.id}
               href={`/listings/${listing.id}`}
@@ -110,12 +111,12 @@ export function FeaturedListingHero({
                   below to stay legible, so the photo itself stays the
                   focal point instead of competing with a dark overlay. */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 from-0% via-black/0 via-40% to-transparent" />
-              {/* bottom-20/24 rather than a plain bottom-4/6: the search card
-                  below overlaps the hero's own bottom 56px (mobile) / 80px
+              {/* bottom-10/14 rather than a plain bottom-4/6: the search card
+                  below overlaps the hero's own bottom 32px (mobile) / 40px
                   (desktop) via its negative top margin (see page.tsx), so
-                  anything anchored too close to the true bottom edge here
-                  would render underneath it. */}
-              <div className="absolute inset-x-4 bottom-20 sm:inset-x-8 sm:bottom-24">
+                  this needs to clear that with a little room to spare
+                  rather than rendering underneath it. */}
+              <div className="absolute inset-x-4 bottom-10 sm:inset-x-8 sm:bottom-14">
                 <p className="flex items-center gap-1 text-xs text-white/80 sm:text-sm">
                   <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   <span className="truncate">{listing.city}</span>
@@ -163,7 +164,7 @@ export function FeaturedListingHero({
             type="button"
             onClick={() => goTo(active - 1)}
             aria-label="Previous stay"
-            className="absolute left-2 top-[68%] z-20 hidden -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-sm transition hover:bg-black/50 sm:left-4 sm:flex"
+            className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-sm transition hover:bg-black/50 sm:left-4 sm:flex"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -171,7 +172,7 @@ export function FeaturedListingHero({
             type="button"
             onClick={() => goTo(active + 1)}
             aria-label="Next stay"
-            className="absolute right-2 top-[68%] z-20 hidden -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-sm transition hover:bg-black/50 sm:right-4 sm:flex"
+            className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-sm transition hover:bg-black/50 sm:right-4 sm:flex"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

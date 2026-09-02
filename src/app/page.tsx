@@ -14,7 +14,6 @@ import { buttonVariants } from "@/components/ui/Button";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
 import { ExploreDestinations, ExploreDestinationsSkeleton } from "@/components/ExploreDestinations";
 import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
-import { firstName, timeOfDayGreeting } from "@/lib/greeting";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { cn } from "@/lib/cn";
@@ -149,9 +148,6 @@ async function FeaturedHero() {
 }
 
 export default async function Home() {
-  const session = await auth();
-  const greetingName = session?.user?.name ? firstName(session.user.name) : null;
-
   // WebSite + SearchAction tells Google this site has an internal search it
   // can offer directly in results (a "sitelinks search box"), targeting the
   // real /search?city= URL the homepage's own search bar already uses -
@@ -193,8 +189,10 @@ export default async function Home() {
           container below so it spans the entire viewport width. Falls back
           to the generated illustration only when there's nothing real to
           feature yet (a brand-new, empty catalog), or for the brief moment
-          before the real one has loaded. Tall enough to carry a real
-          marketing headline over the photo, not just a caption strip. */}
+          before the real one has loaded. Deliberately carries no marketing
+          headline of its own any more - just the photo and its own
+          featured-listing caption (see FeaturedListingHero), so nothing
+          competes with the photo for attention. */}
       <section className="relative h-[420px] w-full overflow-hidden sm:h-[500px] lg:h-[580px]">
         <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
           <FeaturedHero />
@@ -202,50 +200,31 @@ export default async function Home() {
 
         {/* Brand vignette over the photo/illustration - teal-tinted rather
             than a flat black scrim, so the hero reads as distinctly FYStay
-            before a single word of text renders. Darker at the top (for the
-            headline) and bottom (for the featured-listing caption and the
-            search card's edge), lighter through the middle so the photo
-            still shows through. z-10: explicit, so it reliably paints above
-            the backdrop (FeaturedHero/HeroBanner, unpositioned) but below
-            the hero's own text layers (z-20+ - see FeaturedListingHero for
-            why an explicit z is needed there too). */}
+            before a single word of text renders. Darker at the top (so the
+            pagination dots stay legible over a busy photo) and bottom (for
+            the featured-listing caption and the search card's edge),
+            lighter through the middle so the photo still shows through.
+            z-10: explicit, so it reliably paints above the backdrop
+            (FeaturedHero/HeroBanner, unpositioned) but below the hero's own
+            text layers (z-20+ - see FeaturedListingHero for why an explicit
+            z is needed there too). */}
         <div
           className="absolute inset-0 z-10 bg-gradient-to-b from-brand-950/75 via-brand-950/15 to-brand-950/80"
           aria-hidden
         />
-
-        <div className="absolute inset-x-4 top-20 z-30 max-w-xl sm:inset-x-8 sm:top-28 lg:top-32">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-400 sm:text-sm">
-            {greetingName ? "Welcome back" : "Fylde Coast accommodation, booked direct"}
-          </p>
-          <h1 className="mt-2 font-[family-name:var(--font-logo)] text-3xl leading-tight text-white [text-shadow:0_2px_20px_rgb(0_0_0_/_0.35)] sm:text-5xl lg:text-6xl">
-            {greetingName ? (
-              `Good ${timeOfDayGreeting()}, ${greetingName}`
-            ) : (
-              <>
-                Find your stay on the <span className="text-accent-400">Fylde Coast</span>
-              </>
-            )}
-          </h1>
-          <p className="mt-3 max-w-md text-sm text-white/90 sm:text-base">
-            {greetingName
-              ? "What would you like to do today?"
-              : "Independent apartments, cottages and guest houses from real local hosts — no resellers, just the coast."}
-          </p>
-        </div>
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
-        {/* Sits just below the hero photo instead of overlapping it - an
-            earlier version pulled this card up over the banner's bottom
-            edge for a "sitting on top of the scene" effect, but that meant
-            it always hid a slice of whatever photo was behind it, however
-            small. SearchBar already carries its own premium styling
-            (rounded pill on sm+, its own border and shadow - see
-            SearchBar.tsx), so it doesn't need a second card wrapped around
-            it here - one clean layer reads more premium than a bigger boxy
-            one stacked on top of it, and the full photo stays visible. */}
-        <div className="mt-6 sm:mt-8">
+        {/* Deliberately overlaps the hero photo's bottom edge (a small
+            negative top margin, not the much deeper -mt-14/-mt-20 an
+            earlier version used) so the search card reads as floating on
+            top of the scene, the way the reference design does - modest
+            enough that it only ever covers a sliver of the photo rather
+            than cropping a meaningful chunk of it. SearchBar already
+            carries its own premium styling (rounded pill on sm+, its own
+            border and shadow - see SearchBar.tsx), so it doesn't need a
+            second card wrapped around it here. */}
+        <div className="relative z-20 -mt-8 sm:-mt-10">
           <Suspense>
             <SearchBar liveUpdate={false} />
           </Suspense>

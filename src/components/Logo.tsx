@@ -32,7 +32,13 @@ export function Logo({
       {withTagline && (
         <span
           className={cn(
-            "mt-1.5 font-[family-name:var(--font-logo)] text-sm uppercase tracking-wide",
+            // Sized to match the "FYStay" wordmark's own rendered width at
+            // this component's "sm" size (the only size any caller
+            // currently pairs with a tagline) - "Your stay, your way" is
+            // roughly 3x the character count of "FYStay", so fitting it
+            // into the same width needs a font size this much smaller, not
+            // just a token step down like text-sm/text-xs.
+            "mt-1.5 font-[family-name:var(--font-logo)] text-[7px] uppercase tracking-wide",
             taglineClassName,
           )}
         >

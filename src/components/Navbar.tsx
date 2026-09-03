@@ -32,7 +32,7 @@ export async function Navbar() {
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <Link href="/" className="pointer-events-auto flex items-center gap-2">
-            <Logo size="sm" withTagline taglineClassName="mt-0 text-[10px] leading-tight" />
+            <Logo size="sm" withTagline taglineClassName="mt-0 leading-tight" />
           </Link>
         </div>
 

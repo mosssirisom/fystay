@@ -19,13 +19,19 @@ export async function Navbar() {
           header width via this overlay, independent of however wide the
           signed-in/signed-out nav controls happen to be, keeps it exactly
           centered regardless. pointer-events-none/auto so the transparent
-          overlay never blocks clicks on the nav to its right. */}
-      <div className="relative mx-auto flex max-w-6xl items-center justify-end px-6 py-3.5">
+          overlay never blocks clicks on the icon or the nav on either
+          side of it. */}
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+        <Link
+          href="/"
+          aria-label="FYStay home"
+          className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white"
+        >
+          <Home className="h-5 w-5" strokeWidth={2.5} />
+        </Link>
+
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <Link href="/" className="pointer-events-auto flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-              <Home className="h-5 w-5" strokeWidth={2.5} />
-            </span>
             <Logo size="sm" withTagline taglineClassName="mt-0 text-[10px] leading-tight" />
           </Link>
         </div>

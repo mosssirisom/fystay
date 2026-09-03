@@ -112,17 +112,12 @@ export function FeaturedListingHero({
                   image stays the clear focal point rather than a caption
                   or a wash competing with it. */}
               <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/45 to-transparent" />
-              {/* The caption itself: a slim, full-width dark strip (not a
-                  floating card inset from the edges) - "sit within the
-                  featured image" means its own background never extends
-                  past the photo, and bottom-10/14 (not bottom-0) keeps the
-                  whole strip clear of the search card below, which
-                  overlaps the hero's own bottom 32px (mobile) / 40px
-                  (desktop) via its negative top margin (see page.tsx) and
-                  paints above this in z-order - so the strip needs to sit
-                  above that overlap with a little room to spare, never
-                  under or behind it. */}
-              <div className="absolute inset-x-0 bottom-10 bg-black/55 px-4 py-2.5 sm:bottom-14 sm:px-6 sm:py-3">
+              {/* The caption itself: a slim, full-width dark strip sitting
+                  flush against the photo's bottom edge (bottom-0), not a
+                  floating card inset from the edges - the search card
+                  below no longer overlaps the hero (see page.tsx), so
+                  there's nothing left for this to clear. */}
+              <div className="absolute inset-x-0 bottom-0 bg-black/55 px-4 py-2.5 sm:px-6 sm:py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="flex items-center gap-1 text-[11px] text-white/75 sm:text-xs">

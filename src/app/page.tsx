@@ -207,9 +207,18 @@ export default async function Home() {
             z-10: explicit, so it reliably paints above the backdrop
             (FeaturedHero/HeroBanner, unpositioned) but below the hero's own
             text layers (z-20+ - see FeaturedListingHero for why an explicit
-            z is needed there too). */}
+            z is needed there too). pointer-events-none is load-bearing, not
+            decoration: this div is a *sibling* of FeaturedListingHero's
+            root, which has no z-index of its own, so its whole subtree
+            (the clickable slide links, the prev/next arrows, the dot
+            navigation) paints - and hit-tests - below this z-10 layer
+            regardless of the z-20 those elements carry internally, since
+            that z-20 only orders them against each other, not against this
+            sibling. Without pointer-events-none here, this purely
+            decorative tint silently swallowed every click and touch
+            gesture on the entire featured carousel. */}
         <div
-          className="absolute inset-0 z-10 bg-gradient-to-b from-brand-950/75 via-brand-950/15 to-brand-950/80"
+          className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-brand-950/75 via-brand-950/15 to-brand-950/80"
           aria-hidden
         />
       </section>

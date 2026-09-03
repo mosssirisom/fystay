@@ -17,6 +17,11 @@ export function SearchDateRangeField({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  // Picking dates only updates this local draft; the parent (and, on the
+  // search results page, the live-filtered results) only sees the change
+  // once Done is pressed. Closing any other way - clicking outside,
+  // Escape - discards the draft instead of confirming it.
+  const [draftRange, setDraftRange] = useState(range);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -40,8 +45,25 @@ export function SearchDateRangeField({
     };
   }, []);
 
-  const checkInLabel = range?.from ? format(range.from, "d MMM") : null;
-  const checkOutLabel = range?.to ? format(range.to, "d MMM") : null;
+  function toggleOpen() {
+    setOpen((v) => {
+      const next = !v;
+      // Re-seed the draft from the last confirmed range each time the
+      // panel opens, so a previously discarded/unfinished pick never
+      // reappears.
+      if (next) setDraftRange(range);
+      return next;
+    });
+  }
+
+  function confirm() {
+    onChange(draftRange);
+    setOpen(false);
+  }
+
+  const displayRange = open ? draftRange : range;
+  const checkInLabel = displayRange?.from ? format(displayRange.from, "d MMM") : null;
+  const checkOutLabel = displayRange?.to ? format(displayRange.to, "d MMM") : null;
 
   return (
     <div ref={containerRef} className={cn("relative flex items-stretch", className)}>
@@ -55,7 +77,7 @@ export function SearchDateRangeField({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="date-range-panel"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleOpen}
         className="focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
       >
         <CalendarDays className="h-4 w-4 shrink-0 text-brand-600" />
@@ -79,7 +101,7 @@ export function SearchDateRangeField({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="date-range-panel"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleOpen}
         className="focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
       >
         <span className="min-w-0 flex-1">
@@ -105,15 +127,21 @@ export function SearchDateRangeField({
           <DayPicker
             mode="range"
             min={1}
-            selected={range}
-            onSelect={(next) => {
-              onChange(next);
-              if (next?.from && next?.to) setOpen(false);
-            }}
+            selected={draftRange}
+            onSelect={setDraftRange}
             disabled={{ before: new Date() }}
             numberOfMonths={1}
             startMonth={new Date()}
           />
+          <div className="flex justify-end border-t border-border-subtle pt-2">
+            <button
+              type="button"
+              onClick={confirm}
+              className="focus-ring rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
+            >
+              Done
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -56,10 +56,15 @@ test("homepage search's date picker sets checkIn/checkOut and filters results", 
   const monthsAdvanced = await selectDay(page, checkIn, 0);
   await selectDay(page, checkOut, monthsAdvanced);
 
-  // Selecting both ends of the range closes the popover automatically.
-  await expect(dateDialog).toBeHidden();
+  // The fields reflect the picked dates straight away, but picking both
+  // ends no longer closes the popover or confirms the range on its own -
+  // that only happens once Done is pressed.
+  await expect(dateDialog).toBeVisible();
   await expect(checkInButton).not.toContainText("Add date");
   await expect(checkOutButton).not.toContainText("Add date");
+
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(dateDialog).toBeHidden();
 
   await page.getByRole("button", { name: "Search" }).click();
   await page.waitForURL(new RegExp(`checkIn=${isoDate(checkIn)}`));

@@ -185,34 +185,25 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
-          container below so it spans the entire viewport width. Falls back
-          to the generated illustration only when there's nothing real to
-          feature yet (a brand-new, empty catalog), or for the brief moment
-          before the real one has loaded. Deliberately carries no marketing
-          headline of its own any more - just the photo and its own
-          featured-listing caption (see FeaturedListingHero), so nothing
-          competes with the photo for attention. */}
-      <section className="relative h-[420px] w-full overflow-hidden sm:h-[500px] lg:h-[580px]">
-        <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
-          <FeaturedHero />
-        </Suspense>
-
-        {/* Brand vignette over the photo/illustration - teal-tinted rather
-            than a flat black scrim, so the hero reads as distinctly FYStay
-            before a single word of text renders. Darker at the top (so the
-            pagination dots stay legible over a busy photo) and bottom (for
-            the featured-listing caption and the search card's edge),
-            lighter through the middle so the photo still shows through.
-            z-10: explicit, so it reliably paints above the backdrop
-            (FeaturedHero/HeroBanner, unpositioned) but below the hero's own
-            text layers (z-20+ - see FeaturedListingHero for why an explicit
-            z is needed there too). */}
-        <div
-          className="absolute inset-0 z-10 bg-gradient-to-b from-brand-950/75 via-brand-950/15 to-brand-950/80"
-          aria-hidden
-        />
-      </section>
+      {/* A contained, rounded photo card (like every other card on this
+          page) rather than a full-bleed banner touching the viewport's
+          edges - the rounded corners clip the featured listing's own
+          bottom caption strip too, via the overflow-hidden on the same
+          element, so the strip's bottom corners match the photo's rather
+          than sitting square against a rounded frame. Falls back to the
+          generated illustration only when there's nothing real to feature
+          yet (a brand-new, empty catalog), or for the brief moment before
+          the real one has loaded. Carries no marketing headline of its own
+          - just the photo and its own featured-listing caption (see
+          FeaturedListingHero), so nothing competes with the photo for
+          attention. */}
+      <div className="mx-auto w-full max-w-6xl px-6 pt-6">
+        <section className="relative h-[380px] w-full overflow-hidden rounded-3xl sm:h-[460px] lg:h-[520px]">
+          <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
+            <FeaturedHero />
+          </Suspense>
+        </section>
+      </div>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
         {/* Sits just below the hero photo instead of overlapping it - an

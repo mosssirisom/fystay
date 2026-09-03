@@ -10,15 +10,27 @@ export async function Navbar() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border-subtle bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-            <Home className="h-5 w-5" strokeWidth={2.5} />
-          </span>
-          <Logo size="sm" withTagline taglineClassName="mt-0 text-[10px] leading-tight" />
-        </Link>
+      {/* relative + an absolutely-positioned centering layer, rather than a
+          grid with an empty balancing column: a grid track sized to "the
+          rest of the space" still has to yield to its content's minimum
+          width, so an empty left column and the (non-empty) nav's column
+          end up different sizes and the logo lands off-center by roughly
+          half that difference. Centering the logo against the *whole*
+          header width via this overlay, independent of however wide the
+          signed-in/signed-out nav controls happen to be, keeps it exactly
+          centered regardless. pointer-events-none/auto so the transparent
+          overlay never blocks clicks on the nav to its right. */}
+      <div className="relative mx-auto flex max-w-6xl items-center justify-end px-6 py-3.5">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <Link href="/" className="pointer-events-auto flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+              <Home className="h-5 w-5" strokeWidth={2.5} />
+            </span>
+            <Logo size="sm" withTagline taglineClassName="mt-0 text-[10px] leading-tight" />
+          </Link>
+        </div>
 
-        <nav className="flex items-center gap-3">
+        <nav className="relative z-10 flex items-center gap-3">
           {session?.user ? (
             <UserMenu name={session.user.name ?? "Account"} role={session.user.role} />
           ) : (

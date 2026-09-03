@@ -106,48 +106,56 @@ export function FeaturedListingHero({
                 className="object-cover"
                 unoptimized={!isOptimizableImage(listing.photo)}
               />
-              {/* A tight, bottom-only scrim rather than a wash reaching
-                  halfway up the photo - just enough for the caption text
-                  below to stay legible, so the photo itself stays the
-                  focal point instead of competing with a dark overlay. */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 from-0% via-black/0 via-40% to-transparent" />
-              {/* bottom-10/14 rather than a plain bottom-4/6: the search card
-                  below overlaps the hero's own bottom 32px (mobile) / 40px
-                  (desktop) via its negative top margin (see page.tsx), so
-                  this needs to clear that with a little room to spare
-                  rather than rendering underneath it. */}
-              <div className="absolute inset-x-4 bottom-10 sm:inset-x-8 sm:bottom-14">
-                <p className="flex items-center gap-1 text-xs text-white/80 sm:text-sm">
-                  <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                  <span className="truncate">{listing.city}</span>
-                </p>
-                <p className="mt-1 truncate text-xl font-bold text-white sm:text-2xl">
-                  {listing.title}
-                </p>
-                <div className="mt-2 flex items-end justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85 sm:text-sm">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" aria-hidden />
-                      {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <BedDouble className="h-3.5 w-3.5" aria-hidden />
-                      {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
-                    </span>
-                    {topAmenity && (
-                      <span className="flex items-center gap-1">
-                        <topAmenity.icon className="h-3.5 w-3.5" aria-hidden />
-                        {topAmenity.label}
-                      </span>
-                    )}
+              {/* Short top-only scrim, just for the pagination dots'
+                  contrast - the rest of the photo (everything above the
+                  bottom strip below) is left completely untouched, so the
+                  image stays the clear focal point rather than a caption
+                  or a wash competing with it. */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/45 to-transparent" />
+              {/* The caption itself: a slim, full-width dark strip (not a
+                  floating card inset from the edges) - "sit within the
+                  featured image" means its own background never extends
+                  past the photo, and bottom-10/14 (not bottom-0) keeps the
+                  whole strip clear of the search card below, which
+                  overlaps the hero's own bottom 32px (mobile) / 40px
+                  (desktop) via its negative top margin (see page.tsx) and
+                  paints above this in z-order - so the strip needs to sit
+                  above that overlap with a little room to spare, never
+                  under or behind it. */}
+              <div className="absolute inset-x-0 bottom-10 bg-black/55 px-4 py-2.5 sm:bottom-14 sm:px-6 sm:py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 text-[11px] text-white/75 sm:text-xs">
+                      <MapPin className="h-3 w-3 shrink-0" aria-hidden />
+                      <span className="truncate">{listing.city}</span>
+                    </p>
+                    <p className="truncate text-sm font-bold leading-tight text-white sm:text-base">
+                      {listing.title}
+                    </p>
                   </div>
-                  <p className="shrink-0 text-right text-xs text-white/80 sm:text-sm">
+                  <p className="shrink-0 whitespace-nowrap text-right text-[11px] text-white/80 sm:text-xs">
                     From{" "}
-                    <span className="text-base font-bold text-white sm:text-lg">
+                    <span className="text-sm font-bold text-white sm:text-base">
                       {formatPrice(listing.pricePerNightCents)}
-                    </span>{" "}
-                    <span className="text-white/70">/ night</span>
+                    </span>
+                    <span className="text-white/70">/night</span>
                   </p>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/85 sm:text-xs">
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" aria-hidden />
+                    {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <BedDouble className="h-3 w-3" aria-hidden />
+                    {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
+                  </span>
+                  {topAmenity && (
+                    <span className="flex items-center gap-1">
+                      <topAmenity.icon className="h-3 w-3" aria-hidden />
+                      {topAmenity.label}
+                    </span>
+                  )}
                 </div>
               </div>
             </Link>

@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { TouchEvent } from "react";
 import Image from "next/image";
 import { Grip, ImageOff } from "lucide-react";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { SaveButton } from "@/components/SaveButton";
 import { isOptimizableImage } from "@/lib/image";
+import { cn } from "@/lib/cn";
 
 // One large hero plus up to this many stacked thumbnails alongside it - a
 // vertical rail rather than the 2x2 photo mosaic most booking sites use, so
 // the gallery still reads as distinctly FYStay's own even before any text
 // on the page does.
 const MAX_THUMBNAILS = 3;
+const SWIPE_THRESHOLD_PX = 40;
 
 export function PhotoGallery({
   photos,
@@ -28,6 +31,31 @@ export function PhotoGallery({
   isLoggedIn?: boolean;
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  // Which photo the hero tile itself is showing, independent of the
+  // lightbox - lets a mobile visitor swipe through photos right on the
+  // page (the same easy gesture as the homepage carousel and search
+  // result cards) without first opening the fullscreen lightbox at all.
+  const [heroIndex, setHeroIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
+  function goToHeroPhoto(index: number) {
+    setHeroIndex(((index % photos.length) + photos.length) % photos.length);
+  }
+
+  // Same reasoning as the homepage hero and property cards: a real drag
+  // suppresses the button's own click event once it moves, so this and a
+  // plain tap-to-open-lightbox never fight each other.
+  function handleTouchStart(e: TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: TouchEvent) {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (delta <= -SWIPE_THRESHOLD_PX) goToHeroPhoto(heroIndex + 1);
+    else if (delta >= SWIPE_THRESHOLD_PX) goToHeroPhoto(heroIndex - 1);
+  }
 
   if (photos.length === 0) {
     return (
@@ -55,19 +83,47 @@ export function PhotoGallery({
           <button
             type="button"
             data-testid="gallery-tile"
-            onClick={() => setLightboxIndex(0)}
-            className="focus-ring relative block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-surface-muted sm:aspect-auto sm:h-full"
+            onClick={() => setLightboxIndex(heroIndex)}
+            onTouchStart={photos.length > 1 ? handleTouchStart : undefined}
+            onTouchEnd={photos.length > 1 ? handleTouchEnd : undefined}
+            className="focus-ring relative block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-surface-muted transition hover:brightness-95 sm:aspect-auto sm:h-full"
           >
-            <Image
-              src={photos[0]}
-              alt={`${title} photo 1`}
-              fill
-              className="object-cover transition hover:brightness-95"
-              sizes="(max-width: 640px) 100vw, 66vw"
-              unoptimized={!isOptimizableImage(photos[0])}
-              priority
-            />
+            <div
+              className="flex h-full w-full transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(-${heroIndex * 100}%)` }}
+            >
+              {photos.map((photo, i) => (
+                <div key={i} className="relative h-full w-full shrink-0">
+                  <Image
+                    src={photo}
+                    alt={`${title} photo ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 66vw"
+                    unoptimized={!isOptimizableImage(photo)}
+                    priority={i === 0}
+                  />
+                </div>
+              ))}
+            </div>
           </button>
+
+          {photos.length > 1 && (
+            // Mobile-only: sm+ already shows the thumbnail rail beside this
+            // tile, so a dot indicator here would just duplicate it.
+            <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1 sm:hidden">
+              {photos.map((_, i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  className={cn(
+                    "h-1.5 rounded-full transition-all",
+                    i === heroIndex ? "w-4 bg-white" : "w-1.5 bg-white/60",
+                  )}
+                />
+              ))}
+            </div>
+          )}
 
           {listingId && (
             <SaveButton

@@ -194,33 +194,18 @@ export default async function Home() {
           featured-listing caption (see FeaturedListingHero), so nothing
           competes with the photo for attention. */}
       <section className="relative h-[420px] w-full overflow-hidden sm:h-[500px] lg:h-[580px]">
+        {/* No dark vignette over the photo here any more: it dates back to
+            when this section carried its own marketing headline and
+            needed contrast across the whole image, but that headline is
+            gone now (see the "Home" component below) and every remaining
+            text layer already carries its own contrast where it actually
+            sits - the pagination dots' own top scrim and the caption
+            strip's solid background, both inside FeaturedListingHero. A
+            page-wide tint on top of that just darkened every photo for no
+            reason. */}
         <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
           <FeaturedHero />
         </Suspense>
-
-        {/* Brand vignette over the photo/illustration - teal-tinted rather
-            than a flat black scrim, so the hero reads as distinctly FYStay
-            before a single word of text renders. Darker at the top (so the
-            pagination dots stay legible over a busy photo) and bottom (for
-            the featured-listing caption and the search card's edge),
-            lighter through the middle so the photo still shows through.
-            z-10: explicit, so it reliably paints above the backdrop
-            (FeaturedHero/HeroBanner, unpositioned) but below the hero's own
-            text layers (z-20+ - see FeaturedListingHero for why an explicit
-            z is needed there too). pointer-events-none is load-bearing, not
-            decoration: this div is a *sibling* of FeaturedListingHero's
-            root, which has no z-index of its own, so its whole subtree
-            (the clickable slide links, the prev/next arrows, the dot
-            navigation) paints - and hit-tests - below this z-10 layer
-            regardless of the z-20 those elements carry internally, since
-            that z-20 only orders them against each other, not against this
-            sibling. Without pointer-events-none here, this purely
-            decorative tint silently swallowed every click and touch
-            gesture on the entire featured carousel. */}
-        <div
-          className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-brand-950/75 via-brand-950/15 to-brand-950/80"
-          aria-hidden
-        />
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">

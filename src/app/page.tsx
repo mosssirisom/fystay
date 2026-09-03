@@ -215,16 +215,14 @@ export default async function Home() {
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
-        {/* Deliberately overlaps the hero photo's bottom edge (a small
-            negative top margin, not the much deeper -mt-14/-mt-20 an
-            earlier version used) so the search card reads as floating on
-            top of the scene, the way the reference design does - modest
-            enough that it only ever covers a sliver of the photo rather
-            than cropping a meaningful chunk of it. SearchBar already
+        {/* Sits just below the hero photo instead of overlapping it - an
+            overlapping version was tried, but that always hid a slice of
+            whatever was behind it (the photo, and now the featured
+            listing's own bottom strip), however small. SearchBar already
             carries its own premium styling (rounded pill on sm+, its own
             border and shadow - see SearchBar.tsx), so it doesn't need a
             second card wrapped around it here. */}
-        <div className="relative z-20 -mt-8 sm:-mt-10">
+        <div className="mt-6 sm:mt-8">
           <Suspense>
             <SearchBar liveUpdate={false} />
           </Suspense>

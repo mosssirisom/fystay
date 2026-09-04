@@ -23,6 +23,7 @@ export function GuestCategoryPicker({
   onChange,
   capacity,
   showPets = true,
+  requireDoneToConfirm = false,
   className,
   triggerClassName,
 }: {
@@ -32,18 +33,28 @@ export function GuestCategoryPicker({
   capacity?: number;
   /** Hide the Pets row entirely, e.g. when a listing doesn't allow pets. */
   showPets?: boolean;
+  /** When true, +/- only updates this panel's own display; onChange (and
+   * whatever it triggers - on the search bar, a live re-search) only fires
+   * once Done is pressed, matching the search date-range picker. Off by
+   * default so the booking widget keeps applying each click immediately,
+   * where there's no live search to guard against. */
+  requireDoneToConfirm?: boolean;
   className?: string;
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  // Only meaningful when requireDoneToConfirm - +/- clicks update this
+  // instead of calling onChange, so nothing is confirmed until Done.
+  const [draft, setDraft] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const displayValue = requireDoneToConfirm ? draft : value;
   const rows = showPets ? ROWS : ROWS.filter((row) => row.key !== "pets");
 
   function maxFor(key: keyof GuestCounts, rowMax: number): number {
     if (capacity === undefined) return rowMax;
-    if (key === "adults") return Math.min(rowMax, capacity - value.children);
-    if (key === "children") return Math.min(rowMax, capacity - value.adults);
+    if (key === "adults") return Math.min(rowMax, capacity - displayValue.children);
+    if (key === "children") return Math.min(rowMax, capacity - displayValue.adults);
     return rowMax;
   }
 
@@ -64,15 +75,35 @@ export function GuestCategoryPicker({
     };
   }, []);
 
+  function toggleOpen() {
+    setOpen((v) => {
+      const next = !v;
+      // Re-seed the draft from the last confirmed value each time the
+      // panel opens, so a previously discarded/unfinished adjustment
+      // never reappears.
+      if (next && requireDoneToConfirm) setDraft(value);
+      return next;
+    });
+  }
+
   function update(key: keyof GuestCounts, next: number) {
-    onChange({ ...value, [key]: next });
+    if (requireDoneToConfirm) {
+      setDraft((d) => ({ ...d, [key]: next }));
+    } else {
+      onChange({ ...value, [key]: next });
+    }
+  }
+
+  function confirm() {
+    onChange(draft);
+    setOpen(false);
   }
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleOpen}
         aria-expanded={open}
         aria-controls="guest-picker-panel"
         className={cn(
@@ -83,7 +114,9 @@ export function GuestCategoryPicker({
         <Users className="h-4 w-4 shrink-0 text-zinc-400" />
         <span className="min-w-0 flex-1">
           <span className="block text-[11px] font-semibold text-foreground">Guests</span>
-          <span className="block truncate text-sm text-zinc-500">{summarizeGuests(value)}</span>
+          <span className="block truncate text-sm text-zinc-500">
+            {summarizeGuests(displayValue)}
+          </span>
         </span>
       </button>
 
@@ -107,8 +140,8 @@ export function GuestCategoryPicker({
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => update(row.key, Math.max(row.min, value[row.key] - 1))}
-                      disabled={value[row.key] <= row.min}
+                      onClick={() => update(row.key, Math.max(row.min, displayValue[row.key] - 1))}
+                      disabled={displayValue[row.key] <= row.min}
                       aria-label={`Decrease ${row.label.toLowerCase()}`}
                       className={cn(
                         "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
@@ -118,11 +151,13 @@ export function GuestCategoryPicker({
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="w-4 text-center text-sm font-medium">{value[row.key]}</span>
+                    <span className="w-4 text-center text-sm font-medium">
+                      {displayValue[row.key]}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => update(row.key, Math.min(rowMax, value[row.key] + 1))}
-                      disabled={value[row.key] >= rowMax}
+                      onClick={() => update(row.key, Math.min(rowMax, displayValue[row.key] + 1))}
+                      disabled={displayValue[row.key] >= rowMax}
                       aria-label={`Increase ${row.label.toLowerCase()}`}
                       className={cn(
                         "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
@@ -141,6 +176,17 @@ export function GuestCategoryPicker({
             <p className="mt-3 text-xs text-zinc-500">
               This place has a maximum of {capacity} guest{capacity === 1 ? "" : "s"}.
             </p>
+          )}
+          {requireDoneToConfirm && (
+            <div className="mt-3 flex justify-end border-t border-border-subtle pt-3">
+              <button
+                type="button"
+                onClick={confirm}
+                className="focus-ring rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
+              >
+                Done
+              </button>
+            </div>
           )}
         </div>
       )}

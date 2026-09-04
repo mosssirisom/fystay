@@ -142,6 +142,7 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
         <GuestCategoryPicker
           value={guestCounts}
           onChange={setGuestCounts}
+          requireDoneToConfirm
           className="flex-1"
           // [&>svg]: recolors just this trigger's own icon to match the
           // teal used by the Where/Check-in fields, without touching

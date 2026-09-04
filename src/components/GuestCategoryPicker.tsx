@@ -48,7 +48,10 @@ export function GuestCategoryPicker({
   const [draft, setDraft] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const displayValue = requireDoneToConfirm ? draft : value;
+  // Only while open, and only in requireDoneToConfirm mode: closing without
+  // pressing Done (clicking outside, Escape) must fall back to the last
+  // confirmed value, not leave the trigger label showing a discarded draft.
+  const displayValue = open && requireDoneToConfirm ? draft : value;
   const rows = showPets ? ROWS : ROWS.filter((row) => row.key !== "pets");
 
   function maxFor(key: keyof GuestCounts, rowMax: number): number {

@@ -16,6 +16,10 @@ test("guest picker toggles adults, children, infants, and pets, and filters resu
     "2 guests, 1 infant, 1 pet",
   );
 
+  // Adjustments only update the popover's own display until Done is
+  // pressed - matching the date-range picker's confirm-on-Done behavior.
+  await page.getByRole("button", { name: "Done" }).click();
+
   await page.getByRole("button", { name: "Search" }).click();
   await page.waitForURL(/children=1/);
   expect(page.url()).toContain("infants=1");

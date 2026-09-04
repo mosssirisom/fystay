@@ -161,7 +161,24 @@ function RegisterFormInner() {
                 problem when it was really an empty name field. */}
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            <Button type="submit" loading={loading} className="mt-2 w-full">
+            {/* Both pages already exist and are linked from the footer,
+                but a footer link is easy to never see - tying the same
+                links to the action that actually creates the account is
+                what makes this a real consent, not just a page that
+                happens to exist somewhere on the site. */}
+            <p className="text-xs text-zinc-500">
+              By signing up, you agree to {SITE_NAME}&apos;s{" "}
+              <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
+                Terms and Conditions
+              </Link>{" "}
+              and{" "}
+              <Link href="/legal/privacy" className="font-medium text-brand-700 hover:underline">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+
+            <Button type="submit" loading={loading} className="w-full">
               Sign up
             </Button>
           </form>

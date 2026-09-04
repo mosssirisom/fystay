@@ -146,7 +146,7 @@ export default async function ListingDetailPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8 pb-24 lg:pb-8">
+    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}

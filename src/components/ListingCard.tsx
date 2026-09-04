@@ -214,11 +214,20 @@ export function ListingCard({
               </span>
             )}
           </p>
-          {rating !== null && (
+          {rating !== null ? (
             <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-zinc-600">
               <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
               {rating.toFixed(1)}
               {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
+            </span>
+          ) : (
+            // A blank gap here (rather than a placeholder) reads as broken
+            // or missing data next to cards that do have a rating in the
+            // same grid - and every listing starts with zero reviews, so
+            // this isn't a rare case. "New" reframes it as a fact about
+            // the listing instead of an absence.
+            <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+              New
             </span>
           )}
         </div>

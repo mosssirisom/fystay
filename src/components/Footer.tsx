@@ -6,7 +6,7 @@ const columns = [
     heading: "Support",
     links: [
       { label: "Help center", href: "/help" },
-      { label: "Safety information", href: "/safety" },
+      { label: "Trust & Safety", href: "/safety" },
       { label: "Cancellation options", href: "/cancellation-policies" },
     ],
   },
@@ -20,7 +20,10 @@ const columns = [
   },
   {
     heading: "Company",
-    links: [{ label: "About", href: "/about" }],
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Contact us", href: "/contact" },
+    ],
   },
 ];
 

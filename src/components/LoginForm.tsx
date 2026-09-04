@@ -10,8 +10,9 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
-function LoginFormInner() {
+function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
@@ -53,6 +54,16 @@ function LoginFormInner() {
 
       <Card>
         <CardContent className="pt-5">
+          {googleEnabled && (
+            <>
+              <GoogleSignInButton callbackUrl={callbackUrl} />
+              <div className="my-4 flex items-center gap-3 text-xs text-zinc-400">
+                <span className="h-px flex-1 bg-border-subtle" />
+                or
+                <span className="h-px flex-1 bg-border-subtle" />
+              </div>
+            </>
+          )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <Field>
               <Label htmlFor="email">Email</Label>
@@ -114,10 +125,10 @@ function LoginFormInner() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   return (
     <Suspense>
-      <LoginFormInner />
+      <LoginFormInner googleEnabled={googleEnabled} />
     </Suspense>
   );
 }

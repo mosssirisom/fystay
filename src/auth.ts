@@ -1,7 +1,9 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { googleSignInEnabled } from "@/lib/authProviders";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Trust the Host header from the deployment platform's proxy (Vercel, etc.).
@@ -29,7 +31,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await prisma.user.findUnique({
           where: { email: email.toLowerCase() },
         });
-        if (!user) return null;
+        // No account, or one created via Google that's never also set a
+        // password: either way there's nothing to check the password
+        // against, so deny rather than passing null into bcrypt.
+        if (!user || !user.passwordHash) return null;
 
         const isValid = await bcrypt.compare(password, user.passwordHash);
         if (!isValid) return null;
@@ -42,9 +47,60 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+    ...(googleSignInEnabled
+      ? [
+          Google({
+            // The default profile() return has no `role` field, which this
+            // app's User type (src/types/next-auth.d.ts) requires - GUEST
+            // here is only ever a placeholder for the moment between
+            // sign-in and the jwt callback below, which always overwrites
+            // it with the real value from this account's own User row.
+            profile(profile) {
+              return {
+                id: profile.sub,
+                name: profile.name,
+                email: profile.email,
+                image: profile.picture,
+                role: "GUEST",
+              };
+            },
+          }),
+        ]
+      : []),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (account?.provider !== "google") return true;
+      if (!user.email) return false;
+
+      // Credentials sign-in already resolved to a real User row in
+      // authorize() above; Google only ever hands back its own profile, so
+      // the first time a given email signs in this way, create the User
+      // row that everything else in this app (bookings, listings, reviews)
+      // actually points to. passwordHash stays null - see the schema
+      // comment on User.passwordHash for why that's a real, expected state
+      // rather than a bug.
+      const email = user.email.toLowerCase();
+      await prisma.user.upsert({
+        where: { email },
+        update: {},
+        create: { email, name: user.name ?? email, image: user.image },
+      });
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      if (account?.provider === "google" && user?.email) {
+        // Google's own profile has no idea about this app's id/role - look
+        // up the real User row signIn() above just found-or-created.
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email.toLowerCase() },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+        }
+        return token;
+      }
       if (user) {
         token.id = user.id;
         token.role = user.role;

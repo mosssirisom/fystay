@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { cn } from "@/lib/cn";
 import { SITE_NAME } from "@/lib/seo";
 
@@ -18,7 +19,7 @@ const roleOptions = [
   { value: "HOST" as const, label: "Host my place", icon: Home },
 ];
 
-function RegisterFormInner() {
+function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
@@ -95,6 +96,16 @@ function RegisterFormInner() {
 
       <Card>
         <CardContent className="pt-5">
+          {googleEnabled && (
+            <>
+              <GoogleSignInButton callbackUrl={callbackUrl ?? undefined} />
+              <div className="my-4 flex items-center gap-3 text-xs text-zinc-400">
+                <span className="h-px flex-1 bg-border-subtle" />
+                or
+                <span className="h-px flex-1 bg-border-subtle" />
+              </div>
+            </>
+          )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <fieldset>
               <legend className="mb-1.5 text-sm font-medium text-zinc-800">I want to</legend>
@@ -198,10 +209,10 @@ function RegisterFormInner() {
   );
 }
 
-export function RegisterForm() {
+export function RegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
   return (
     <Suspense>
-      <RegisterFormInner />
+      <RegisterFormInner googleEnabled={googleEnabled} />
     </Suspense>
   );
 }

@@ -82,7 +82,11 @@ model User {
   id           String    @id @default(cuid())
   name         String
   email        String    @unique
-  passwordHash String
+  // Null for an account created via an OAuth provider (e.g. Google) that
+  // has never also set a password - there's nothing to compare against on
+  // a Credentials login, so authorize() must treat null as "deny" rather
+  // than passing it to bcrypt.
+  passwordHash String?
   role         Role      @default(GUEST)
   image        String?
   createdAt    DateTime  @default(now())

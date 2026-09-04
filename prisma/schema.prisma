@@ -124,6 +124,13 @@ model Listing {
   city        String
   country     String
   address     String?
+  // Both null until the listing's city matches a known Fylde Coast town
+  // (see src/lib/geocoding.ts) - never a guessed or user-typed value, so a
+  // city FYStay doesn't actually cover never gets a fabricated pin on the
+  // map. Town-center coordinates with a small deterministic jitter, not a
+  // real street address - this app has no per-property geocoding data.
+  latitude    Float?
+  longitude   Float?
   propertyType PropertyType @default(OTHER)
   pricePerNightCents Int
   // A flat, once-per-stay fee (housekeeping between guests), separate from

@@ -165,8 +165,12 @@ test("list/map view toggle switches the results presentation without losing filt
 
   await page.getByRole("button", { name: "Map" }).click();
   await page.waitForURL(/view=map/);
-  await expect(page.getByText("Map view is coming soon")).toBeVisible();
-  await expect(page.getByText("Blackpool", { exact: false }).first()).toBeVisible();
+  // A real interactive map now renders here (see ListingsMap /
+  // src/lib/geocoding.ts) rather than the old "coming soon" placeholder -
+  // .leaflet-container is Leaflet's own root element, and this listing's
+  // pin is a real marker for it, not a city-count list.
+  await expect(page.locator(".leaflet-container")).toBeVisible();
+  await expect(page.locator(".leaflet-marker-icon")).toHaveCount(1);
 
   await page.getByRole("button", { name: "List" }).click();
   await page.waitForURL((url) => !url.search.includes("view=map"));

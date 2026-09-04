@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { httpUrlSchema } from "@/lib/validation";
+import { geocodeListing } from "@/lib/geocoding";
 
 const updateListingSchema = z
   .object({
@@ -82,9 +83,24 @@ export async function PATCH(
     );
   }
 
+  // Re-geocode only when the city actually changed - an edit to the price
+  // or description shouldn't reroll the map pin's jitter for no reason.
+  // Falls back to null (not the stale old pin) if the new city isn't one
+  // of FYStay's towns, same as a brand-new listing in that city would.
+  const coordinates =
+    parsed.data.city && parsed.data.city !== listing.city
+      ? geocodeListing({ id: listing.id, city: parsed.data.city })
+      : undefined;
+
   const updated = await prisma.listing.update({
     where: { id },
-    data: parsed.data,
+    data: {
+      ...parsed.data,
+      ...(coordinates !== undefined && {
+        latitude: coordinates?.latitude ?? null,
+        longitude: coordinates?.longitude ?? null,
+      }),
+    },
   });
 
   return NextResponse.json({ listing: updated });

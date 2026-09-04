@@ -9,6 +9,7 @@ import { FilterSheet } from "@/components/FilterSheet";
 import { SortDropdown } from "@/components/SortDropdown";
 import { ResultsViewToggle } from "@/components/ResultsViewToggle";
 import { MapViewPlaceholder } from "@/components/MapViewPlaceholder";
+import { ListingsMap } from "@/components/ListingsMap";
 import {
   applyListingFilters,
   parseListingFiltersFromParams,
@@ -160,7 +161,31 @@ export async function ListingsGrid({
           </p>
         </div>
       ) : view === "map" ? (
-        <MapViewPlaceholder cityCounts={cityCounts} />
+        (() => {
+          // Every current town geocodes (see src/lib/geocoding.ts), so this
+          // is only ever empty for a result set entirely outside FYStay's
+          // actual coverage - the honest placeholder, not a broken-looking
+          // empty map, is the right fallback for that.
+          const mappable = results.filter(
+            (l): l is typeof l & { latitude: number; longitude: number } =>
+              l.latitude !== null && l.longitude !== null,
+          );
+          return mappable.length > 0 ? (
+            <ListingsMap
+              listings={mappable.map((l) => ({
+                id: l.id,
+                title: l.title,
+                city: l.city,
+                photo: l.photos[0] ?? null,
+                pricePerNightCents: l.pricePerNightCents,
+                latitude: l.latitude,
+                longitude: l.longitude,
+              }))}
+            />
+          ) : (
+            <MapViewPlaceholder cityCounts={cityCounts} />
+          );
+        })()
       ) : (
         // Single column below sm: two half-width cards on a phone left
         // titles clipped and photos too small to judge a place by. One

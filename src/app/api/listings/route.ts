@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
 import { httpUrlSchema } from "@/lib/validation";
+import { geocodeListing } from "@/lib/geocoding";
 
 const createListingSchema = z
   .object({
@@ -103,5 +104,13 @@ export async function POST(request: Request) {
     data: { ...parsed.data, hostId: session.user.id },
   });
 
-  return NextResponse.json({ listing }, { status: 201 });
+  // The jitter that keeps two listings in the same town from landing on
+  // the exact same pin is keyed on the listing's own id, which Prisma only
+  // assigns on insert - so this can't be folded into the create() above.
+  const coordinates = geocodeListing({ id: listing.id, city: listing.city });
+  const withCoordinates = coordinates
+    ? await prisma.listing.update({ where: { id: listing.id }, data: coordinates })
+    : listing;
+
+  return NextResponse.json({ listing: withCoordinates }, { status: 201 });
 }

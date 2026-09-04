@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { nightsBetween } from "../src/lib/availability";
 import { computeBookingPricing } from "../src/lib/pricing";
 import { generateBookingReference } from "../src/lib/bookingReference";
+import { geocodeListing } from "../src/lib/geocoding";
 
 const prisma = new PrismaClient();
 
@@ -163,7 +164,11 @@ async function main() {
         hostId: host.id,
       },
     });
-    createdListings.push(created);
+    const coordinates = geocodeListing({ id: created.id, city: created.city });
+    const withCoordinates = coordinates
+      ? await prisma.listing.update({ where: { id: created.id }, data: coordinates })
+      : created;
+    createdListings.push(withCoordinates);
   }
 
   // A completed stay + review, so the reviews feature has something to

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
+import { useReserveBottomSpace } from "@/hooks/useReserveBottomSpace";
 
 /**
  * On mobile the booking widget sits below the description, amenities, and
@@ -12,31 +13,7 @@ import { Button } from "@/components/ui/Button";
  */
 export function MobileBookingBar({ pricePerNightCents }: { pricePerNightCents: number }) {
   const barRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const bar = barRef.current;
-    if (!bar) return;
-    // This bar is position:fixed, so it always sits over the true bottom
-    // of the *viewport*, not the bottom of this page's own content - any
-    // padding added further up the page (e.g. after the booking widget)
-    // only stops it covering content in the middle of the page, not the
-    // shared Footer that renders after every page's own content. Reserving
-    // real space on <body> itself, sized to the bar's own rendered height,
-    // is what actually keeps the last few rows of the Footer (its legal
-    // links) from ending up permanently hidden behind this bar once a
-    // guest scrolls all the way down. A ResizeObserver (rather than a
-    // fixed pixel value, or reading the height once) means this self-
-    // corrects if the bar's height ever changes, including collapsing to
-    // 0 via its own lg:hidden once the viewport crosses into desktop width.
-    const observer = new ResizeObserver(() => {
-      document.body.style.paddingBottom = `${bar.offsetHeight}px`;
-    });
-    observer.observe(bar);
-    return () => {
-      observer.disconnect();
-      document.body.style.paddingBottom = "";
-    };
-  }, []);
+  useReserveBottomSpace(barRef);
 
   function scrollToWidget() {
     document.getElementById("booking-widget")?.scrollIntoView({ behavior: "smooth", block: "start" });

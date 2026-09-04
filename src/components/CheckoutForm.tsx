@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -8,6 +8,7 @@ import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { formatPrice } from "@/lib/format";
+import { useReserveBottomSpace } from "@/hooks/useReserveBottomSpace";
 
 export function CheckoutForm({
   bookingId,
@@ -29,6 +30,8 @@ export function CheckoutForm({
   const [phone, setPhone] = useState(defaultPhone);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const mobileBarRef = useRef<HTMLDivElement>(null);
+  useReserveBottomSpace(mobileBarRef);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -130,7 +133,10 @@ export function CheckoutForm({
         card details.
       </p>
 
-      <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border-subtle bg-surface px-4 py-3 [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
+      <div
+        ref={mobileBarRef}
+        className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border-subtle bg-surface px-4 py-3 [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden"
+      >
         <div>
           <p className="text-xs text-zinc-500">Total</p>
           <p className="text-base font-semibold text-foreground">{formatPrice(totalPriceCents)}</p>

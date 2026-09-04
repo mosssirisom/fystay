@@ -5,6 +5,7 @@ import { ChevronLeft, Info } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { PENDING_BOOKING_HOLD_MINUTES } from "@/lib/availability";
+import { resolveCancellationPolicy } from "@/lib/cancellationPolicy";
 import { BookingSummaryCard } from "@/components/BookingSummaryCard";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -44,9 +45,10 @@ export default async function CheckoutPage({
     booking.createdAt.getTime() + PENDING_BOOKING_HOLD_MINUTES * 60 * 1000,
   );
   const expired = holdExpiresAt <= new Date();
+  const cancellationPolicy = resolveCancellationPolicy(booking.listing);
 
   return (
-    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 pb-28 lg:pb-8">
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
       <Link
         href={`/listings/${booking.listingId}`}
         className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"
@@ -105,6 +107,8 @@ export default async function CheckoutPage({
               serviceFeeCents={booking.serviceFeeCents}
               taxCents={booking.taxCents}
               totalPriceCents={booking.totalPriceCents}
+              cancellationPolicyLabel={cancellationPolicy.label}
+              cancellationPolicyDescription={cancellationPolicy.description}
             />
           </div>
         </div>

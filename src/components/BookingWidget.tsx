@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type DateRange } from "react-day-picker";
 import { toast } from "sonner";
-import { Lock, MessageCircle, ShieldCheck, Star } from "lucide-react";
+import { CalendarClock, Lock, MessageCircle, ShieldCheck, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
@@ -24,6 +24,7 @@ type Props = {
   isLoggedIn: boolean;
   rating?: number | null;
   reviewCount?: number;
+  cancellationPolicyLabel: string;
 };
 
 export function BookingWidget({
@@ -36,6 +37,7 @@ export function BookingWidget({
   isLoggedIn,
   rating = null,
   reviewCount = 0,
+  cancellationPolicyLabel,
 }: Props) {
   const router = useRouter();
   const [range, setRange] = useState<DateRange | undefined>();
@@ -273,6 +275,16 @@ export function BookingWidget({
               {availabilityChecked ? "You won't be charged yet" : "We'll confirm your dates are free"}
             </p>
           )}
+          <p className="flex items-center gap-2">
+            <CalendarClock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+            <span>
+              <span className="font-medium text-zinc-700">{cancellationPolicyLabel}</span> cancellation
+              -{" "}
+              <a href="#cancellation-policy" className="underline hover:text-brand-700">
+                see policy
+              </a>
+            </span>
+          </p>
           <p className="flex items-center gap-2">
             <Lock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             Secure payment via Stripe - we never see your card details

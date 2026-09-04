@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BedDouble, Bath, DoorOpen, MapPin, Star, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, blockingRanges } from "@/lib/availability";
+import { resolveCancellationPolicy } from "@/lib/cancellationPolicy";
 import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
@@ -19,7 +20,7 @@ const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
     where: { id },
     include: {
-      host: { select: { name: true } },
+      host: { select: { name: true, createdAt: true } },
       bookings: {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
@@ -80,13 +81,21 @@ export default async function ListingDetailPage({
     notFound();
   }
 
-  const isSaved = session?.user
-    ? Boolean(
-        await prisma.savedListing.findUnique({
-          where: { userId_listingId: { userId: session.user.id, listingId: listing.id } },
-        }),
-      )
-    : false;
+  const [isSaved, hostReviewCount] = await Promise.all([
+    session?.user
+      ? prisma.savedListing
+          .findUnique({
+            where: { userId_listingId: { userId: session.user.id, listingId: listing.id } },
+          })
+          .then(Boolean)
+      : Promise.resolve(false),
+    // Across every listing this host runs, not just this one - a host with
+    // one glowing review on their tenth property and a host with their
+    // first-ever review look identical from a single listing's own count.
+    prisma.review.count({
+      where: { status: "PUBLISHED", listing: { hostId: listing.hostId } },
+    }),
+  ]);
 
   const reportedReviewIds = session?.user
     ? new Set(
@@ -111,6 +120,7 @@ export default async function ListingDetailPage({
 
   const rating = averageRating(listing.reviews);
   const reviewCount = listing.reviews.length;
+  const cancellationPolicy = resolveCancellationPolicy(listing);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -201,6 +211,15 @@ export default async function ListingDetailPage({
               <div className="hidden text-sm sm:block">
                 <p className="text-zinc-500">Hosted by</p>
                 <p className="font-medium text-foreground">{listing.host.name}</p>
+                {/* Join date and review count are the two things this app
+                    can actually vouch for about a host - real columns on
+                    real rows, not a response-rate or "verified ID" claim
+                    this codebase has no data behind. */}
+                <p className="mt-0.5 text-xs text-zinc-500">
+                  Hosting since {listing.host.createdAt.getFullYear()}
+                  {hostReviewCount > 0 &&
+                    ` · ${hostReviewCount} review${hostReviewCount === 1 ? "" : "s"}`}
+                </p>
               </div>
             </div>
           </div>
@@ -215,6 +234,15 @@ export default async function ListingDetailPage({
               <AmenityList amenities={listing.amenities} />
             </>
           )}
+
+          <hr className="my-6 border-border-subtle" />
+          <h2 id="cancellation-policy" className="scroll-mt-20 text-lg font-semibold text-foreground">
+            Cancellation policy
+          </h2>
+          <p className="mt-2 text-zinc-700">
+            <span className="font-medium text-foreground">{cancellationPolicy.label}.</span>{" "}
+            {cancellationPolicy.description}
+          </p>
 
           {listing.reviews.length > 0 && (
             <>
@@ -248,6 +276,7 @@ export default async function ListingDetailPage({
             isLoggedIn={Boolean(session?.user)}
             rating={rating}
             reviewCount={reviewCount}
+            cancellationPolicyLabel={cancellationPolicy.label}
           />
         </div>
       </div>

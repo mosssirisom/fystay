@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ImageOff } from "lucide-react";
+import { CalendarClock, ImageOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { formatPrice } from "@/lib/format";
@@ -42,6 +42,8 @@ export function BookingSummaryCard({
   guestEmail,
   guestPhone,
   paymentStatus,
+  cancellationPolicyLabel,
+  cancellationPolicyDescription,
 }: {
   listing: { title: string; city: string; country: string; photos: string[] };
   checkIn: Date;
@@ -59,6 +61,12 @@ export function BookingSummaryCard({
   guestEmail?: string | null;
   guestPhone?: string | null;
   paymentStatus?: "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
+  /** Only passed at checkout, right before payment - once a booking exists,
+   * its own page (via BookingCard) already shows the policy that actually
+   * applied to it, so repeating it here would just be a second, easier-to-
+   * drift-out-of-sync copy of the same fact. */
+  cancellationPolicyLabel?: string;
+  cancellationPolicyDescription?: string;
 }) {
   const nightlySubtotalCents = nights * nightlyPriceCents;
 
@@ -140,6 +148,18 @@ export function BookingSummaryCard({
             {guests} guest{guests === 1 ? "" : "s"}
           </dd>
         </dl>
+
+        {cancellationPolicyLabel && (
+          <div className="flex items-start gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
+            <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+            <p>
+              <span className="font-medium text-foreground">
+                {cancellationPolicyLabel} cancellation.
+              </span>{" "}
+              <span className="text-zinc-500">{cancellationPolicyDescription}</span>
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
           <div className="flex justify-between">

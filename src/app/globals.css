@@ -8,6 +8,13 @@
   --surface-muted: #f7f7f8;
   --border-subtle: #e5e5e7;
 
+  /* Live height of whichever page-specific fixed bottom bar is currently
+     mounted (MobileBookingBar, CheckoutForm's pay bar) - see
+     useReserveBottomSpace. Zero on any page without one, so other fixed
+     bottom-corner UI (e.g. the support widget) can always add this rather
+     than needing to know which bar, if any, is on screen. */
+  --fixed-bottom-bar-height: 0px;
+
   /* Brand: deep teal. Distinct from the pink/coral clichè, reads as
      trustworthy and premium; pairs with a warm amber accent for CTAs
      that need to pop against it. */

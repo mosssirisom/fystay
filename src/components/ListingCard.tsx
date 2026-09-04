@@ -5,7 +5,7 @@ import type { TouchEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ImageOff, MapPin, Star, Users } from "lucide-react";
-import { formatPrice } from "@/lib/format";
+import { useFormattedPrice } from "@/components/CurrencyProvider";
 import { isOptimizableImage } from "@/lib/image";
 import { computeBookingPricing } from "@/lib/pricing";
 import { SaveButton } from "@/components/SaveButton";
@@ -84,6 +84,13 @@ export function ListingCard({
           cleaningFeeCents: listing.cleaningFeeCents,
         }).totalPriceCents
       : null;
+
+  // Called unconditionally (hooks can't be conditional) even though
+  // totalPriceCents may be null - formattedTotal is simply unused in that
+  // case, exactly like the totalPriceCents !== null check below already
+  // gates whether it renders.
+  const formattedNightlyPrice = useFormattedPrice(listing.pricePerNightCents);
+  const formattedTotal = useFormattedPrice(totalPriceCents ?? 0);
 
   return (
     // The lift-on-hover applies to the whole card (image and text together)
@@ -204,14 +211,10 @@ export function ListingCard({
         )}
         <div className="mt-1 flex items-end justify-between gap-2">
           <p className="flex flex-wrap items-baseline gap-x-1">
-            <span className="text-base font-bold text-brand-800">
-              {formatPrice(listing.pricePerNightCents)}
-            </span>
+            <span className="text-base font-bold text-brand-800">{formattedNightlyPrice}</span>
             <span className="text-xs text-zinc-500">/ night</span>
             {totalPriceCents !== null && (
-              <span className="text-xs text-zinc-500">
-                · {formatPrice(totalPriceCents)} total
-              </span>
+              <span className="text-xs text-zinc-500">· {formattedTotal} total</span>
             )}
           </p>
           {rating !== null ? (

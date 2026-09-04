@@ -4,6 +4,8 @@ import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { CurrencyProvider } from "@/components/CurrencyProvider";
+import { SupportWidget } from "@/components/SupportWidget";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
@@ -71,13 +73,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to main content
         </a>
-        <CookieConsentBanner />
-        <Navbar />
-        <main id="main-content" className="flex flex-1 flex-col">
-          {children}
-        </main>
-        <Footer />
-        <Toaster position="top-center" richColors closeButton />
+        <CurrencyProvider>
+          <CookieConsentBanner />
+          <Navbar />
+          <main id="main-content" className="flex flex-1 flex-col">
+            {children}
+          </main>
+          <Footer />
+          <SupportWidget />
+          <Toaster position="top-center" richColors closeButton />
+        </CurrencyProvider>
       </body>
     </html>
   );

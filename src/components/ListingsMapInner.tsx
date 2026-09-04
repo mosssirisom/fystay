@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { formatPrice } from "@/lib/format";
+import { useFormattedPrice } from "@/components/CurrencyProvider";
 import { isOptimizableImage } from "@/lib/image";
 import { fyldeCoastCenter } from "@/lib/geocoding";
 
@@ -24,9 +24,11 @@ export type MapListing = {
  * rather than Leaflet's default pin: an L.divIcon rendering plain HTML,
  * since Leaflet's own icon system predates React and isn't a place
  * components can render into directly - only the popup content below is
- * real React.
+ * real React. Takes an already-formatted label rather than raw cents,
+ * since this plain function (not a component) can't call the
+ * useFormattedPrice hook itself - see ListingMarker below.
  */
-function priceIcon(pricePerNightCents: number) {
+function priceIcon(label: string) {
   return L.divIcon({
     className: "",
     html: `<div style="
@@ -39,10 +41,49 @@ function priceIcon(pricePerNightCents: number) {
       box-shadow: 0 1px 3px rgba(0,0,0,0.35);
       white-space: nowrap;
       font-family: inherit;
-    ">${formatPrice(pricePerNightCents)}</div>`,
+    ">${label}</div>`,
     iconSize: undefined,
     iconAnchor: [30, 15],
   });
+}
+
+/**
+ * Its own component (rather than inline in the .map() below) purely so
+ * useFormattedPrice - a hook - can be called once per marker: calling a
+ * hook inside a .map() callback itself would break React's rules of hooks
+ * the moment the listings count ever changed between renders.
+ */
+function ListingMarker({ listing }: { listing: MapListing }) {
+  const formattedPrice = useFormattedPrice(listing.pricePerNightCents);
+
+  return (
+    <Marker position={[listing.latitude, listing.longitude]} icon={priceIcon(formattedPrice)}>
+      <Popup minWidth={200}>
+        <Link href={`/listings/${listing.id}`} className="flex flex-col gap-2 no-underline">
+          <div className="relative h-24 w-full overflow-hidden rounded-lg bg-surface-muted">
+            {listing.photo && (
+              <Image
+                src={listing.photo}
+                alt={listing.title}
+                fill
+                className="object-cover"
+                sizes="200px"
+                unoptimized={!isOptimizableImage(listing.photo)}
+              />
+            )}
+          </div>
+          <div>
+            <p className="truncate text-sm font-semibold text-foreground">{listing.title}</p>
+            <p className="text-xs text-zinc-500">{listing.city}</p>
+            <p className="mt-1 text-sm font-bold text-brand-800">
+              {formattedPrice}
+              <span className="text-xs font-normal text-zinc-500"> / night</span>
+            </p>
+          </div>
+        </Link>
+      </Popup>
+    </Marker>
+  );
 }
 
 export function ListingsMapInner({ listings }: { listings: MapListing[] }) {
@@ -66,36 +107,7 @@ export function ListingsMapInner({ listings }: { listings: MapListing[] }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {listings.map((listing) => (
-        <Marker
-          key={listing.id}
-          position={[listing.latitude, listing.longitude]}
-          icon={priceIcon(listing.pricePerNightCents)}
-        >
-          <Popup minWidth={200}>
-            <Link href={`/listings/${listing.id}`} className="flex flex-col gap-2 no-underline">
-              <div className="relative h-24 w-full overflow-hidden rounded-lg bg-surface-muted">
-                {listing.photo && (
-                  <Image
-                    src={listing.photo}
-                    alt={listing.title}
-                    fill
-                    className="object-cover"
-                    sizes="200px"
-                    unoptimized={!isOptimizableImage(listing.photo)}
-                  />
-                )}
-              </div>
-              <div>
-                <p className="truncate text-sm font-semibold text-foreground">{listing.title}</p>
-                <p className="text-xs text-zinc-500">{listing.city}</p>
-                <p className="mt-1 text-sm font-bold text-brand-800">
-                  {formatPrice(listing.pricePerNightCents)}
-                  <span className="text-xs font-normal text-zinc-500"> / night</span>
-                </p>
-              </div>
-            </Link>
-          </Popup>
-        </Marker>
+        <ListingMarker key={listing.id} listing={listing} />
       ))}
     </MapContainer>
   );

@@ -5,7 +5,7 @@ import type { TouchEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BedDouble, ChevronLeft, ChevronRight, MapPin, Users } from "lucide-react";
-import { formatPrice } from "@/lib/format";
+import { useFormattedPrice } from "@/components/CurrencyProvider";
 import { isOptimizableImage } from "@/lib/image";
 import type { FeaturedListing } from "@/lib/marketplace";
 import { AMENITY_CATEGORIES } from "@/lib/amenityCategories";
@@ -76,86 +76,9 @@ export function FeaturedListingHero({
         onTouchStart={count > 1 ? handleTouchStart : undefined}
         onTouchEnd={count > 1 ? handleTouchEnd : undefined}
       >
-        {listings.map((listing, i) => {
-          // Guests and bedrooms are always real (every listing has both),
-          // so they anchor the feature row - a matching amenity tops it up
-          // to 3 without ever promising an amenity that isn't actually there.
-          const topAmenity = AMENITY_CATEGORIES.find((category) =>
-            category.test(listing.amenities),
-          );
-
-          return (
-            // z-20 on the slide track and the controls below: page.tsx layers
-            // a page-wide brand vignette over this whole hero at z-10 (so
-            // the pagination dots stay legible over a busy photo), which -
-            // being a later sibling of this component's root, with an
-            // explicit z-index of its own - would otherwise paint above
-            // this photo and its caption/controls entirely, not just tint
-            // them.
-            <Link
-              key={listing.id}
-              href={`/listings/${listing.id}`}
-              className="relative z-20 h-full w-full shrink-0"
-            >
-              <Image
-                src={listing.photo}
-                alt={withCity(listing.title, listing.city)}
-                fill
-                priority={i === 0}
-                sizes="100vw"
-                className="object-cover"
-                unoptimized={!isOptimizableImage(listing.photo)}
-              />
-              {/* Short top-only scrim, just for the pagination dots'
-                  contrast - the rest of the photo (everything above the
-                  bottom strip below) is left completely untouched, so the
-                  image stays the clear focal point rather than a caption
-                  or a wash competing with it. */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/45 to-transparent" />
-              {/* The caption itself: a slim, full-width dark strip sitting
-                  flush against the photo's bottom edge (bottom-0), not a
-                  floating card inset from the edges - the search card
-                  below no longer overlaps the hero (see page.tsx), so
-                  there's nothing left for this to clear. */}
-              <div className="absolute inset-x-0 bottom-0 bg-black/55 px-4 py-2.5 sm:px-6 sm:py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-1 text-[11px] text-white/75 sm:text-xs">
-                      <MapPin className="h-3 w-3 shrink-0" aria-hidden />
-                      <span className="truncate">{listing.city}</span>
-                    </p>
-                    <p className="truncate text-sm font-bold leading-tight text-white sm:text-base">
-                      {listing.title}
-                    </p>
-                  </div>
-                  <p className="shrink-0 whitespace-nowrap text-right text-[11px] text-white/80 sm:text-xs">
-                    From{" "}
-                    <span className="text-sm font-bold text-white sm:text-base">
-                      {formatPrice(listing.pricePerNightCents)}
-                    </span>
-                    <span className="text-white/70">/night</span>
-                  </p>
-                </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/85 sm:text-xs">
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" aria-hidden />
-                    {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <BedDouble className="h-3 w-3" aria-hidden />
-                    {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
-                  </span>
-                  {topAmenity && (
-                    <span className="flex items-center gap-1">
-                      <topAmenity.icon className="h-3 w-3" aria-hidden />
-                      {topAmenity.label}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
+        {listings.map((listing, i) => (
+          <FeaturedSlide key={listing.id} listing={listing} priority={i === 0} />
+        ))}
       </div>
 
       {count > 1 && (
@@ -198,5 +121,82 @@ export function FeaturedListingHero({
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Its own component (rather than inline in the .map() above) purely so
+ * useFormattedPrice - a hook - can be called once per slide: calling a hook
+ * inside a .map() callback itself would break React's rules of hooks the
+ * moment the listings count ever changed between renders.
+ */
+function FeaturedSlide({ listing, priority }: { listing: FeaturedListing; priority: boolean }) {
+  // Guests and bedrooms are always real (every listing has both), so they
+  // anchor the feature row - a matching amenity tops it up to 3 without
+  // ever promising an amenity that isn't actually there.
+  const topAmenity = AMENITY_CATEGORIES.find((category) => category.test(listing.amenities));
+  const formattedPrice = useFormattedPrice(listing.pricePerNightCents);
+
+  return (
+    // z-20 on the slide track and the controls below: page.tsx layers a
+    // page-wide brand vignette over this whole hero at z-10 (so the
+    // pagination dots stay legible over a busy photo), which - being a
+    // later sibling of this component's root, with an explicit z-index of
+    // its own - would otherwise paint above this photo and its caption/
+    // controls entirely, not just tint them.
+    <Link href={`/listings/${listing.id}`} className="relative z-20 h-full w-full shrink-0">
+      <Image
+        src={listing.photo}
+        alt={withCity(listing.title, listing.city)}
+        fill
+        priority={priority}
+        sizes="100vw"
+        className="object-cover"
+        unoptimized={!isOptimizableImage(listing.photo)}
+      />
+      {/* Short top-only scrim, just for the pagination dots' contrast - the
+          rest of the photo (everything above the bottom strip below) is
+          left completely untouched, so the image stays the clear focal
+          point rather than a caption or a wash competing with it. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/45 to-transparent" />
+      {/* The caption itself: a slim, full-width dark strip sitting flush
+          against the photo's bottom edge (bottom-0), not a floating card
+          inset from the edges - the search card below no longer overlaps
+          the hero (see page.tsx), so there's nothing left for this to
+          clear. */}
+      <div className="absolute inset-x-0 bottom-0 bg-black/55 px-4 py-2.5 sm:px-6 sm:py-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1 text-[11px] text-white/75 sm:text-xs">
+              <MapPin className="h-3 w-3 shrink-0" aria-hidden />
+              <span className="truncate">{listing.city}</span>
+            </p>
+            <p className="truncate text-sm font-bold leading-tight text-white sm:text-base">
+              {listing.title}
+            </p>
+          </div>
+          <p className="shrink-0 whitespace-nowrap text-right text-[11px] text-white/80 sm:text-xs">
+            From <span className="text-sm font-bold text-white sm:text-base">{formattedPrice}</span>
+            <span className="text-white/70">/night</span>
+          </p>
+        </div>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/85 sm:text-xs">
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3" aria-hidden />
+            {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
+          </span>
+          <span className="flex items-center gap-1">
+            <BedDouble className="h-3 w-3" aria-hidden />
+            {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
+          </span>
+          {topAmenity && (
+            <span className="flex items-center gap-1">
+              <topAmenity.icon className="h-3 w-3" aria-hidden />
+              {topAmenity.label}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
   );
 }

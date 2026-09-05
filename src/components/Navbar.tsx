@@ -1,12 +1,22 @@
 import Link from "next/link";
 import { Home } from "lucide-react";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { UserMenu } from "@/components/UserMenu";
 import { GuestMenu } from "@/components/GuestMenu";
 import { Logo } from "@/components/Logo";
 
 export async function Navbar() {
   const session = await auth();
+  const unreadMessageCount = session?.user
+    ? await prisma.message.count({
+        where: {
+          senderId: { not: session.user.id },
+          readAt: null,
+          conversation: { OR: [{ guestId: session.user.id }, { hostId: session.user.id }] },
+        },
+      })
+    : 0;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border-subtle bg-white/90 backdrop-blur">
@@ -38,7 +48,11 @@ export async function Navbar() {
 
         <nav className="relative z-10 flex items-center gap-3">
           {session?.user ? (
-            <UserMenu name={session.user.name ?? "Account"} role={session.user.role} />
+            <UserMenu
+              name={session.user.name ?? "Account"}
+              role={session.user.role}
+              unreadMessageCount={unreadMessageCount}
+            />
           ) : (
             <GuestMenu />
           )}

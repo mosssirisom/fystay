@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Heart, Home, LayoutDashboard, LogOut, Luggage } from "lucide-react";
+import { Heart, Home, LayoutDashboard, LogOut, Luggage, MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { signOutAction } from "@/actions/auth";
@@ -11,9 +11,10 @@ import { cn } from "@/lib/cn";
 type Props = {
   name: string;
   role: "GUEST" | "HOST" | "ADMIN";
+  unreadMessageCount?: number;
 };
 
-export function UserMenu({ name, role }: Props) {
+export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -55,7 +56,15 @@ export function UserMenu({ name, role }: Props) {
         className="focus-ring flex items-center gap-2 rounded-full border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)]"
       >
         <span className="hidden text-sm font-medium sm:inline">{name.split(" ")[0]}</span>
-        <Avatar name={name} size={32} />
+        <span className="relative">
+          <Avatar name={name} size={32} />
+          {unreadMessageCount > 0 && (
+            <span
+              aria-hidden
+              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500"
+            />
+          )}
+        </span>
       </button>
 
       <div
@@ -86,6 +95,18 @@ export function UserMenu({ name, role }: Props) {
               <LayoutDashboard className="h-4 w-4" /> Host dashboard
             </Link>
           )}
+          <Link
+            href="/inbox"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+          >
+            <MessageCircle className="h-4 w-4" /> Messages
+            {unreadMessageCount > 0 && (
+              <Badge variant="brand" className="ml-auto">
+                {unreadMessageCount}
+              </Badge>
+            )}
+          </Link>
           <Link
             href="/bookings"
             onClick={() => setOpen(false)}

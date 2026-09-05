@@ -11,6 +11,7 @@ import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
 import { NearbyAttractions } from "@/components/NearbyAttractions";
+import { ContactHostButton } from "@/components/ContactHostButton";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/ui/Avatar";
@@ -224,6 +225,16 @@ export default async function ListingDetailPage({
               </div>
             </div>
           </div>
+
+          {session?.user?.id !== listing.hostId && (
+            <div className="mt-4">
+              <ContactHostButton
+                listingId={listing.id}
+                hostName={listing.host.name}
+                isLoggedIn={Boolean(session?.user)}
+              />
+            </div>
+          )}
 
           <h2 className="mt-6 text-lg font-semibold text-foreground">About this place</h2>
           <p className="mt-2 whitespace-pre-line text-zinc-700">{listing.description}</p>

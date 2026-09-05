@@ -111,6 +111,9 @@ model User {
   savedListings SavedListing[]
   passwordResetTokens PasswordResetToken[]
   reviewReports ReviewReport[]
+  guestConversations Conversation[] @relation("GuestConversations")
+  hostConversations  Conversation[] @relation("HostConversations")
+  sentMessages       Message[]
 }
 
 // A single-use, time-limited token for the "forgot password" flow. Only a
@@ -173,6 +176,7 @@ model Listing {
   reviews  Review[]
   savedBy  SavedListing[]
   availabilityBlocks AvailabilityBlock[]
+  conversations Conversation[]
 
   @@index([city])
   @@index([hostId])
@@ -370,6 +374,52 @@ model ReviewReport {
   // A guest can flag a given review at most once.
   @@unique([reviewId, reporterId])
   @@index([reviewId])
+}
+
+// One thread per guest+listing pair, not per booking - a guest asking a
+// question before booking and the same guest coordinating check-in after
+// paying belong in the same conversation with that host about that
+// property, not fragmented across separate threads. hostId is redundant
+// with listing.hostId in principle, but stored directly so a listing being
+// edited (or, one day, transferred) never silently moves an existing
+// conversation to a different host mid-thread.
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  guestId String
+  guest   User   @relation("GuestConversations", fields: [guestId], references: [id], onDelete: Cascade)
+
+  hostId String
+  host   User   @relation("HostConversations", fields: [hostId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  @@unique([listingId, guestId])
+  @@index([hostId])
+  @@index([guestId])
+}
+
+model Message {
+  id        String    @id @default(cuid())
+  body      String
+  createdAt DateTime  @default(now())
+  // Null until the *other* participant reads it - a sender's own messages
+  // are never marked read against themselves, so this alone is enough to
+  // compute an unread count without a separate per-recipient read table.
+  readAt    DateTime?
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
 }
 
 // A fixed-window request counter for lightweight abuse protection on

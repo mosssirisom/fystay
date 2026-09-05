@@ -382,6 +382,11 @@ model RateLimitHit {
   key         String   @id
   windowStart DateTime
   count       Int
+
+  // Indexed for the opportunistic "delete anything long stale" sweep in
+  // src/lib/rateLimit.ts, which would otherwise be a full table scan every
+  // time it runs.
+  @@index([windowStart])
 }
 
 model SavedListing {

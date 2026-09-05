@@ -45,6 +45,15 @@ export async function POST(request: Request) {
     data: { userId: user.id, tokenHash, expiresAt },
   });
 
+  // No background job runner (see completePastBookings in bookingLifecycle.ts
+  // for the same reasoning elsewhere) - a token row is only ever read again
+  // by reset-password, so the moment a new one is requested is as good a
+  // time as any to sweep out rows nothing will ever look up again, rather
+  // than letting them accumulate forever.
+  await prisma.passwordResetToken.deleteMany({
+    where: { OR: [{ expiresAt: { lt: new Date() } }, { usedAt: { not: null } }] },
+  });
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 

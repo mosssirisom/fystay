@@ -35,8 +35,14 @@ export async function POST(request: Request) {
     const bookingId = checkoutSession.metadata?.bookingId;
     const changeRequestId = checkoutSession.metadata?.changeRequestId;
     if (bookingId) {
-      const booking = await prisma.booking.update({
-        where: { id: bookingId },
+      // Stripe's own docs are explicit that a webhook endpoint must tolerate
+      // the same event arriving more than once (a retry after a slow 200, or
+      // just an occasional genuine duplicate). Scoping the update to bookings
+      // not already CONFIRMED makes a redelivery a pure no-op instead of
+      // re-sending the guest and host their confirmation email a second (or
+      // third) time for a booking that was already confirmed the first time.
+      const { count } = await prisma.booking.updateMany({
+        where: { id: bookingId, status: { not: "CONFIRMED" } },
         data: {
           status: "CONFIRMED",
           paymentStatus: "PAID",
@@ -46,25 +52,31 @@ export async function POST(request: Request) {
               ? checkoutSession.payment_intent
               : undefined,
         },
-        include: { listing: { include: { host: true } } },
       });
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-      await sendBookingConfirmedEmails({
-        reference: booking.reference,
-        listingTitle: booking.listing.title,
-        city: booking.listing.city,
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-        nights: booking.nights,
-        guests: booking.guests,
-        totalPriceCents: booking.totalPriceCents,
-        guestName: booking.guestName,
-        guestEmail: booking.guestEmail,
-        hostName: booking.listing.host.name,
-        hostEmail: booking.listing.host.email,
-        bookingUrl: `${baseUrl}/bookings/${booking.id}`,
-      });
+      if (count > 0) {
+        const booking = await prisma.booking.findUniqueOrThrow({
+          where: { id: bookingId },
+          include: { listing: { include: { host: true } } },
+        });
+
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+        await sendBookingConfirmedEmails({
+          reference: booking.reference,
+          listingTitle: booking.listing.title,
+          city: booking.listing.city,
+          checkIn: booking.checkIn,
+          checkOut: booking.checkOut,
+          nights: booking.nights,
+          guests: booking.guests,
+          totalPriceCents: booking.totalPriceCents,
+          guestName: booking.guestName,
+          guestEmail: booking.guestEmail,
+          hostName: booking.listing.host.name,
+          hostEmail: booking.listing.host.email,
+          bookingUrl: `${baseUrl}/bookings/${booking.id}`,
+        });
+      }
     } else if (changeRequestId) {
       await applyApprovedChange(changeRequestId);
     }

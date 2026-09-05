@@ -7,6 +7,23 @@ export type RateLimitResult = {
   resetAt: Date;
 };
 
+// Comfortably longer than the longest windowMs any call site actually uses
+// today (signup's 1 hour) - a row this old is stale under every window in
+// use, never one still being actively counted against.
+const STALE_ROW_AGE_MS = 24 * 60 * 60 * 1000;
+// No background job runner (see completePastBookings in bookingLifecycle.ts
+// for the same reasoning elsewhere), so instead of a cron job, every write
+// to this table has a small independent chance of also sweeping out rows
+// nothing will ever read again - cheap enough to skip most of the time
+// without ever letting the table grow unbounded.
+const PRUNE_PROBABILITY = 0.05;
+
+async function maybePruneStaleRows(now: Date): Promise<void> {
+  if (Math.random() >= PRUNE_PROBABILITY) return;
+  const staleBefore = new Date(now.getTime() - STALE_ROW_AGE_MS);
+  await prisma.$executeRaw`DELETE FROM "RateLimitHit" WHERE "windowStart" < ${staleBefore}`;
+}
+
 /**
  * A fixed-window request counter backed by Postgres, not an in-memory Map -
  * FYStay runs as short-lived serverless functions (Vercel), each with its
@@ -45,6 +62,7 @@ export async function checkRateLimit(params: {
       END
     RETURNING "count", "windowStart"
   `;
+  await maybePruneStaleRows(now);
 
   const row = rows[0];
   return {
@@ -115,6 +133,7 @@ export async function recordFailedAttempt(params: {
         ELSE "RateLimitHit"."windowStart"
       END
   `;
+  await maybePruneStaleRows(now);
 }
 
 /** Clears a key's counter entirely - e.g. a successful login wiping out a string of earlier failed attempts, so they can't count against a future one. */

@@ -4,6 +4,12 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { googleSignInEnabled } from "@/lib/authProviders";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+// Keyed by the attempted email, not the caller's IP - authorize() here has
+// no access to the request, and a per-account cap on guesses is the actual
+// goal (a distributed brute force spreading guesses across many IPs against
+// one account is exactly what this needs to stop, not what it should miss).
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Trust the Host header from the deployment platform's proxy (Vercel, etc.).
@@ -28,8 +34,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        const normalizedEmail = email.toLowerCase();
+        // Checked before the database lookup, and denies the same way a
+        // wrong password would (a plain null) - a rate-limited response
+        // that looked any different would itself tell an attacker their
+        // guessing was noticed, and roughly how many guesses it took.
+        const { allowed } = await checkRateLimit({
+          key: `login:${normalizedEmail}`,
+          limit: 10,
+          windowMs: 15 * 60 * 1000,
+        });
+        if (!allowed) return null;
+
         const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
+          where: { email: normalizedEmail },
         });
         // No account, or one created via Google that's never also set a
         // password: either way there's nothing to check the password

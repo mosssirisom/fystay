@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 import { applyApprovedChange } from "@/app/api/bookings/[id]/change-requests/[requestId]/pay/route";
 import { connectFlagsFromAccount } from "@/lib/stripeConnect";
+import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
     const bookingId = checkoutSession.metadata?.bookingId;
     const changeRequestId = checkoutSession.metadata?.changeRequestId;
     if (bookingId) {
-      await prisma.booking.update({
+      const booking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           status: "CONFIRMED",
@@ -45,6 +46,24 @@ export async function POST(request: Request) {
               ? checkoutSession.payment_intent
               : undefined,
         },
+        include: { listing: { include: { host: true } } },
+      });
+
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+      await sendBookingConfirmedEmails({
+        reference: booking.reference,
+        listingTitle: booking.listing.title,
+        city: booking.listing.city,
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        nights: booking.nights,
+        guests: booking.guests,
+        totalPriceCents: booking.totalPriceCents,
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        hostName: booking.listing.host.name,
+        hostEmail: booking.listing.host.email,
+        bookingUrl: `${baseUrl}/bookings/${booking.id}`,
       });
     } else if (changeRequestId) {
       await applyApprovedChange(changeRequestId);

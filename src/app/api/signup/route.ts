@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, clientIp, rateLimitedResponse } from "@/lib/rateLimit";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Please enter your name.").max(100, "Name is too long."),
@@ -14,6 +15,17 @@ const signupSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  // Keyed by IP, not email: the existing-account check below already stops
+  // any one email being reused, so what needs capping here is a single
+  // source spinning up many *different* accounts (spam signups, or probing
+  // which emails are already taken via the 409 response).
+  const rateLimit = await checkRateLimit({
+    key: `signup:${clientIp(request)}`,
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
+
   const body = await request.json();
   const parsed = signupSchema.safeParse(body);
   if (!parsed.success) {

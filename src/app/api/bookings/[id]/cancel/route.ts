@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { canCancelBooking } from "@/lib/changeRequests";
 import { previewCancellation } from "@/lib/cancellationPolicy";
+import { sendBookingCancelledEmails } from "@/lib/notificationEmails";
 
 /**
  * Cancels a booking and, if it was paid for, refunds it per the listing's
@@ -23,7 +24,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { listing: true },
+    include: { listing: { include: { host: true } } },
   });
   if (!booking) {
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
@@ -81,6 +82,32 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       ...(wasPaid && refund.refundCents > 0 ? { refundedAt: new Date() } : {}),
     },
   });
+
+  // Only when the booking was already CONFIRMED - a still-PENDING one was
+  // never paid for or announced to the host in the first place (no
+  // confirmation email ever went out for it), so a cancellation notice
+  // would reference a booking neither side has actually seen yet.
+  if (booking.status === "CONFIRMED") {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+    await sendBookingCancelledEmails(
+      {
+        reference: booking.reference,
+        listingTitle: booking.listing.title,
+        city: booking.listing.city,
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        nights: booking.nights,
+        guests: booking.guests,
+        totalPriceCents: booking.totalPriceCents,
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        hostName: booking.listing.host.name,
+        hostEmail: booking.listing.host.email,
+        bookingUrl: `${baseUrl}/bookings/${booking.id}`,
+      },
+      wasPaid ? refund.refundCents : 0,
+    );
+  }
 
   return NextResponse.json({ booking: updated, refund });
 }

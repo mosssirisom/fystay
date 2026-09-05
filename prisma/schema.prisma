@@ -372,6 +372,18 @@ model ReviewReport {
   @@index([reviewId])
 }
 
+// A fixed-window request counter for lightweight abuse protection on
+// unauthenticated, high-risk endpoints (login, signup, password reset) - see
+// src/lib/rateLimit.ts. Deliberately just a counter keyed by an arbitrary
+// string (e.g. "login:someone@example.com") with no relations to anything
+// else in the schema, so it can be pruned or reset without touching real
+// application data.
+model RateLimitHit {
+  key         String   @id
+  windowStart DateTime
+  count       Int
+}
+
 model SavedListing {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())

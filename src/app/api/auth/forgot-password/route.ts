@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getResendClient, EMAIL_FROM } from "@/lib/email";
 import { generateResetToken } from "@/lib/passwordReset";
+import { checkRateLimit, clientIp, rateLimitedResponse } from "@/lib/rateLimit";
 
 const forgotPasswordSchema = z.object({ email: z.string().email() });
 
@@ -19,8 +20,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
+  const normalizedEmail = parsed.data.email.toLowerCase();
+  // Two separate caps: one per email (so retrying the same address can't be
+  // used to re-send indefinitely) and one per IP (so one source can't work
+  // through many different addresses - which the always-generic response
+  // below would otherwise make a cheap way to probe for accounts).
+  const [emailLimit, ipLimit] = await Promise.all([
+    checkRateLimit({ key: `forgot-password:${normalizedEmail}`, limit: 3, windowMs: 15 * 60 * 1000 }),
+    checkRateLimit({ key: `forgot-password-ip:${clientIp(request)}`, limit: 20, windowMs: 15 * 60 * 1000 }),
+  ]);
+  if (!emailLimit.allowed || !ipLimit.allowed) {
+    return rateLimitedResponse(emailLimit.allowed ? ipLimit : emailLimit);
+  }
+
   const user = await prisma.user.findUnique({
-    where: { email: parsed.data.email.toLowerCase() },
+    where: { email: normalizedEmail },
   });
   if (!user) {
     return NextResponse.json(genericResponse);

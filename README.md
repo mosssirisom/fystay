@@ -78,6 +78,14 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
   proportion of the transfer and the platform fee (`reverse_transfer`/`refund_application_fee`) so a
   refund never leaves the host under- or over-paid relative to the guest. See [Payments without
   Stripe keys](#payments-without-stripe-keys) below for testing this without a real Stripe account.
+- **Booking-lifecycle emails** (`src/lib/notificationEmails.ts`): a guest gets a confirmation when
+  their booking is paid for and a notice when it's cancelled (with whatever refund actually
+  applies, per the cancellation policy - never assumed to be the full amount); the host gets the
+  mirror image of both, so a new booking or a cancellation is never something they only discover by
+  checking the dashboard. Reuses the same Resend setup as password resets, and the same
+  if-unconfigured behavior: with no `RESEND_API_KEY`, sends are silently skipped (logged nowhere,
+  thrown nowhere) rather than failing the booking or cancellation that triggered them - a
+  notification email must never be able to block or roll back money that already moved.
 - **Photo uploads**: hosts upload real photos (via Supabase Storage) instead of pasting URLs,
   with a manual URL-paste fallback if storage isn't configured on a given deployment.
 - **Reviews**: a guest can leave a star rating + comment once a booking is paid for and its stay
@@ -245,6 +253,15 @@ error instead of crashing; the listing form's "paste an image URL" fallback stil
   runs its availability check and insert inside a single `SERIALIZABLE` transaction
   (`src/app/api/bookings/route.ts`), so Postgres itself rejects whichever one would conflict, and
   that guest sees a normal "those dates were just booked" error rather than a double booking.
+- **Rate limiting** (`src/lib/rateLimit.ts`): login, signup, and password-reset requests are capped
+  by a fixed-window counter backed by Postgres (a `RateLimitHit` row per key), not in-memory state -
+  this app runs as short-lived serverless functions, so a `Map` would reset every cold start and
+  wouldn't agree across concurrent instances anyway. The counter itself is a single atomic
+  `INSERT ... ON CONFLICT DO UPDATE`, so concurrent requests for the same key can't race past the
+  limit. Login is capped per email (10 attempts/15 min) and denies the same way a wrong password
+  does - a distinguishable response would itself tell an attacker their guessing was noticed.
+  Signup is capped per IP (5/hour); password-reset requests are capped both per email (3/15 min)
+  and per IP (20/15 min).
 
 ## Project structure
 

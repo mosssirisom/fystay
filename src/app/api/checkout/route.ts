@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { decideExistingSessionAction } from "@/lib/checkoutSession";
 import { isConnectReady } from "@/lib/stripeConnect";
+import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
 
 const checkoutSchema = z.object({
   bookingId: z.string().min(1),
@@ -81,6 +82,21 @@ export async function POST(request: Request) {
     await prisma.booking.update({
       where: { id: booking.id },
       data: { status: "CONFIRMED", paymentStatus: "PAID", paidAt: new Date() },
+    });
+    await sendBookingConfirmedEmails({
+      reference: booking.reference,
+      listingTitle: booking.listing.title,
+      city: booking.listing.city,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      nights: booking.nights,
+      guests: booking.guests,
+      totalPriceCents: booking.totalPriceCents,
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      hostName: booking.listing.host.name,
+      hostEmail: booking.listing.host.email,
+      bookingUrl: `${baseUrl}/bookings/${booking.id}`,
     });
     return NextResponse.json({
       url: `${confirmationUrl}?dev_confirmed=1`,

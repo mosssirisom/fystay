@@ -167,20 +167,20 @@ function FeaturedSlide({ listing, priority }: { listing: FeaturedListing; priori
       <div className="absolute inset-x-0 bottom-0 bg-black/55 px-4 py-2.5 sm:px-6 sm:py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="flex items-center gap-1 text-[11px] text-white/75 sm:text-xs">
+            <p className="flex items-center gap-1 text-xs text-white/75 sm:text-sm">
               <MapPin className="h-3 w-3 shrink-0" aria-hidden />
               <span className="truncate">{listing.city}</span>
             </p>
-            <p className="truncate text-sm font-bold leading-tight text-white sm:text-base">
+            <p className="truncate text-base font-bold leading-tight text-white sm:text-lg">
               {listing.title}
             </p>
           </div>
-          <p className="shrink-0 whitespace-nowrap text-right text-[11px] text-white/80 sm:text-xs">
-            From <span className="text-sm font-bold text-white sm:text-base">{formattedPrice}</span>
+          <p className="shrink-0 whitespace-nowrap text-right text-xs text-white/80 sm:text-sm">
+            From <span className="text-base font-bold text-white sm:text-lg">{formattedPrice}</span>
             <span className="text-white/70">/night</span>
           </p>
         </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/85 sm:text-xs">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85 sm:text-sm">
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3" aria-hidden />
             {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}

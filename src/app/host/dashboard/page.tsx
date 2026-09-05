@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarCheck2, PlusCircle, Star, Wallet } from "lucide-react";
+import { CalendarCheck2, CreditCard, PlusCircle, Star, Wallet } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { averageRating } from "@/lib/reviews";
 import { computeOccupancyRate, summarizeEarnings } from "@/lib/hostStats";
+import { isConnectReady } from "@/lib/stripeConnect";
 import { formatPrice } from "@/lib/format";
 import { HostListingRow } from "@/components/HostListingRow";
 import { NeedsAttention, type PendingChangeRequest } from "@/components/host/NeedsAttention";
@@ -36,6 +37,16 @@ export default async function HostDashboardPage() {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const host = await prisma.user.findUniqueOrThrow({
+    where: { id: session.user.id },
+    select: {
+      stripeConnectAccountId: true,
+      stripeConnectChargesEnabled: true,
+      stripeConnectPayoutsEnabled: true,
+    },
+  });
+  const payoutsReady = isConnectReady(host);
 
   const now = new Date();
   const allBookings = listings.flatMap((l) => l.bookings);
@@ -74,11 +85,33 @@ export default async function HostDashboardPage() {
             {listings.length} listing{listings.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link href="/host/listings/new" className={cn(buttonVariants())}>
-          <PlusCircle className="h-4 w-4" />
-          New listing
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/host/payouts" className={cn(buttonVariants({ variant: "outline" }))}>
+            <CreditCard className="h-4 w-4" />
+            Payouts
+          </Link>
+          <Link href="/host/listings/new" className={cn(buttonVariants())}>
+            <PlusCircle className="h-4 w-4" />
+            New listing
+          </Link>
+        </div>
       </div>
+
+      {!payoutsReady && (
+        <Card className="mt-4 flex flex-wrap items-center justify-between gap-3 border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm text-amber-900">
+            {host.stripeConnectAccountId
+              ? "Finish connecting Stripe to start receiving payouts automatically."
+              : "Connect a Stripe account so guest payments pay you out directly."}
+          </p>
+          <Link
+            href="/host/payouts"
+            className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "shrink-0")}
+          >
+            {host.stripeConnectAccountId ? "Finish onboarding" : "Connect with Stripe"}
+          </Link>
+        </Card>
+      )}
 
       {listings.length === 0 ? (
         <Card className="mt-8 flex flex-col items-center gap-3 p-12 text-center">

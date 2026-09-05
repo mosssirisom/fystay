@@ -35,3 +35,26 @@ export function computeBookingPricing(params: {
 
   return { nightlySubtotalCents, cleaningFeeCents, serviceFeeCents, taxCents, totalPriceCents };
 }
+
+/**
+ * Splits an arbitrary charge against an existing booking (currently only the
+ * extra payment for an approved date/guest change - see
+ * src/app/api/bookings/[id]/change-requests/[requestId]/pay/route.ts) into a
+ * host share and a platform share, in the same proportion as the booking's
+ * own nightly+cleaning vs total split. priceDeltaCents itself doesn't carry
+ * its own fee breakdown, so this reuses the same "every line moves together"
+ * assumption already applied to refunds (see hostRevenueCents in
+ * hostStats.ts) - just applied to a charge instead of a refund.
+ */
+export function splitByHostShare(
+  amountCents: number,
+  booking: { nightlyPriceCents: number; cleaningFeeCents: number; totalPriceCents: number },
+): { hostShareCents: number; platformShareCents: number } {
+  if (booking.totalPriceCents <= 0) {
+    return { hostShareCents: amountCents, platformShareCents: 0 };
+  }
+  const hostFraction =
+    (booking.nightlyPriceCents + booking.cleaningFeeCents) / booking.totalPriceCents;
+  const hostShareCents = Math.round(amountCents * hostFraction);
+  return { hostShareCents, platformShareCents: amountCents - hostShareCents };
+}

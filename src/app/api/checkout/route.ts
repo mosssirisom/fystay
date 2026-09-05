@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { decideExistingSessionAction } from "@/lib/checkoutSession";
+import { isConnectReady } from "@/lib/stripeConnect";
 
 const checkoutSchema = z.object({
   bookingId: z.string().min(1),
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
   let booking = await prisma.booking.findUnique({
     where: { id: parsed.data.bookingId },
-    include: { listing: true },
+    include: { listing: { include: { host: true } } },
   });
 
   if (!booking) {
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
         guestEmail: parsed.data.guestEmail ?? booking.guestEmail,
         guestPhone: parsed.data.guestPhone ?? booking.guestPhone,
       },
-      include: { listing: true },
+      include: { listing: { include: { host: true } } },
     });
   }
 
@@ -147,6 +148,15 @@ export async function POST(request: Request) {
     });
   }
 
+  // Only route the payout straight to the host if their Connect account can
+  // actually receive one right now - never just because they have an
+  // account id, since that alone can mean onboarding is still incomplete.
+  // A host who isn't ready yet still gets bookings and gets paid; the money
+  // simply sits in FYStay's own Stripe balance until they connect, the same
+  // as before Connect existed, rather than blocking the booking outright.
+  const connectReady = isConnectReady(booking.listing.host);
+  const applicationFeeCents = booking.serviceFeeCents + booking.taxCents;
+
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -155,6 +165,12 @@ export async function POST(request: Request) {
     metadata: { bookingId: booking.id },
     success_url: `${confirmationUrl}?success=1`,
     cancel_url: `${baseUrl}/checkout/${booking.id}?cancelled=1`,
+    ...(connectReady && {
+      payment_intent_data: {
+        application_fee_amount: applicationFeeCents,
+        transfer_data: { destination: booking.listing.host.stripeConnectAccountId! },
+      },
+    }),
   });
 
   // Conditional on stripeSessionId still being unset: if a concurrent
@@ -163,7 +179,11 @@ export async function POST(request: Request) {
   // actually pay through, not the one this request just created.
   const attached = await prisma.booking.updateMany({
     where: { id: booking.id, stripeSessionId: null },
-    data: { stripeSessionId: checkoutSession.id },
+    data: {
+      stripeSessionId: checkoutSession.id,
+      hostPaidViaConnect: connectReady,
+      applicationFeeCents: connectReady ? applicationFeeCents : null,
+    },
   });
 
   if (attached.count === 0) {

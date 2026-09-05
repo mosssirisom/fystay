@@ -51,6 +51,16 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     await stripe.refunds.create({
       payment_intent: booking.stripePaymentIntentId,
       amount: refund.refundCents,
+      // Only meaningful (and only accepted by Stripe) on a payment that
+      // actually carried a transfer to the host's Connect account - see
+      // Booking.hostPaidViaConnect. Reverses the same proportion of the
+      // host's payout and platform fee as is being refunded to the guest,
+      // rather than leaving a cancelled booking's money split unwound only
+      // on FYStay's side.
+      ...(booking.hostPaidViaConnect && {
+        reverse_transfer: true,
+        refund_application_fee: true,
+      }),
     });
   }
 

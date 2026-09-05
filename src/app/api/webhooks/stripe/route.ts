@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 import { applyApprovedChange } from "@/app/api/bookings/[id]/change-requests/[requestId]/pay/route";
+import { connectFlagsFromAccount } from "@/lib/stripeConnect";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -48,6 +49,23 @@ export async function POST(request: Request) {
     } else if (changeRequestId) {
       await applyApprovedChange(changeRequestId);
     }
+  } else if (event.type === "account.updated") {
+    // Fires on every change to a connected account, including ones this app
+    // never directly caused (Stripe re-verifying details, a host adding a
+    // bank account from their own Express dashboard). Written by account id
+    // rather than a stored userId, since that's all this event carries -
+    // see also refreshConnectAccountStatus, which does the same lookup for
+    // a host returning from onboarding without waiting on this webhook.
+    const account = event.data.object;
+    await prisma.user
+      .update({
+        where: { stripeConnectAccountId: account.id },
+        data: connectFlagsFromAccount(account),
+      })
+      .catch(() => {
+        // No user has this account id yet (e.g. a stale/test event) -
+        // nothing to update, and not worth failing the webhook over.
+      });
   } else if (event.type === "checkout.session.expired") {
     // The guest never completed payment and Stripe's own session TTL ran
     // out (e.g. they abandoned the card form). Only ever touches a booking

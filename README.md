@@ -68,6 +68,16 @@ plus shared `not-found.tsx` and `error.tsx` boundaries.
   reference, full breakdown, guest details, and payment status, and polls briefly for the webhook
   if the redirect back arrives first. Bookings move through `PENDING` → `CONFIRMED` →
   `COMPLETED` (once the stay ends) or `CANCELLED`/`REFUNDED`.
+- **Host payouts (Stripe Connect)**: a host connects a Stripe Express account from `/host/payouts`
+  (`src/lib/stripeConnect.ts`); once Stripe reports both `charges_enabled` and `payouts_enabled`,
+  every future booking's Checkout session is a destination charge - the nightly rate + cleaning fee
+  transfer straight to the host's own bank account, and FYStay's 10% service fee is retained as an
+  `application_fee_amount`. A host who hasn't connected (or hasn't finished onboarding) still takes
+  bookings exactly as before; the money simply settles to FYStay's own Stripe balance until they do,
+  rather than blocking anything. Cancelling a booking that did pay out via Connect reverses the same
+  proportion of the transfer and the platform fee (`reverse_transfer`/`refund_application_fee`) so a
+  refund never leaves the host under- or over-paid relative to the guest. See [Payments without
+  Stripe keys](#payments-without-stripe-keys) below for testing this without a real Stripe account.
 - **Photo uploads**: hosts upload real photos (via Supabase Storage) instead of pasting URLs,
   with a manual URL-paste fallback if storage isn't configured on a given deployment.
 - **Reviews**: a guest can leave a star rating + comment once a booking is paid for and its stay
@@ -139,6 +149,15 @@ without a Stripe account. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
 `/api/webhooks/stripe` for the `checkout.session.completed` and `checkout.session.expired` events
 (e.g. via `stripe listen --forward-to localhost:3000/api/webhooks/stripe` during development,
 which forwards every event type without needing to list them individually).
+
+To also test host payouts (Stripe Connect), enable Connect on the same Stripe account (Dashboard →
+Connect → get started; test mode needs no business verification) - no separate API key is needed,
+the existing `STRIPE_SECRET_KEY` covers both. Log in as a host, visit `/host/payouts`, and click
+"Connect with Stripe" to run through Express onboarding with test data. To receive `account.updated`
+events locally, add `--forward-to localhost:3000/api/webhooks/stripe` events for connected accounts
+too: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` already forwards these; in a
+deployed environment, the webhook endpoint in the Stripe Dashboard needs "Listen to events on
+Connected accounts" turned on (or a second endpoint) for `account.updated` to arrive at all.
 
 ## Password resets without an email service
 

@@ -92,6 +92,19 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // A host's Stripe Express connected account, used to pay them out
+  // directly via destination charges (see src/lib/stripeConnect.ts) rather
+  // than FYStay holding every guest payment in its own Stripe balance.
+  // Null until a host starts onboarding. The two Enabled flags mirror
+  // Stripe's own account object exactly (kept in sync by the account.updated
+  // webhook) rather than being collapsed into one "ready" flag, since a host
+  // can have charges enabled but payouts still restricted (e.g. missing bank
+  // details) and the UI needs to tell those apart.
+  stripeConnectAccountId        String?  @unique
+  stripeConnectDetailsSubmitted Boolean  @default(false)
+  stripeConnectChargesEnabled   Boolean  @default(false)
+  stripeConnectPayoutsEnabled   Boolean  @default(false)
+
   listings Listing[]
   bookings Booking[]
   reviews  Review[]
@@ -215,6 +228,18 @@ model Booking {
 
   stripeSessionId       String? @unique
   stripePaymentIntentId String?
+  // True only when this booking's payment actually routed to the host's
+  // Stripe Connect account via transfer_data (see src/lib/stripeConnect.ts) -
+  // never just because the host has one today, since they may have
+  // connected after this booking was already paid for. Read before issuing
+  // a refund: reverse_transfer/refund_application_fee only make sense, and
+  // only succeed, on a PaymentIntent that actually carried a transfer.
+  hostPaidViaConnect Boolean @default(false)
+  // The platform fee actually applied at charge time (application_fee_amount
+  // on the PaymentIntent), snapshotted separately from serviceFeeCents -
+  // normally identical, but kept apart so a future change to the fee rate
+  // never rewrites what was actually charged on an existing booking.
+  applicationFeeCents Int?
   paidAt     DateTime?
   refundedAt DateTime?
   // The actual amount returned to the guest on cancellation, per the
@@ -269,6 +294,11 @@ model BookingChangeRequest {
   originalTotalPriceCents Int
 
   stripeSessionId String?    @unique
+  // Same meaning as Booking.hostPaidViaConnect/applicationFeeCents - this
+  // extra payment for an approved change gets its own destination charge,
+  // separate from the original booking's.
+  hostPaidViaConnect  Boolean @default(false)
+  applicationFeeCents Int?
   paidAt          DateTime?
   refundedAt      DateTime?
   respondedAt     DateTime?

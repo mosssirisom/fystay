@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { formatPrice } from "@/lib/format";
+import { splitByHostShare } from "@/lib/pricing";
+import { isConnectReady } from "@/lib/stripeConnect";
 
 export async function POST(
   _request: Request,
@@ -16,7 +18,7 @@ export async function POST(
 
   const changeRequest = await prisma.bookingChangeRequest.findUnique({
     where: { id: requestId },
-    include: { booking: { include: { listing: true } } },
+    include: { booking: { include: { listing: { include: { host: true } } } } },
   });
 
   if (!changeRequest || changeRequest.bookingId !== id) {
@@ -46,6 +48,12 @@ export async function POST(
     });
   }
 
+  const connectReady = isConnectReady(changeRequest.booking.listing.host);
+  const { platformShareCents: applicationFeeCents } = splitByHostShare(
+    changeRequest.priceDeltaCents,
+    changeRequest.booking,
+  );
+
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -64,11 +72,21 @@ export async function POST(
     metadata: { changeRequestId: changeRequest.id },
     success_url: `${baseUrl}/bookings?success=1`,
     cancel_url: `${baseUrl}/bookings`,
+    ...(connectReady && {
+      payment_intent_data: {
+        application_fee_amount: applicationFeeCents,
+        transfer_data: { destination: changeRequest.booking.listing.host.stripeConnectAccountId! },
+      },
+    }),
   });
 
   await prisma.bookingChangeRequest.update({
     where: { id: requestId },
-    data: { stripeSessionId: checkoutSession.id },
+    data: {
+      stripeSessionId: checkoutSession.id,
+      hostPaidViaConnect: connectReady,
+      applicationFeeCents: connectReady ? applicationFeeCents : null,
+    },
   });
 
   return NextResponse.json({ url: checkoutSession.url });

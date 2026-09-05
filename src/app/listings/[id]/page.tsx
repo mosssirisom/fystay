@@ -10,6 +10,7 @@ import { BookingWidget } from "@/components/BookingWidget";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenityList } from "@/components/AmenityList";
+import { NearbyAttractions } from "@/components/NearbyAttractions";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/ui/Avatar";
@@ -234,6 +235,8 @@ export default async function ListingDetailPage({
               <AmenityList amenities={listing.amenities} />
             </>
           )}
+
+          <NearbyAttractions latitude={listing.latitude} longitude={listing.longitude} />
 
           <hr className="my-6 border-border-subtle" />
           <h2 id="cancellation-policy" className="scroll-mt-20 text-lg font-semibold text-foreground">

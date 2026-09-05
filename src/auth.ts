@@ -4,12 +4,18 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { googleSignInEnabled } from "@/lib/authProviders";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { peekRateLimit, recordFailedAttempt, resetRateLimit } from "@/lib/rateLimit";
 
 // Keyed by the attempted email, not the caller's IP - authorize() here has
 // no access to the request, and a per-account cap on guesses is the actual
 // goal (a distributed brute force spreading guesses across many IPs against
 // one account is exactly what this needs to stop, not what it should miss).
+// Only failed attempts count, and a success clears the count entirely - a
+// real user logging in from several devices/tabs in one session can easily
+// rack up more than a handful of *successful* logins, and counting those
+// against the same cap as guesses would eventually lock them out of their
+// own account for doing nothing wrong.
+const LOGIN_RATE_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Trust the Host header from the deployment platform's proxy (Vercel, etc.).
@@ -35,15 +41,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const normalizedEmail = email.toLowerCase();
-        // Checked before the database lookup, and denies the same way a
-        // wrong password would (a plain null) - a rate-limited response
-        // that looked any different would itself tell an attacker their
-        // guessing was noticed, and roughly how many guesses it took.
-        const { allowed } = await checkRateLimit({
-          key: `login:${normalizedEmail}`,
-          limit: 10,
-          windowMs: 15 * 60 * 1000,
-        });
+        const rateLimitKey = `login:${normalizedEmail}`;
+        // A read-only check: denies the same way a wrong password would (a
+        // plain null) if already over the limit, without yet touching the
+        // counter itself - a rate-limited response that looked any
+        // different would itself tell an attacker their guessing was
+        // noticed, and roughly how many guesses it took.
+        const { allowed } = await peekRateLimit({ key: rateLimitKey, ...LOGIN_RATE_LIMIT });
         if (!allowed) return null;
 
         const user = await prisma.user.findUnique({
@@ -52,10 +56,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // No account, or one created via Google that's never also set a
         // password: either way there's nothing to check the password
         // against, so deny rather than passing null into bcrypt.
-        if (!user || !user.passwordHash) return null;
+        if (!user || !user.passwordHash) {
+          await recordFailedAttempt({ key: rateLimitKey, windowMs: LOGIN_RATE_LIMIT.windowMs });
+          return null;
+        }
 
         const isValid = await bcrypt.compare(password, user.passwordHash);
-        if (!isValid) return null;
+        if (!isValid) {
+          await recordFailedAttempt({ key: rateLimitKey, windowMs: LOGIN_RATE_LIMIT.windowMs });
+          return null;
+        }
+        await resetRateLimit(rateLimitKey);
 
         return {
           id: user.id,

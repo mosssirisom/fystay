@@ -54,6 +54,74 @@ export async function checkRateLimit(params: {
   };
 }
 
+/**
+ * Read-only version of the same fixed window, for call sites where only
+ * *failures* should count against the limit (see recordFailedAttempt/
+ * resetRateLimit below) but the limit still needs enforcing before doing
+ * any real work. Never creates or touches a row - a key with no rows yet
+ * is simply under the limit.
+ */
+export async function peekRateLimit(params: {
+  key: string;
+  limit: number;
+  windowMs: number;
+  now?: Date;
+}): Promise<RateLimitResult> {
+  const { key, limit, windowMs, now = new Date() } = params;
+  const staleBefore = new Date(now.getTime() - windowMs);
+
+  const rows = await prisma.$queryRaw<{ count: number; windowStart: Date }[]>`
+    SELECT "count", "windowStart" FROM "RateLimitHit" WHERE "key" = ${key}
+  `;
+  const row = rows[0];
+  if (!row || row.windowStart <= staleBefore) {
+    return { allowed: true, remaining: limit, resetAt: new Date(now.getTime() + windowMs) };
+  }
+  return {
+    allowed: row.count < limit,
+    remaining: Math.max(0, limit - row.count),
+    resetAt: new Date(row.windowStart.getTime() + windowMs),
+  };
+}
+
+/**
+ * Increments the same counter as checkRateLimit, but without a limit to
+ * compare against - for call sites (login) where success and failure need
+ * different treatment: check with peekRateLimit before doing any real work,
+ * call this only once the attempt has been confirmed to fail, and call
+ * resetRateLimit on success. Counting every attempt regardless of outcome
+ * (the plain checkRateLimit above) would lock out a real user simply for
+ * logging in from several devices in the same session - only a run of
+ * actual failures should ever cost someone their own next login.
+ */
+export async function recordFailedAttempt(params: {
+  key: string;
+  windowMs: number;
+  now?: Date;
+}): Promise<void> {
+  const { key, windowMs, now = new Date() } = params;
+  const staleBefore = new Date(now.getTime() - windowMs);
+
+  await prisma.$executeRaw`
+    INSERT INTO "RateLimitHit" ("key", "windowStart", "count")
+    VALUES (${key}, ${now}, 1)
+    ON CONFLICT ("key") DO UPDATE SET
+      "count" = CASE
+        WHEN "RateLimitHit"."windowStart" <= ${staleBefore} THEN 1
+        ELSE "RateLimitHit"."count" + 1
+      END,
+      "windowStart" = CASE
+        WHEN "RateLimitHit"."windowStart" <= ${staleBefore} THEN ${now}
+        ELSE "RateLimitHit"."windowStart"
+      END
+  `;
+}
+
+/** Clears a key's counter entirely - e.g. a successful login wiping out a string of earlier failed attempts, so they can't count against a future one. */
+export async function resetRateLimit(key: string): Promise<void> {
+  await prisma.$executeRaw`DELETE FROM "RateLimitHit" WHERE "key" = ${key}`;
+}
+
 /** The client's IP as reported by the platform's proxy (Vercel sets this on every request). Falls back to a single shared bucket if it's missing, e.g. in local development. */
 export function clientIp(request: Request): string {
   const forwardedFor = request.headers.get("x-forwarded-for");

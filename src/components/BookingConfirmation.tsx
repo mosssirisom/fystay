@@ -2,13 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Home } from "lucide-react";
 import { BookingSummaryCard } from "@/components/BookingSummaryCard";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
 const POLL_INTERVAL_MS = 1500;
 const MAX_POLLS = 12;
+
+// One per poll tick, in order - purely to make an inherently-uncertain wait
+// (this app has no way to know how many seconds Stripe itself will take)
+// feel like it's actually progressing through real steps, rather than one
+// static "please wait" the whole time. Loops if confirmation takes longer
+// than the list.
+const CONFIRMING_MESSAGES = [
+  "Checking your dates…",
+  "Securing your stay…",
+  "Letting your host know…",
+  "Almost there…",
+];
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
 type PaymentStatus = "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
@@ -53,6 +65,7 @@ export function BookingConfirmation({
   const [status, setStatus] = useState<BookingStatus>(initialStatus);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(initialPaymentStatus);
   const [pollsExhausted, setPollsExhausted] = useState(false);
+  const [messageIndex, setMessageIndex] = useState(0);
   const pollCount = useRef(0);
 
   useEffect(() => {
@@ -60,6 +73,7 @@ export function BookingConfirmation({
 
     const interval = setInterval(async () => {
       pollCount.current += 1;
+      setMessageIndex((i) => (i + 1) % CONFIRMING_MESSAGES.length);
       try {
         const res = await fetch(`/api/bookings/${bookingId}`);
         if (res.ok) {
@@ -100,8 +114,29 @@ export function BookingConfirmation({
           </>
         ) : (
           <>
-            <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
-            <p className="font-medium text-foreground">Finalizing your payment&hellip;</p>
+            {/* A radar-style pulse rather than a plain spinner - the guest
+                has no way to know how many seconds this actually takes, so
+                the animation's job is to read as "working", not to imply a
+                specific duration the way a determinate progress bar would. */}
+            <div className="relative flex h-20 w-20 items-center justify-center">
+              <span
+                className="confirm-ping absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400/40"
+                style={{ animationDuration: "1.8s" }}
+              />
+              <span
+                className="confirm-ping absolute inline-flex h-14 w-14 animate-ping rounded-full bg-brand-400/40"
+                style={{ animationDuration: "1.8s", animationDelay: "0.5s" }}
+              />
+              <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-brand-700 text-white shadow-lg">
+                <Home className="h-6 w-6" />
+              </span>
+            </div>
+            <p
+              key={messageIndex}
+              className="animate-confirm-message-in font-medium text-foreground"
+            >
+              {CONFIRMING_MESSAGES[messageIndex]}
+            </p>
             <p className="max-w-sm text-sm text-zinc-500">This only takes a moment.</p>
           </>
         )}

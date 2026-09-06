@@ -143,6 +143,32 @@ body {
   }
 }
 
+/* The booking-confirmation loading screen (BookingConfirmation.tsx): a
+   fade/slide for each cycling status line, and an opt-out for the radar-
+   style pulse rings (Tailwind's own animate-ping, which has no built-in
+   reduced-motion handling) - this is the one screen a guest is stuck
+   staring at mid-payment, so it leans into motion more than anywhere else
+   in the app, and needs an explicit escape hatch for it. */
+@keyframes confirm-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-confirm-message-in {
+  animation: confirm-message-in 300ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-confirm-message-in,
+  .confirm-ping {
+    animation: none;
+  }
+}
+
 /* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);

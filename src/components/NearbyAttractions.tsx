@@ -1,4 +1,5 @@
 import { MapPin, TrainFront } from "lucide-react";
+import { SectionHeading } from "@/components/SectionHeading";
 import { nearbyLandmarks } from "@/lib/landmarks";
 
 /**
@@ -24,9 +25,8 @@ export function NearbyAttractions({
   if (landmarks.length === 0) return null;
 
   return (
-    <>
-      <hr className="my-6 border-border-subtle" />
-      <h2 className="text-lg font-semibold text-foreground">Getting around</h2>
+    <div className="mt-10">
+      <SectionHeading icon={MapPin}>Getting around</SectionHeading>
       <ul className="mt-3 flex flex-col gap-2">
         {landmarks.map((landmark) => (
           <li key={landmark.name} className="flex items-center gap-2.5 text-sm text-zinc-700">
@@ -43,6 +43,6 @@ export function NearbyAttractions({
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 }

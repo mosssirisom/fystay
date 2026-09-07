@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BedDouble, Bath, DoorOpen, MapPin, Star, Users } from "lucide-react";
+import { BedDouble, Bath, DoorOpen, Home, MapPin, ShieldCheck, Sparkles, Star, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, blockingRanges } from "@/lib/availability";
 import { resolveCancellationPolicy } from "@/lib/cancellationPolicy";
@@ -14,6 +14,7 @@ import { NearbyAttractions } from "@/components/NearbyAttractions";
 import { ContactHostButton } from "@/components/ContactHostButton";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
+import { SectionHeading } from "@/components/SectionHeading";
 import { Avatar } from "@/components/ui/Avatar";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { averageRating } from "@/lib/reviews";
@@ -209,7 +210,7 @@ export default async function ListingDetailPage({
               ))}
             </div>
             <div className="flex shrink-0 items-center gap-3">
-              <Avatar name={listing.host.name} />
+              <Avatar name={listing.host.name} size={48} className="ring-2 ring-brand-50" />
               <div className="hidden text-sm sm:block">
                 <p className="text-zinc-500">Hosted by</p>
                 <p className="font-medium text-foreground">{listing.host.name}</p>
@@ -236,34 +237,35 @@ export default async function ListingDetailPage({
             </div>
           )}
 
-          <h2 className="mt-6 text-lg font-semibold text-foreground">About this place</h2>
-          <p className="mt-2 whitespace-pre-line text-zinc-700">{listing.description}</p>
+          <div className="mt-8">
+            <SectionHeading icon={Home}>About this place</SectionHeading>
+            <p className="mt-3 whitespace-pre-line text-zinc-700">{listing.description}</p>
+          </div>
 
           {listing.amenities.length > 0 && (
-            <>
-              <hr className="my-6 border-border-subtle" />
-              <h2 className="text-lg font-semibold text-foreground">What this place offers</h2>
+            <div className="mt-10">
+              <SectionHeading icon={Sparkles}>What this place offers</SectionHeading>
               <AmenityList amenities={listing.amenities} />
-            </>
+            </div>
           )}
 
           <NearbyAttractions latitude={listing.latitude} longitude={listing.longitude} />
 
-          <hr className="my-6 border-border-subtle" />
-          <h2 id="cancellation-policy" className="scroll-mt-20 text-lg font-semibold text-foreground">
-            Cancellation policy
-          </h2>
-          <p className="mt-2 text-zinc-700">
-            <span className="font-medium text-foreground">{cancellationPolicy.label}.</span>{" "}
-            {cancellationPolicy.description}
-          </p>
+          <div className="mt-10">
+            <SectionHeading icon={ShieldCheck} id="cancellation-policy">
+              Cancellation policy
+            </SectionHeading>
+            <p className="mt-3 text-zinc-700">
+              <span className="font-medium text-foreground">{cancellationPolicy.label}.</span>{" "}
+              {cancellationPolicy.description}
+            </p>
+          </div>
 
           {listing.reviews.length > 0 && (
-            <>
-              <hr className="my-6 border-border-subtle" />
-              <h2 id="reviews" className="scroll-mt-20 text-lg font-semibold text-foreground">
+            <div className="mt-10">
+              <SectionHeading icon={Star} id="reviews">
                 Reviews
-              </h2>
+              </SectionHeading>
               <div className="mt-4">
                 <ReviewSummary reviews={listing.reviews} />
               </div>
@@ -273,7 +275,7 @@ export default async function ListingDetailPage({
                 viewerId={session?.user?.id}
                 reportedReviewIds={reportedReviewIds}
               />
-            </>
+            </div>
           )}
         </div>
 

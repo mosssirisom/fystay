@@ -122,7 +122,7 @@ export function BookingCard({
           <div className="min-w-0 flex-1">
             <Link
               href={`/listings/${booking.listingId}`}
-              className="block truncate font-medium text-foreground hover:text-brand-700"
+              className="block line-clamp-2 font-medium text-foreground hover:text-brand-700"
             >
               {booking.listing.title}
             </Link>

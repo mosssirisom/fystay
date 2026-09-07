@@ -184,7 +184,7 @@ function FeaturedSlide({
               <MapPin className="h-3 w-3 shrink-0" aria-hidden />
               <span className="truncate">{listing.city}</span>
             </p>
-            <p className="truncate text-base font-bold leading-tight text-white sm:text-lg">
+            <p className="line-clamp-2 text-base font-bold leading-tight text-white sm:text-lg">
               {listing.title}
             </p>
           </div>

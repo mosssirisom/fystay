@@ -113,7 +113,7 @@ export function HostListingRow({
             <div className="min-w-0 flex-1">
               <Link
                 href={`/listings/${listing.id}`}
-                className="block truncate font-medium text-foreground hover:text-brand-700"
+                className="block line-clamp-2 font-medium text-foreground hover:text-brand-700"
               >
                 {listing.title}
               </Link>

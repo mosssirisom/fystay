@@ -96,7 +96,7 @@ export function BookingSummaryCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <p className="truncate font-semibold text-foreground">{listing.title}</p>
+              <p className="line-clamp-2 font-semibold text-foreground">{listing.title}</p>
               {paymentStatus && (
                 <Badge variant={paymentStatusVariant[paymentStatus]} className="shrink-0">
                   {paymentStatusLabel[paymentStatus]}

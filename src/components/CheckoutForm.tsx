@@ -74,6 +74,10 @@ export function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} noValidate>
       <Card>
+        {/* Same signature strip as the listing page's BookingWidget - one
+            visual cue for "this card is part of the money-changing-hands
+            flow" that now appears consistently everywhere that flow touches. */}
+        <div className="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400" aria-hidden />
         <CardHeader>
           <CardTitle>Confirm your details</CardTitle>
         </CardHeader>

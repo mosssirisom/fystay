@@ -3,8 +3,43 @@
 // constant so the rate lives in one place if it's ever revisited.
 export const GUEST_SERVICE_FEE_RATE = 0.1;
 
+// Airbnb-style length-of-stay discount thresholds. A stay only qualifies
+// once it meets or exceeds the relevant minimum - a 6-night stay never
+// gets the weekly rate, a 27-night stay never gets the monthly one.
+export const WEEKLY_DISCOUNT_MIN_NIGHTS = 7;
+export const MONTHLY_DISCOUNT_MIN_NIGHTS = 28;
+
+export type LengthOfStayDiscountLabel = "weekly" | "monthly";
+
+/**
+ * Picks which length-of-stay discount (if either) applies to a given stay.
+ * Monthly takes priority at 28+ nights when the host has set one, since a
+ * host who bothers configuring both rates means the monthly one for their
+ * longest stays; a stay of 28+ nights still falls back to the weekly rate
+ * if no monthly rate is set, rather than getting no discount at all.
+ */
+export function resolveLengthOfStayDiscount(params: {
+  nights: number;
+  weeklyDiscountPercent?: number | null;
+  monthlyDiscountPercent?: number | null;
+}): { percent: number; label: LengthOfStayDiscountLabel | null } {
+  const { nights, weeklyDiscountPercent, monthlyDiscountPercent } = params;
+
+  if (nights >= MONTHLY_DISCOUNT_MIN_NIGHTS && monthlyDiscountPercent) {
+    return { percent: monthlyDiscountPercent, label: "monthly" };
+  }
+  if (nights >= WEEKLY_DISCOUNT_MIN_NIGHTS && weeklyDiscountPercent) {
+    return { percent: weeklyDiscountPercent, label: "weekly" };
+  }
+  return { percent: 0, label: null };
+}
+
 export type BookingPriceBreakdown = {
+  /** Gross, before any length-of-stay discount: nights * pricePerNightCents. */
   nightlySubtotalCents: number;
+  lengthOfStayDiscountPercent: number;
+  lengthOfStayDiscountCents: number;
+  lengthOfStayDiscountLabel: LengthOfStayDiscountLabel | null;
   cleaningFeeCents: number;
   serviceFeeCents: number;
   taxCents: number;
@@ -26,14 +61,38 @@ export function computeBookingPricing(params: {
   nights: number;
   pricePerNightCents: number;
   cleaningFeeCents?: number;
+  weeklyDiscountPercent?: number | null;
+  monthlyDiscountPercent?: number | null;
 }): BookingPriceBreakdown {
-  const { nights, pricePerNightCents, cleaningFeeCents = 0 } = params;
+  const {
+    nights,
+    pricePerNightCents,
+    cleaningFeeCents = 0,
+    weeklyDiscountPercent,
+    monthlyDiscountPercent,
+  } = params;
   const nightlySubtotalCents = Math.max(0, nights) * pricePerNightCents;
-  const serviceFeeCents = Math.round(nightlySubtotalCents * GUEST_SERVICE_FEE_RATE);
+  const { percent: lengthOfStayDiscountPercent, label: lengthOfStayDiscountLabel } =
+    resolveLengthOfStayDiscount({ nights, weeklyDiscountPercent, monthlyDiscountPercent });
+  const lengthOfStayDiscountCents = Math.round(
+    (nightlySubtotalCents * lengthOfStayDiscountPercent) / 100,
+  );
+  const discountedNightlySubtotalCents = nightlySubtotalCents - lengthOfStayDiscountCents;
+  const serviceFeeCents = Math.round(discountedNightlySubtotalCents * GUEST_SERVICE_FEE_RATE);
   const taxCents = 0;
-  const totalPriceCents = nightlySubtotalCents + cleaningFeeCents + serviceFeeCents + taxCents;
+  const totalPriceCents =
+    discountedNightlySubtotalCents + cleaningFeeCents + serviceFeeCents + taxCents;
 
-  return { nightlySubtotalCents, cleaningFeeCents, serviceFeeCents, taxCents, totalPriceCents };
+  return {
+    nightlySubtotalCents,
+    lengthOfStayDiscountPercent,
+    lengthOfStayDiscountCents,
+    lengthOfStayDiscountLabel,
+    cleaningFeeCents,
+    serviceFeeCents,
+    taxCents,
+    totalPriceCents,
+  };
 }
 
 /**

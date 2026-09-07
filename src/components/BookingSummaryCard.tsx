@@ -33,6 +33,8 @@ export function BookingSummaryCard({
   nights,
   guests,
   nightlyPriceCents,
+  lengthOfStayDiscountCents = 0,
+  lengthOfStayDiscountLabel = null,
   cleaningFeeCents,
   serviceFeeCents,
   taxCents,
@@ -51,6 +53,8 @@ export function BookingSummaryCard({
   nights: number;
   guests: number;
   nightlyPriceCents: number;
+  lengthOfStayDiscountCents?: number;
+  lengthOfStayDiscountLabel?: "weekly" | "monthly" | null;
   cleaningFeeCents: number;
   serviceFeeCents: number;
   taxCents: number;
@@ -168,6 +172,12 @@ export function BookingSummaryCard({
             </span>
             <span>{formatPrice(nightlySubtotalCents)}</span>
           </div>
+          {lengthOfStayDiscountCents > 0 && (
+            <div className="flex justify-between text-brand-700">
+              <span>{lengthOfStayDiscountLabel === "monthly" ? "Monthly" : "Weekly"} discount</span>
+              <span>&minus;{formatPrice(lengthOfStayDiscountCents)}</span>
+            </div>
+          )}
           {cleaningFeeCents > 0 && (
             <div className="flex justify-between">
               <span>Cleaning fee</span>

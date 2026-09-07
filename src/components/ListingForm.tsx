@@ -49,6 +49,8 @@ export type ListingFormValues = {
   address: string;
   pricePerNight: string;
   cleaningFee: string;
+  weeklyDiscountPercent: string;
+  monthlyDiscountPercent: string;
   maxGuests: string;
   bedrooms: string;
   beds: string;
@@ -69,6 +71,8 @@ const emptyValues: ListingFormValues = {
   address: "",
   pricePerNight: "",
   cleaningFee: "",
+  weeklyDiscountPercent: "",
+  monthlyDiscountPercent: "",
   maxGuests: "2",
   bedrooms: "1",
   beds: "1",
@@ -183,6 +187,12 @@ export function ListingForm({ listingId, initialValues }: Props) {
       address: values.address || undefined,
       pricePerNightCents: Math.round(Number(values.pricePerNight) * 100),
       cleaningFeeCents: values.cleaningFee ? Math.round(Number(values.cleaningFee) * 100) : 0,
+      weeklyDiscountPercent: values.weeklyDiscountPercent
+        ? Number(values.weeklyDiscountPercent)
+        : null,
+      monthlyDiscountPercent: values.monthlyDiscountPercent
+        ? Number(values.monthlyDiscountPercent)
+        : null,
       maxGuests: Number(values.maxGuests),
       bedrooms: Number(values.bedrooms),
       beds: Number(values.beds),
@@ -334,6 +344,32 @@ export function ListingForm({ listingId, initialValues }: Props) {
                 onChange={(e) => update("cleaningFee", e.target.value)}
                 placeholder="0"
               />
+            </Field>
+            <Field>
+              <Label htmlFor="weeklyDiscountPercent">Weekly discount % (optional)</Label>
+              <Input
+                id="weeklyDiscountPercent"
+                type="number"
+                min={0}
+                max={90}
+                value={values.weeklyDiscountPercent}
+                onChange={(e) => update("weeklyDiscountPercent", e.target.value)}
+                placeholder="0"
+              />
+              <FieldHint>Applied to stays of 7+ nights.</FieldHint>
+            </Field>
+            <Field>
+              <Label htmlFor="monthlyDiscountPercent">Monthly discount % (optional)</Label>
+              <Input
+                id="monthlyDiscountPercent"
+                type="number"
+                min={0}
+                max={90}
+                value={values.monthlyDiscountPercent}
+                onChange={(e) => update("monthlyDiscountPercent", e.target.value)}
+                placeholder="0"
+              />
+              <FieldHint>Applied to stays of 28+ nights.</FieldHint>
             </Field>
             <Field>
               <Label htmlFor="maxGuests">Max guests</Label>

@@ -17,6 +17,8 @@ const updateListingSchema = z
     address: z.string().max(200).optional(),
     pricePerNightCents: z.number().int().positive().optional(),
     cleaningFeeCents: z.number().int().min(0).optional(),
+    weeklyDiscountPercent: z.number().int().min(0).max(90).nullable().optional(),
+    monthlyDiscountPercent: z.number().int().min(0).max(90).nullable().optional(),
     maxGuests: z.number().int().min(1).max(50).optional(),
     bedrooms: z.number().int().min(0).max(50).optional(),
     beds: z.number().int().min(1).max(50).optional(),

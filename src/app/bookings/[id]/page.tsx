@@ -181,6 +181,8 @@ export default async function BookingDetailPage({
                     currentTotalPriceCents={booking.totalPriceCents}
                     pricePerNightCents={booking.listing.pricePerNightCents}
                     cleaningFeeCents={booking.listing.cleaningFeeCents}
+                    weeklyDiscountPercent={booking.listing.weeklyDiscountPercent}
+                    monthlyDiscountPercent={booking.listing.monthlyDiscountPercent}
                     maxGuests={booking.listing.maxGuests}
                     otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
                   />
@@ -239,6 +241,8 @@ export default async function BookingDetailPage({
             nights={booking.nights}
             guests={booking.guests}
             nightlyPriceCents={booking.nightlyPriceCents}
+            lengthOfStayDiscountCents={booking.lengthOfStayDiscountCents}
+            lengthOfStayDiscountLabel={booking.lengthOfStayDiscountLabel as "weekly" | "monthly" | null}
             cleaningFeeCents={booking.cleaningFeeCents}
             serviceFeeCents={booking.serviceFeeCents}
             taxCents={booking.taxCents}

@@ -128,6 +128,14 @@ export default async function BookingReceiptPage({
                 </span>
                 <span>{formatPrice(nightlySubtotalCents)}</span>
               </div>
+              {booking.lengthOfStayDiscountCents > 0 && (
+                <div className="flex justify-between text-brand-700">
+                  <span>
+                    {booking.lengthOfStayDiscountLabel === "monthly" ? "Monthly" : "Weekly"} discount
+                  </span>
+                  <span>&minus;{formatPrice(booking.lengthOfStayDiscountCents)}</span>
+                </div>
+              )}
               {booking.cleaningFeeCents > 0 && (
                 <div className="flex justify-between">
                   <span>Cleaning fee</span>

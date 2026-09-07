@@ -35,13 +35,24 @@ export function computePriceDeltaCents(params: {
   requestedNights: number;
   pricePerNightCents: number;
   cleaningFeeCents?: number;
+  weeklyDiscountPercent?: number | null;
+  monthlyDiscountPercent?: number | null;
   currentTotalPriceCents: number;
 }): number {
-  const { requestedNights, pricePerNightCents, cleaningFeeCents, currentTotalPriceCents } = params;
+  const {
+    requestedNights,
+    pricePerNightCents,
+    cleaningFeeCents,
+    weeklyDiscountPercent,
+    monthlyDiscountPercent,
+    currentTotalPriceCents,
+  } = params;
   const { totalPriceCents } = computeBookingPricing({
     nights: requestedNights,
     pricePerNightCents,
     cleaningFeeCents,
+    weeklyDiscountPercent,
+    monthlyDiscountPercent,
   });
   return totalPriceCents - currentTotalPriceCents;
 }

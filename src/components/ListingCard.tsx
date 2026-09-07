@@ -21,6 +21,8 @@ export type ListingCardData = {
   country: string;
   pricePerNightCents: number;
   cleaningFeeCents: number;
+  weeklyDiscountPercent?: number | null;
+  monthlyDiscountPercent?: number | null;
   photos: string[];
   amenities: string[];
   maxGuests: number;
@@ -82,6 +84,8 @@ export function ListingCard({
           nights,
           pricePerNightCents: listing.pricePerNightCents,
           cleaningFeeCents: listing.cleaningFeeCents,
+          weeklyDiscountPercent: listing.weeklyDiscountPercent,
+          monthlyDiscountPercent: listing.monthlyDiscountPercent,
         }).totalPriceCents
       : null;
 

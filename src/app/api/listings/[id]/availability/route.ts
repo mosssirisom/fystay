@@ -84,6 +84,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     nights,
     pricePerNightCents: listing.pricePerNightCents,
     cleaningFeeCents: listing.cleaningFeeCents,
+    weeklyDiscountPercent: listing.weeklyDiscountPercent,
+    monthlyDiscountPercent: listing.monthlyDiscountPercent,
   });
 
   return NextResponse.json({ available: true, nights, pricing });

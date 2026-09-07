@@ -18,6 +18,8 @@ const createListingSchema = z
     address: z.string().max(200).optional(),
     pricePerNightCents: z.number().int().positive(),
     cleaningFeeCents: z.number().int().min(0).default(0),
+    weeklyDiscountPercent: z.number().int().min(0).max(90).nullable().optional(),
+    monthlyDiscountPercent: z.number().int().min(0).max(90).nullable().optional(),
     maxGuests: z.number().int().min(1).max(50),
     bedrooms: z.number().int().min(0).max(50),
     beds: z.number().int().min(1).max(50),

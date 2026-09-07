@@ -66,6 +66,8 @@ export function BookingCard({
       photos: string[];
       pricePerNightCents: number;
       cleaningFeeCents: number;
+      weeklyDiscountPercent: number | null;
+      monthlyDiscountPercent: number | null;
       maxGuests: number;
       cancellationPolicy: CancellationPolicyKind;
       customCancellationCutoffDays: number | null;
@@ -189,6 +191,8 @@ export function BookingCard({
                 currentTotalPriceCents={booking.totalPriceCents}
                 pricePerNightCents={booking.listing.pricePerNightCents}
                 cleaningFeeCents={booking.listing.cleaningFeeCents}
+                weeklyDiscountPercent={booking.listing.weeklyDiscountPercent}
+                monthlyDiscountPercent={booking.listing.monthlyDiscountPercent}
                 maxGuests={booking.listing.maxGuests}
                 otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
               />

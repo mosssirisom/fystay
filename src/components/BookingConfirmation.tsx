@@ -36,6 +36,8 @@ export function BookingConfirmation({
   nights,
   guests,
   nightlyPriceCents,
+  lengthOfStayDiscountCents,
+  lengthOfStayDiscountLabel,
   cleaningFeeCents,
   serviceFeeCents,
   taxCents,
@@ -54,6 +56,8 @@ export function BookingConfirmation({
   nights: number;
   guests: number;
   nightlyPriceCents: number;
+  lengthOfStayDiscountCents: number;
+  lengthOfStayDiscountLabel: "weekly" | "monthly" | null;
   cleaningFeeCents: number;
   serviceFeeCents: number;
   taxCents: number;
@@ -174,6 +178,8 @@ export function BookingConfirmation({
           nights={nights}
           guests={guests}
           nightlyPriceCents={nightlyPriceCents}
+          lengthOfStayDiscountCents={lengthOfStayDiscountCents}
+          lengthOfStayDiscountLabel={lengthOfStayDiscountLabel}
           cleaningFeeCents={cleaningFeeCents}
           serviceFeeCents={serviceFeeCents}
           taxCents={taxCents}

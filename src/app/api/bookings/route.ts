@@ -124,6 +124,8 @@ export async function POST(request: Request) {
             nights,
             pricePerNightCents: listing.pricePerNightCents,
             cleaningFeeCents: listing.cleaningFeeCents,
+            weeklyDiscountPercent: listing.weeklyDiscountPercent,
+            monthlyDiscountPercent: listing.monthlyDiscountPercent,
           });
 
           return tx.booking.create({
@@ -136,6 +138,8 @@ export async function POST(request: Request) {
               guests,
               nights,
               nightlyPriceCents: listing.pricePerNightCents,
+              lengthOfStayDiscountCents: pricing.lengthOfStayDiscountCents,
+              lengthOfStayDiscountLabel: pricing.lengthOfStayDiscountLabel,
               cleaningFeeCents: pricing.cleaningFeeCents,
               serviceFeeCents: pricing.serviceFeeCents,
               taxCents: pricing.taxCents,

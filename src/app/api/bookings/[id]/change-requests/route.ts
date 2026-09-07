@@ -84,6 +84,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     requestedNights: nights,
     pricePerNightCents: booking.listing.pricePerNightCents,
     cleaningFeeCents: booking.cleaningFeeCents,
+    weeklyDiscountPercent: booking.listing.weeklyDiscountPercent,
+    monthlyDiscountPercent: booking.listing.monthlyDiscountPercent,
     currentTotalPriceCents: booking.totalPriceCents,
   });
 

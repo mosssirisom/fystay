@@ -21,6 +21,8 @@ export function RequestChangeDialog({
   currentTotalPriceCents,
   pricePerNightCents,
   cleaningFeeCents = 0,
+  weeklyDiscountPercent,
+  monthlyDiscountPercent,
   maxGuests,
   otherBookedRanges,
 }: {
@@ -31,6 +33,8 @@ export function RequestChangeDialog({
   currentTotalPriceCents: number;
   pricePerNightCents: number;
   cleaningFeeCents?: number;
+  weeklyDiscountPercent?: number | null;
+  monthlyDiscountPercent?: number | null;
   maxGuests: number;
   otherBookedRanges: { checkIn: Date; checkOut: Date }[];
 }) {
@@ -54,6 +58,8 @@ export function RequestChangeDialog({
     nights,
     pricePerNightCents,
     cleaningFeeCents,
+    weeklyDiscountPercent,
+    monthlyDiscountPercent,
   });
   const priceDeltaCents = newTotalPriceCents - currentTotalPriceCents;
 

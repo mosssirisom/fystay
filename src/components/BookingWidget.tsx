@@ -11,13 +11,19 @@ import { DateRangeField } from "@/components/DateRangeField";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap } from "@/lib/availability";
-import { computeBookingPricing } from "@/lib/pricing";
+import {
+  computeBookingPricing,
+  MONTHLY_DISCOUNT_MIN_NIGHTS,
+  WEEKLY_DISCOUNT_MIN_NIGHTS,
+} from "@/lib/pricing";
 import { isPetFriendly, totalOccupants, type GuestCounts } from "@/lib/search";
 
 type Props = {
   listingId: string;
   pricePerNightCents: number;
   cleaningFeeCents: number;
+  weeklyDiscountPercent?: number | null;
+  monthlyDiscountPercent?: number | null;
   maxGuests: number;
   amenities: string[];
   bookedRanges: { checkIn: string; checkOut: string }[];
@@ -31,6 +37,8 @@ export function BookingWidget({
   listingId,
   pricePerNightCents,
   cleaningFeeCents,
+  weeklyDiscountPercent,
+  monthlyDiscountPercent,
   maxGuests,
   amenities,
   bookedRanges,
@@ -77,7 +85,13 @@ export function BookingWidget({
   );
 
   const nights = range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
-  const pricing = computeBookingPricing({ nights, pricePerNightCents, cleaningFeeCents });
+  const pricing = computeBookingPricing({
+    nights,
+    pricePerNightCents,
+    cleaningFeeCents,
+    weeklyDiscountPercent,
+    monthlyDiscountPercent,
+  });
 
   const availabilityChecked = Boolean(
     checkedSelection &&
@@ -201,6 +215,14 @@ export function BookingWidget({
           )}
         </div>
 
+        {nights === 0 && (weeklyDiscountPercent || monthlyDiscountPercent) && (
+          <p className="mt-1 text-xs font-medium text-brand-700">
+            {monthlyDiscountPercent
+              ? `${monthlyDiscountPercent}% off stays of ${MONTHLY_DISCOUNT_MIN_NIGHTS}+ nights`
+              : `${weeklyDiscountPercent}% off stays of ${WEEKLY_DISCOUNT_MIN_NIGHTS}+ nights`}
+          </p>
+        )}
+
         <div className="mt-4 flex flex-col gap-2">
           <DateRangeField range={range} onChange={setRange} disabledRanges={disabledDays} />
           <GuestCategoryPicker
@@ -220,6 +242,15 @@ export function BookingWidget({
               </span>
               <span>{formatPrice(pricing.nightlySubtotalCents)}</span>
             </div>
+            {pricing.lengthOfStayDiscountCents > 0 && (
+              <div className="flex justify-between text-brand-700">
+                <span>
+                  {pricing.lengthOfStayDiscountLabel === "monthly" ? "Monthly" : "Weekly"} discount
+                  {" "}({pricing.lengthOfStayDiscountPercent}%)
+                </span>
+                <span>&minus;{formatPrice(pricing.lengthOfStayDiscountCents)}</span>
+              </div>
+            )}
             {pricing.cleaningFeeCents > 0 && (
               <div className="flex justify-between">
                 <span>Cleaning fee</span>

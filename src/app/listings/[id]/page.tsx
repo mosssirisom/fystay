@@ -282,6 +282,8 @@ export default async function ListingDetailPage({
             listingId={listing.id}
             pricePerNightCents={listing.pricePerNightCents}
             cleaningFeeCents={listing.cleaningFeeCents}
+            weeklyDiscountPercent={listing.weeklyDiscountPercent}
+            monthlyDiscountPercent={listing.monthlyDiscountPercent}
             maxGuests={listing.maxGuests}
             amenities={listing.amenities}
             bookedRanges={blockingRanges(listing.bookings, listing.availabilityBlocks).map(

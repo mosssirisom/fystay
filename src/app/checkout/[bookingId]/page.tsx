@@ -103,6 +103,8 @@ export default async function CheckoutPage({
               nights={booking.nights}
               guests={booking.guests}
               nightlyPriceCents={booking.nightlyPriceCents}
+              lengthOfStayDiscountCents={booking.lengthOfStayDiscountCents}
+              lengthOfStayDiscountLabel={booking.lengthOfStayDiscountLabel as "weekly" | "monthly" | null}
               cleaningFeeCents={booking.cleaningFeeCents}
               serviceFeeCents={booking.serviceFeeCents}
               taxCents={booking.taxCents}

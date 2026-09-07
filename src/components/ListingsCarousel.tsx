@@ -29,7 +29,7 @@ export function ListingsCarousel({
           <ListingCard listing={listings[0]} isLoggedIn={isLoggedIn} />
         </div>
       </div>
-      <div className="absolute inset-x-0 top-0 flex snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="absolute inset-x-0 top-0 flex snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {listings.map((listing) => (
           <div key={listing.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]">
             <ListingCard

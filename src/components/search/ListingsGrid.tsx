@@ -141,13 +141,18 @@ export async function ListingsGrid({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterSheet
-            availablePropertyTypes={availablePropertyTypes}
-            availableAmenityCategories={amenityCategories}
-          />
-          <SortDropdown />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-medium text-zinc-500">
+            {results.length} stay{results.length === 1 ? "" : "s"}
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterSheet
+              availablePropertyTypes={availablePropertyTypes}
+              availableAmenityCategories={amenityCategories}
+            />
+            <SortDropdown />
+          </div>
         </div>
         <ResultsViewToggle />
       </div>

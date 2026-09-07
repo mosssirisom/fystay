@@ -2,13 +2,13 @@ import { MapPinned } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 /**
- * An honest foundation for map view, not a fake interactive map: Listing
- * has no latitude/longitude yet, so rendering pins on a real map would mean
- * either fabricating coordinates or pulling in a full mapping stack for a
- * handful of Fylde Coast towns. The List | Map toggle itself is fully wired
- * (it's real URL state, not a dead button) and this pane already knows the
- * real city breakdown of the current results, so a future task can drop a
- * real map in here without changing how the toggle or the results work.
+ * The map itself (ListingsMap/ListingsMapInner) is real and fully wired -
+ * this only ever renders for the one case that isn't fixable by adding a
+ * map library: a result set entirely outside FYStay's five geocoded towns
+ * (see the comment on the call site in ListingsGrid.tsx). Its job is to
+ * stay honest about *why* there's no map here today, not to reproduce one -
+ * a fabricated pin for a town FYStay doesn't have real coordinates for
+ * would be worse than this list.
  */
 export function MapViewPlaceholder({ cityCounts }: { cityCounts: Map<string, number> }) {
   const cities = Array.from(cityCounts.entries()).sort((a, b) => b[1] - a[1]);
@@ -16,10 +16,10 @@ export function MapViewPlaceholder({ cityCounts }: { cityCounts: Map<string, num
   return (
     <Card className="flex flex-col items-center gap-3 p-12 text-center">
       <MapPinned className="h-8 w-8 text-zinc-300" />
-      <p className="font-medium text-foreground">Map view is coming soon</p>
+      <p className="font-medium text-foreground">No map for these results yet</p>
       <p className="max-w-sm text-sm text-zinc-500">
-        We&apos;re working on an interactive map for the Fylde Coast. For now, here&apos;s where
-        your matching stays are:
+        These stays fall outside the Fylde Coast towns FYStay has mapped so far. Here&apos;s where
+        they are instead:
       </p>
       {cities.length > 0 && (
         <ul className="mt-2 flex flex-wrap justify-center gap-2">

@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal } from "lucide-react";
+import {
+  Building2,
+  Home,
+  Hotel,
+  LandPlot,
+  SlidersHorizontal,
+  Trees,
+  Warehouse,
+  type LucideIcon,
+} from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -15,6 +24,16 @@ import { cn } from "@/lib/cn";
 
 const BEDROOM_BATHROOM_OPTIONS = [0, 1, 2, 3, 4];
 const RATING_OPTIONS = [0, 3, 3.5, 4, 4.5];
+
+const PROPERTY_TYPE_ICON: Record<PropertyType, LucideIcon> = {
+  APARTMENT: Building2,
+  HOUSE: Home,
+  HOTEL: Hotel,
+  COTTAGE: Trees,
+  VILLA: LandPlot,
+  STUDIO: Warehouse,
+  OTHER: Home,
+};
 
 function ToggleChip({
   active,
@@ -31,7 +50,7 @@ function ToggleChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "focus-ring rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+        "focus-ring flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
         active
           ? "border-brand-600 bg-brand-50 text-brand-800"
           : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
@@ -180,15 +199,19 @@ export function FilterSheet({
             <div>
               <p className="mb-2 text-sm font-semibold text-foreground">Property type</p>
               <div className="flex flex-wrap gap-2">
-                {availablePropertyTypes.map((type) => (
-                  <ToggleChip
-                    key={type}
-                    active={propertyTypes.includes(type)}
-                    onClick={() => toggle(propertyTypes, type, setPropertyTypes)}
-                  >
-                    {PROPERTY_TYPE_LABEL[type]}
-                  </ToggleChip>
-                ))}
+                {availablePropertyTypes.map((type) => {
+                  const Icon = PROPERTY_TYPE_ICON[type];
+                  return (
+                    <ToggleChip
+                      key={type}
+                      active={propertyTypes.includes(type)}
+                      onClick={() => toggle(propertyTypes, type, setPropertyTypes)}
+                    >
+                      <Icon className="h-3.5 w-3.5" aria-hidden />
+                      {PROPERTY_TYPE_LABEL[type]}
+                    </ToggleChip>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -77,7 +77,7 @@ export function FeaturedListingHero({
         onTouchEnd={count > 1 ? handleTouchEnd : undefined}
       >
         {listings.map((listing, i) => (
-          <FeaturedSlide key={listing.id} listing={listing} priority={i === 0} />
+          <FeaturedSlide key={listing.id} listing={listing} priority={i === 0} isActive={i === active} />
         ))}
       </div>
 
@@ -130,7 +130,15 @@ export function FeaturedListingHero({
  * inside a .map() callback itself would break React's rules of hooks the
  * moment the listings count ever changed between renders.
  */
-function FeaturedSlide({ listing, priority }: { listing: FeaturedListing; priority: boolean }) {
+function FeaturedSlide({
+  listing,
+  priority,
+  isActive,
+}: {
+  listing: FeaturedListing;
+  priority: boolean;
+  isActive: boolean;
+}) {
   // Guests and bedrooms are always real (every listing has both), so they
   // anchor the feature row - a matching amenity tops it up to 3 without
   // ever promising an amenity that isn't actually there.
@@ -144,14 +152,19 @@ function FeaturedSlide({ listing, priority }: { listing: FeaturedListing; priori
     // later sibling of this component's root, with an explicit z-index of
     // its own - would otherwise paint above this photo and its caption/
     // controls entirely, not just tint them.
-    <Link href={`/listings/${listing.id}`} className="relative z-20 h-full w-full shrink-0">
+    <Link href={`/listings/${listing.id}`} className="relative z-20 h-full w-full shrink-0 overflow-hidden">
+      {/* Keyed on isActive so the animation restarts fresh each time this
+          slide becomes the active one again, rather than only ever playing
+          once on first mount (every slide mounts up front - see the
+          component doc comment above). */}
       <Image
+        key={isActive ? "active" : "inactive"}
         src={listing.photo}
         alt={withCity(listing.title, listing.city)}
         fill
         priority={priority}
         sizes="100vw"
-        className="object-cover"
+        className={cn("object-cover", isActive && "motion-safe:animate-hero-kenburns")}
         unoptimized={!isOptimizableImage(listing.photo)}
       />
       {/* Short top-only scrim, just for the pagination dots' contrast - the

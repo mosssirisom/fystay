@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 
-const DESTINATION_ART: Record<string, { icon: LucideIcon; gradient: string }> = {
+export const DESTINATION_ART: Record<string, { icon: LucideIcon; gradient: string }> = {
   blackpool: { icon: FerrisWheel, gradient: "from-brand-600 via-brand-700 to-brand-900" },
   "lytham-st-annes": { icon: Wind, gradient: "from-brand-500 to-ink" },
   cleveleys: { icon: Waves, gradient: "from-sky-500 to-brand-800" },

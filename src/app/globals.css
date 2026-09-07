@@ -169,6 +169,48 @@ body {
   }
 }
 
+/* Homepage hero (FeaturedListingHero): a slow, barely-there zoom on the
+   active slide's photo while it's on screen - the kind of ambient motion
+   that reads as "considered" rather than "look, animation", and disabled
+   outright under reduced-motion (the zoom itself, not just the timing,
+   since a paused mid-zoom frame is a worse still image than the original). */
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+/* @utility (not a plain class) so the motion-safe: variant used at the call
+   site can compose with it - Tailwind only generates variant-scoped rules
+   for utilities it knows about. */
+@utility animate-hero-kenburns {
+  animation: hero-kenburns 5000ms ease-out forwards;
+}
+
+/* Homepage section entrances: each major section fades/slides in once as it
+   first enters the viewport (see useRevealOnScroll) - a single subtle beat,
+   not a per-scroll replay, and skipped entirely under reduced-motion by
+   never removing the .reveal-hidden class in the first place. */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.reveal-visible {
+  animation: reveal-in 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);

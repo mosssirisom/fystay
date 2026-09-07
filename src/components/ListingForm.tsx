@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Camera, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { PhotoUploader } from "@/components/PhotoUploader";
+import { SectionHeading } from "@/components/SectionHeading";
 import { resolveCancellationPolicy, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL, type PropertyType } from "@/lib/propertyType";
 import { cn } from "@/lib/cn";
@@ -239,7 +241,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <Card>
         <CardHeader>
-          <CardTitle>The basics</CardTitle>
+          <SectionHeading icon={Home}>The basics</SectionHeading>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Field>
@@ -281,7 +283,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Location</CardTitle>
+          <SectionHeading icon={MapPin}>Location</SectionHeading>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
@@ -317,7 +319,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Capacity & pricing</CardTitle>
+          <SectionHeading icon={Wallet}>Capacity & pricing</SectionHeading>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -421,7 +423,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Photos & amenities</CardTitle>
+          <SectionHeading icon={Camera}>Photos & amenities</SectionHeading>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Field>
@@ -483,7 +485,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Cancellation policy</CardTitle>
+          <SectionHeading icon={ShieldCheck}>Cancellation policy</SectionHeading>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Field>

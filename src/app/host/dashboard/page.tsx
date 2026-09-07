@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarCheck2, CreditCard, PlusCircle, Star, Wallet } from "lucide-react";
+import { CalendarCheck2, CreditCard, Home, PlusCircle, Star, Wallet } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { averageRating } from "@/lib/reviews";
@@ -11,6 +11,7 @@ import { formatPrice } from "@/lib/format";
 import { HostListingRow } from "@/components/HostListingRow";
 import { NeedsAttention, type PendingChangeRequest } from "@/components/host/NeedsAttention";
 import { StatCard } from "@/components/host/StatCard";
+import { SectionHeading } from "@/components/SectionHeading";
 import { Card } from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
@@ -156,7 +157,7 @@ export default async function HostDashboardPage() {
           <NeedsAttention requests={pendingRequests} />
 
           <div className="mt-8">
-            <h2 className="text-lg font-bold text-foreground">Your listings</h2>
+            <SectionHeading icon={Home}>Your listings</SectionHeading>
             <ul className="mt-3 flex flex-col gap-4">
               {listings.map((listing) => {
                 const revenue = summarizeEarnings(listing.bookings, now);

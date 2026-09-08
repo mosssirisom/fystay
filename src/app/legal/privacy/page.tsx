@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LegalPageLayout, LegalSection } from "@/components/legal/LegalPageLayout";
+import { getCompanyInfo } from "@/lib/companyInfo";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -11,6 +12,8 @@ export const metadata = pageMetadata({
 const LAST_UPDATED = "31 August 2026";
 
 export default function PrivacyPolicyPage() {
+  const company = getCompanyInfo();
+
   return (
     <LegalPageLayout title="Privacy Policy" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="Who we are">
@@ -24,6 +27,12 @@ export default function PrivacyPolicyPage() {
           </a>
           .
         </p>
+        {company && (
+          <p>
+            The data controller is {company.legalName} (company number {company.companyNumber}),
+            registered office at {company.registeredAddress}.
+          </p>
+        )}
       </LegalSection>
 
       <LegalSection heading="What we collect">
@@ -91,6 +100,11 @@ export default function PrivacyPolicyPage() {
             complete the stay.
           </li>
         </ul>
+        <p>
+          Some of these providers may process data outside the UK. Where that happens, it&apos;s
+          covered by adequacy regulations or standard contractual clauses recognised under UK
+          GDPR, and each provider&apos;s own data processing terms.
+        </p>
         <p>We never sell your personal data.</p>
       </LegalSection>
 

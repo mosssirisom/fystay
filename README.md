@@ -198,6 +198,10 @@ variables:
 - `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` if you want real host photo uploads
   (see [Photo uploads](#photo-uploads) below); otherwise the upload button shows an error and
   hosts fall back to pasting an image URL directly
+- `NEXT_PUBLIC_COMPANY_LEGAL_NAME`, `NEXT_PUBLIC_COMPANY_NUMBER` and `NEXT_PUBLIC_COMPANY_ADDRESS`
+  once this is a real, trading business - see `src/lib/companyInfo.ts`. UK law requires this
+  disclosure on a site taking real bookings and payments; all three are required together, or the
+  Terms and Privacy pages simply omit the section rather than showing a placeholder to guests.
 
 After setting `DATABASE_URL`/`DIRECT_URL`, run `npx prisma migrate deploy` once from your machine
 (with those same two variables in your local `.env`) to create the schema on the real database.

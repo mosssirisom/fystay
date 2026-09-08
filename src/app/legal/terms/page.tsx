@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LegalPageLayout, LegalSection } from "@/components/legal/LegalPageLayout";
+import { getCompanyInfo } from "@/lib/companyInfo";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -11,6 +12,8 @@ export const metadata = pageMetadata({
 const LAST_UPDATED = "31 August 2026";
 
 export default function TermsPage() {
+  const company = getCompanyInfo();
+
   return (
     <LegalPageLayout title="Terms and Conditions" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="1. Who these terms are between">
@@ -25,6 +28,12 @@ export default function TermsPage() {
           the accommodation contract for a stay is between the guest and the host, not with FY
           Stay.
         </p>
+        {company && (
+          <p>
+            FYStay is operated by {company.legalName} (company number {company.companyNumber}),
+            registered office at {company.registeredAddress}.
+          </p>
+        )}
       </LegalSection>
 
       <LegalSection heading="2. Accounts">

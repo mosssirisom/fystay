@@ -3,6 +3,7 @@ import { LOCAL_GUIDES } from "@/lib/localGuide";
 import type { FyldeCoastDestination } from "@/lib/destinations";
 import { SectionHeading } from "@/components/SectionHeading";
 import { LocalGuideExplorer } from "@/components/LocalGuideExplorer";
+import { LocalKnowledge } from "@/components/LocalKnowledge";
 import { Badge } from "@/components/ui/Badge";
 
 /**
@@ -36,6 +37,8 @@ export function LocalGuide({ destination }: { destination: FyldeCoastDestination
         <Quote className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
         <p className="text-sm italic leading-relaxed text-brand-900">{guide.insiderTip}</p>
       </blockquote>
+
+      <LocalKnowledge destinationName={destination.name} slug={destination.slug} />
 
       <LocalGuideExplorer guide={guide} destinationName={destination.name} />
     </section>

@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { GUIDE_CATEGORIES, type GuideCategoryKey, type GuideEntry, type TownGuide } from "@/lib/localGuide";
+import { prioritizeEntriesByDistance } from "@/lib/guideLocation";
 
 export type MoodKey =
   | "family"
@@ -89,11 +90,23 @@ export type TopPick = {
   entry: GuideEntry;
 };
 
-/** Up to three real entries pulled from a mood's highest-priority categories, for an instant "here's what that actually means" answer before the user expands anything. */
-export function topPicksForMood(guide: TownGuide, mood: MoodKey): TopPick[] {
+/**
+ * Up to three real entries pulled from a mood's highest-priority
+ * categories, for an instant "here's what that actually means" answer
+ * before the user expands anything. When `origin` is given (a guest
+ * arrived via a specific listing), each category contributes its closest
+ * entry rather than just its first, so "most relevant" (the mood) and
+ * "closest" (the property) combine instead of competing.
+ */
+export function topPicksForMood(
+  guide: TownGuide,
+  mood: MoodKey,
+  origin: { latitude: number; longitude: number } | null = null,
+): TopPick[] {
   const picks: TopPick[] = [];
   for (const category of MOOD_CATEGORY_PRIORITY[mood]) {
-    const entry = guide[category][0];
+    const candidates = origin ? prioritizeEntriesByDistance(guide[category], origin) : guide[category];
+    const entry = candidates[0];
     if (!entry) continue;
     picks.push({ category, categoryLabel: CATEGORY_LABEL[category], entry });
     if (picks.length === 3) break;

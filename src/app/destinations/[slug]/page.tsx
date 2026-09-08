@@ -3,12 +3,33 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookOpen } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
 import { LocalGuide } from "@/components/LocalGuide";
 import { FYLDE_COAST_DESTINATIONS, type FyldeCoastDestination } from "@/lib/destinations";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
+
+/**
+ * Looks up the listing a guest arrived from (via the "Read the full X Local
+ * Guide" link on a listing page, which appends ?from=<listingId>) so the
+ * guide below can show real distances from that specific property rather
+ * than nothing. A fresh, authoritative lookup rather than trusting raw
+ * coordinates in the URL - a stale or tampered `from` value just falls
+ * back to the guide's default, non-location-aware behaviour.
+ */
+async function findOriginListing(listingId: string | undefined) {
+  if (!listingId) return null;
+  const listing = await prisma.listing
+    .findUnique({
+      where: { id: listingId, published: true },
+      select: { title: true, latitude: true, longitude: true },
+    })
+    .catch(() => null);
+  if (!listing || listing.latitude === null || listing.longitude === null) return null;
+  return { title: listing.title, latitude: listing.latitude, longitude: listing.longitude };
+}
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -50,6 +71,9 @@ export default async function DestinationPage({
   const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams]);
   const destination = findDestination(slug);
   if (!destination) notFound();
+
+  const fromParam = resolvedSearchParams.from;
+  const fromListing = await findOriginListing(typeof fromParam === "string" ? fromParam : undefined);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -104,7 +128,7 @@ export default async function DestinationPage({
         </Suspense>
       </div>
 
-      <LocalGuide destination={destination} />
+      <LocalGuide destination={destination} fromListing={fromListing} />
     </div>
   );
 }

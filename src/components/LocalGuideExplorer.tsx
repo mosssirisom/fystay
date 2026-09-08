@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { ChevronDown, X } from "lucide-react";
-import type { TownGuide } from "@/lib/localGuide";
+import type { GuideCategoryKey, GuideEntry, TownGuide } from "@/lib/localGuide";
 import { MOOD_CATEGORY_PRIORITY, MOODS, orderCategoriesForMood, topPicksForMood, type MoodKey } from "@/lib/moods";
+import { entryMatchesCategory, locateEntry, prioritizeEntriesByDistance, type OriginListing } from "@/lib/guideLocation";
+import { EntryLocationMeta } from "@/components/EntryLocationMeta";
+import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/cn";
 
 /**
@@ -17,13 +20,19 @@ import { cn } from "@/lib/cn";
  * rendered, and this component's own default state (no mood picked) is the
  * exact order the server already rendered, so hydration never causes a
  * visible reflow.
+ *
+ * `fromListing`, when present, layers real distance on top of the mood
+ * reordering: every category's own entries sort closest-first, and any
+ * entry naming a real place gets a distance/walk/drive-time line.
  */
 export function LocalGuideExplorer({
   guide,
   destinationName,
+  fromListing,
 }: {
   guide: TownGuide;
   destinationName: string;
+  fromListing: OriginListing | null;
 }) {
   const [mood, setMood] = useState<MoodKey | null>(null);
 
@@ -34,7 +43,7 @@ export function LocalGuideExplorer({
   const selectedMood = MOODS.find((m) => m.key === mood);
   const priorityKeys = mood ? new Set(MOOD_CATEGORY_PRIORITY[mood]) : null;
   const orderedCategories = orderCategoriesForMood(mood);
-  const topPicks = mood ? topPicksForMood(guide, mood) : [];
+  const topPicks = mood ? topPicksForMood(guide, mood, fromListing) : [];
 
   return (
     <div className="mt-6">
@@ -100,6 +109,7 @@ export function LocalGuideExplorer({
                 <p className="text-[11px] font-medium uppercase tracking-wide text-brand-700">{categoryLabel}</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{entry.name}</p>
                 <p className="mt-0.5 text-xs text-zinc-500">{entry.note}</p>
+                <EntryLocationMeta location={locateEntry(fromListing, entry.place)} />
               </li>
             ))}
           </ul>
@@ -111,6 +121,7 @@ export function LocalGuideExplorer({
           const entries = guide[key];
           if (entries.length === 0) return null;
           const isPriority = priorityKeys?.has(key) ?? false;
+          const orderedEntries = prioritizeEntriesByDistance(entries, fromListing);
           return (
             <details
               key={key}
@@ -135,11 +146,8 @@ export function LocalGuideExplorer({
                 />
               </summary>
               <ul className="mt-4 flex flex-col gap-3 border-t border-border-subtle pt-4">
-                {entries.map((entry) => (
-                  <li key={entry.name}>
-                    <p className="text-sm font-medium text-foreground">{entry.name}</p>
-                    <p className="mt-0.5 text-sm text-zinc-500">{entry.note}</p>
-                  </li>
+                {orderedEntries.map((entry) => (
+                  <EntryRow key={entry.name} guide={guide} category={key} entry={entry} fromListing={fromListing} />
                 ))}
               </ul>
             </details>
@@ -147,5 +155,38 @@ export function LocalGuideExplorer({
         })}
       </div>
     </div>
+  );
+}
+
+/**
+ * One recommendation row: the entry's own text, plus a distance badge when
+ * it names a real place and family/dog badges when the guide's own
+ * family/dogFriendly categories already list this exact entry elsewhere -
+ * a fact the guide already asserts, surfaced here rather than a new claim.
+ */
+function EntryRow({
+  guide,
+  category,
+  entry,
+  fromListing,
+}: {
+  guide: TownGuide;
+  category: GuideCategoryKey;
+  entry: GuideEntry;
+  fromListing: OriginListing | null;
+}) {
+  const isFamilyFriendly = category !== "family" && entryMatchesCategory(guide, "family", entry.name);
+  const isDogFriendly = category !== "dogFriendly" && entryMatchesCategory(guide, "dogFriendly", entry.name);
+
+  return (
+    <li>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <p className="text-sm font-medium text-foreground">{entry.name}</p>
+        {isFamilyFriendly && <Badge variant="brand">Family-friendly</Badge>}
+        {isDogFriendly && <Badge variant="brand">Dog-friendly</Badge>}
+      </div>
+      <p className="mt-0.5 text-sm text-zinc-500">{entry.note}</p>
+      <EntryLocationMeta location={locateEntry(fromListing, entry.place)} />
+    </li>
   );
 }

@@ -38,6 +38,8 @@ import {
 export type GuideEntry = {
   name: string;
   note: string;
+  /** Key into src/lib/placeCoordinates.ts, set only when this entry names one real, singular, identifiable place - never guessed for a street, an area, or "independent shops nearby". Powers the location-aware distance/walk/drive badges on the Local Guide. */
+  place?: string;
 };
 
 export type GuideCategoryKey =
@@ -86,10 +88,12 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Blackpool Tower & Tower Eye",
         note: "Take the glass lift up for coastline views, then step onto the SkyWalk's glass floor near the top.",
+        place: "Blackpool Tower",
       },
       {
         name: "Pleasure Beach Blackpool",
         note: "One of Britain's biggest amusement parks, with the Big One and a run of genuinely world-class coasters.",
+        place: "Blackpool Pleasure Beach",
       },
       {
         name: "Blackpool Illuminations",
@@ -98,6 +102,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Winter Gardens & Opera House",
         note: "A Victorian entertainment complex still hosting touring shows and conferences inside genuinely ornate interiors.",
+        place: "Winter Gardens Blackpool",
       },
     ],
     eat: [
@@ -132,14 +137,17 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Sandcastle Waterpark",
         note: "Indoor slides and wave pools next to Pleasure Beach - a solid rainy-day option too.",
+        place: "Sandcastle Waterpark",
       },
       {
         name: "Blackpool Zoo",
         note: "Set back in Stanley Park, with elephants, orangutans and a safari-style layout.",
+        place: "Blackpool Zoo",
       },
       {
         name: "SEA LIFE Blackpool",
         note: "An aquarium beneath the Promenade with a walk-through ocean tunnel.",
+        place: "SEA LIFE Blackpool",
       },
     ],
     beachesAndWalks: [
@@ -154,12 +162,14 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Stanley Park",
         note: "An inland green space with a boating lake and Italian Gardens - a break from the seafront crowds.",
+        place: "Stanley Park Blackpool",
       },
     ],
     pubsAndNightlife: [
       {
         name: "The Syndicate, Church Street",
         note: "One of the UK's largest nightclubs, a genuine Blackpool nightlife landmark.",
+        place: "The Syndicate Blackpool",
       },
       {
         name: "Seafront and town-centre Wetherspoon pubs",
@@ -174,6 +184,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Houndshill Shopping Centre",
         note: "The town's main indoor shopping centre, just back from the seafront.",
+        place: "Houndshill Shopping Centre",
       },
       {
         name: "Coral Island",
@@ -220,6 +231,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Multi-storey car parks near Houndshill",
         note: "A good bet if seafront parking is full, especially on peak weekends.",
+        place: "Houndshill Shopping Centre",
       },
       {
         name: "Arrive early on peak days",
@@ -234,6 +246,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Stanley Park",
         note: "A popular inland walk for dog owners away from the seafront crowds.",
+        place: "Stanley Park Blackpool",
       },
       {
         name: "Seafront pubs and cafés",
@@ -244,6 +257,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "The Comedy Carpet",
         note: "A huge art installation of comedians' catchphrases set into the pavement by the Tower - easy to walk straight over without noticing.",
+        place: "Comedy Carpet",
       },
       {
         name: "Early morning on the Promenade",
@@ -255,9 +269,9 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
     ],
     rainyDay: [
-      { name: "Sandcastle Waterpark", note: "Indoor and warm, whatever the weather outside." },
+      { name: "Sandcastle Waterpark", note: "Indoor and warm, whatever the weather outside.", place: "Sandcastle Waterpark" },
       { name: "Madame Tussauds Blackpool", note: "A fully indoor seafront attraction on the Golden Mile." },
-      { name: "SEA LIFE Blackpool", note: "Another reliable indoor option right on the Promenade." },
+      { name: "SEA LIFE Blackpool", note: "Another reliable indoor option right on the Promenade.", place: "SEA LIFE Blackpool" },
     ],
     events: [
       {
@@ -282,14 +296,17 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Lytham Windmill",
         note: "A working windmill on Lytham Green, one of the coast's most-photographed landmarks.",
+        place: "Lytham Windmill",
       },
       {
         name: "Royal Lytham & St Annes Golf Club",
         note: "A genuine Open Championship course - even non-golfers will recognise the name.",
+        place: "Royal Lytham & St Annes Golf Club",
       },
       {
         name: "Lowther Pavilion",
         note: "Lytham's own theatre, with a year-round programme of shows and touring productions.",
+        place: "Lowther Pavilion",
       },
     ],
     eat: [
@@ -318,12 +335,14 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Ashton Gardens café, St Annes",
         note: "A good stop if you're already walking the gardens.",
+        place: "Ashton Gardens",
       },
     ],
     family: [
       {
         name: "Fairhaven Lake, St Annes",
         note: "Pedal boats and a model boating lake, with a park alongside for a full day out.",
+        place: "Fairhaven Lake",
       },
       {
         name: "St Annes beach",
@@ -332,6 +351,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Lowther Pavilion",
         note: "Family-friendly matinees and a pantomime season alongside its main programme.",
+        place: "Lowther Pavilion",
       },
     ],
     beachesAndWalks: [
@@ -425,6 +445,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Ashton Gardens, St Annes",
         note: "A quiet, formal park many day-trippers never reach.",
+        place: "Ashton Gardens",
       },
       {
         name: "The far end of Lytham Green",
@@ -432,7 +453,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
     ],
     rainyDay: [
-      { name: "Lowther Pavilion", note: "A full indoor programme of shows whatever the weather." },
+      { name: "Lowther Pavilion", note: "A full indoor programme of shows whatever the weather.", place: "Lowther Pavilion" },
       { name: "Clifton Street cafés", note: "A slower-paced, indoor way to spend a wet afternoon." },
       { name: "Booths café, Lytham", note: "Genuinely popular as a coffee stop in its own right." },
     ],
@@ -463,10 +484,12 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Anchorsholme Park",
         note: "A splash park, skate park and open green space right by the coast.",
+        place: "Anchorsholme Park",
       },
       {
         name: "Jubilee Gardens",
         note: "Landscaped seafront gardens - a quieter spot for a sit-down and a view.",
+        place: "Jubilee Gardens Cleveleys",
       },
     ],
     eat: [
@@ -491,6 +514,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Anchorsholme Park café",
         note: "Handy if you're already at the splash park or skate park.",
+        place: "Anchorsholme Park",
       },
       {
         name: "Town-centre coffee shops",
@@ -501,6 +525,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Anchorsholme Park splash park",
         note: "A free, popular water play area for younger children in summer.",
+        place: "Anchorsholme Park",
       },
       {
         name: "Cleveleys beach",
@@ -523,6 +548,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Rossall Point and the coastal path north",
         note: "A slightly longer walk with sea views over the Wyre estuary.",
+        place: "Rossall Point Tower",
       },
     ],
     pubsAndNightlife: [
@@ -575,7 +601,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         name: "Generally easier than central Blackpool",
         note: "Even in peak summer.",
       },
-      { name: "Anchorsholme Park car park", note: "For families visiting the splash park." },
+      { name: "Anchorsholme Park car park", note: "For families visiting the splash park.", place: "Anchorsholme Park" },
     ],
     dogFriendly: [
       {
@@ -585,6 +611,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Anchorsholme Park",
         note: "Plenty of open grass for dog walking alongside the splash park.",
+        place: "Anchorsholme Park",
       },
       { name: "Promenade cafés", note: "Several allow dogs at outside tables." },
     ],
@@ -592,6 +619,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Rossall Point Tower",
         note: "A striking modern coastal observation tower most visitors never walk far enough north to find.",
+        place: "Rossall Point Tower",
       },
       { name: "Jubilee Gardens' quieter corners", note: "Away from the main Promenade benches." },
       {
@@ -624,20 +652,24 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Fleetwood Museum",
         note: "A maritime museum covering the town's fishing and trawler history, right on the waterfront.",
+        place: "Fleetwood Museum",
       },
       {
         name: "Fleetwood's twin lighthouses",
         note: "The Lower and Upper Lighthouses, both distinctive 1840s landmarks designed by Decimus Burton.",
+        place: "Fleetwood Pharos Lighthouse",
       },
       {
         name: "The Fleetwood-Knott End ferry",
         note: "A short foot-passenger ferry crossing the mouth of the River Wyre.",
+        place: "Fleetwood Ferry",
       },
     ],
     eat: [
       {
         name: "Fleetwood Market",
         note: "As much a place to eat as to shop, with food stalls alongside the market traders.",
+        place: "Fleetwood Market",
       },
       {
         name: "Seafront fish and chip restaurants",
@@ -649,8 +681,8 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
     ],
     coffeeAndBreakfast: [
-      { name: "Cafés in and around Fleetwood Market", note: "The town's main breakfast spot." },
-      { name: "Marine Hall café", note: "Overlooks the seafront gardens." },
+      { name: "Cafés in and around Fleetwood Market", note: "The town's main breakfast spot.", place: "Fleetwood Market" },
+      { name: "Marine Hall café", note: "Overlooks the seafront gardens.", place: "Marine Hall" },
       {
         name: "Independent coffee shops",
         note: "Along the town's main shopping streets.",
@@ -660,10 +692,12 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Marine Hall and Gardens",
         note: "Seafront gardens with occasional family events and a paddling pool in summer.",
+        place: "Marine Hall",
       },
       {
         name: "Fleetwood Museum",
         note: "Hands-on maritime exhibits that tend to hold children's attention well.",
+        place: "Fleetwood Museum",
       },
       {
         name: "The full length of the Blackpool Tramway",
@@ -702,6 +736,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Fleetwood Market",
         note: "One of the region's better-known indoor and outdoor markets - a genuine destination in its own right.",
+        place: "Fleetwood Market",
       },
       {
         name: "The outlet shopping village near the docks",
@@ -760,18 +795,21 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "The Fleetwood Lighthouses at dusk",
         note: "The Lower Lighthouse still functions as a working navigation aid.",
+        place: "Fleetwood Pharos Lighthouse",
       },
       {
         name: "The Knott End ferry crossing",
         note: "A five-minute trip most coast visitors never think to take.",
+        place: "Fleetwood Ferry",
       },
       {
         name: "Fleetwood Museum's smaller exhibits",
         note: "The town's trawling-disaster displays are easy to miss but genuinely moving.",
+        place: "Fleetwood Museum",
       },
     ],
     rainyDay: [
-      { name: "Fleetwood Museum", note: "Fully indoors and covers a good hour or two." },
+      { name: "Fleetwood Museum", note: "Fully indoors and covers a good hour or two.", place: "Fleetwood Museum" },
       { name: "Fleetwood Market's indoor hall", note: "A dry way to spend a wet morning." },
       {
         name: "The outlet shopping village near the docks",
@@ -802,6 +840,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "St Andrew's Church, Bispham",
         note: "One of the older buildings on the Fylde Coast, worth a look if you're passing.",
+        place: "St Andrew's Church Bispham",
       },
       {
         name: "Easy tram access to Blackpool",
@@ -845,6 +884,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Anchorsholme Park splash park",
         note: "A short walk or drive north into Cleveleys.",
+        place: "Anchorsholme Park",
       },
     ],
     beachesAndWalks: [

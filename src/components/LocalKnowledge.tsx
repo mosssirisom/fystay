@@ -1,5 +1,7 @@
 import { Lightbulb } from "lucide-react";
 import { LOCAL_KNOWLEDGE, LOCAL_KNOWLEDGE_CATEGORIES } from "@/lib/localKnowledge";
+import { locateEntry, type OriginListing } from "@/lib/guideLocation";
+import { EntryLocationMeta } from "@/components/EntryLocationMeta";
 
 /**
  * FYStay Local Knowledge - the specific, practical answers a guest would
@@ -12,7 +14,15 @@ import { LOCAL_KNOWLEDGE, LOCAL_KNOWLEDGE_CATEGORIES } from "@/lib/localKnowledg
  * edited content rather than a repeat of the Local Guide's reference-style
  * category grid below it.
  */
-export function LocalKnowledge({ destinationName, slug }: { destinationName: string; slug: string }) {
+export function LocalKnowledge({
+  destinationName,
+  slug,
+  fromListing,
+}: {
+  destinationName: string;
+  slug: string;
+  fromListing: OriginListing | null;
+}) {
   const knowledge = LOCAL_KNOWLEDGE[slug];
   if (!knowledge) return null;
 
@@ -32,6 +42,7 @@ export function LocalKnowledge({ destinationName, slug }: { destinationName: str
       <ul className="mt-5 divide-y divide-border-subtle rounded-3xl border border-border-subtle bg-surface px-6 sm:px-8">
         {LOCAL_KNOWLEDGE_CATEGORIES.map(({ key, label, icon: Icon }) => {
           const entry = knowledge[key];
+          const location = locateEntry(fromListing, entry.place);
           return (
             <li key={key} className="py-5 first:pt-6 last:pb-6">
               <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brand-700">
@@ -40,6 +51,7 @@ export function LocalKnowledge({ destinationName, slug }: { destinationName: str
               </div>
               <p className="mt-1.5 font-semibold text-foreground">{entry.headline}</p>
               <p className="mt-1 text-sm leading-relaxed text-zinc-600">{entry.body}</p>
+              <EntryLocationMeta location={location} />
             </li>
           );
         })}

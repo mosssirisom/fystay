@@ -1,6 +1,7 @@
-import { Compass, Quote, Sparkles } from "lucide-react";
+import { Compass, MapPin, Quote, Sparkles } from "lucide-react";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import type { FyldeCoastDestination } from "@/lib/destinations";
+import type { OriginListing } from "@/lib/guideLocation";
 import { SectionHeading } from "@/components/SectionHeading";
 import { LocalGuideExplorer } from "@/components/LocalGuideExplorer";
 import { LocalKnowledge } from "@/components/LocalKnowledge";
@@ -14,8 +15,19 @@ import { Badge } from "@/components/ui/Badge";
  * looking for" mood picker and the category grid it reorders live in
  * LocalGuideExplorer, the one piece of this section that actually needs to
  * be a client component.
+ *
+ * `fromListing`, when present (a guest arrived via a specific listing's
+ * "Read the full Local Guide" link), makes the whole section
+ * location-aware: real distance/walk/drive-time badges on every entry that
+ * names a real place, and each category's entries reordered closest-first.
  */
-export function LocalGuide({ destination }: { destination: FyldeCoastDestination }) {
+export function LocalGuide({
+  destination,
+  fromListing,
+}: {
+  destination: FyldeCoastDestination;
+  fromListing: OriginListing | null;
+}) {
   const guide = LOCAL_GUIDES[destination.slug];
   if (!guide) return null;
 
@@ -33,14 +45,21 @@ export function LocalGuide({ destination }: { destination: FyldeCoastDestination
         actually know this stretch of coast, not scraped from a review site.
       </p>
 
+      {fromListing && (
+        <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-brand-700">
+          <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          Distances and order below are relative to {fromListing.title}
+        </p>
+      )}
+
       <blockquote className="mt-6 flex gap-3 rounded-2xl border border-brand-100 bg-brand-50 p-5">
         <Quote className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
         <p className="text-sm italic leading-relaxed text-brand-900">{guide.insiderTip}</p>
       </blockquote>
 
-      <LocalKnowledge destinationName={destination.name} slug={destination.slug} />
+      <LocalKnowledge destinationName={destination.name} slug={destination.slug} fromListing={fromListing} />
 
-      <LocalGuideExplorer guide={guide} destinationName={destination.name} />
+      <LocalGuideExplorer guide={guide} destinationName={destination.name} fromListing={fromListing} />
     </section>
   );
 }

@@ -42,6 +42,8 @@ export type LocalKnowledgeCategoryKey =
 export type LocalKnowledgeEntry = {
   headline: string;
   body: string;
+  /** Key into src/lib/placeCoordinates.ts, set only when this entry centres on one real, singular, identifiable place. */
+  place?: string;
 };
 
 export type TownLocalKnowledge = Record<LocalKnowledgeCategoryKey, LocalKnowledgeEntry>;
@@ -66,6 +68,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     parkingToAvoid: {
       headline: "Skip the car parks right under the Tower",
       body: "The Promenade car parks nearest the Tower fill first and clear last, especially on Illuminations nights. The multi-storey near Houndshill Shopping Centre empties out faster and is only a five-minute walk from the seafront.",
+      place: "Houndshill Shopping Centre",
     },
     bestTimes: {
       headline: "First and last hour beat the midday crush",
@@ -82,6 +85,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     quietAlternatives: {
       headline: "Sandcastle Waterpark over Pleasure Beach's queues",
       body: "If Pleasure Beach's queues aren't for you, Sandcastle Waterpark next door is usually far calmer outside summer weekends, with a similar big-ride thrill and none of the standing around.",
+      place: "Sandcastle Waterpark",
     },
     shortcuts: {
       headline: "The tram beats driving the seafront in summer",
@@ -90,6 +94,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     hiddenGem: {
       headline: "The Grundy Art Gallery, two minutes off Queen Street",
       body: "Free to enter and almost always quiet, the Grundy sits a short walk inland from the Golden Mile - a proper change of pace from the seafront that most visitors never realise is there.",
+      place: "Grundy Art Gallery",
     },
   },
 
@@ -105,6 +110,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     bestTimes: {
       headline: "Fairhaven Lake before 10am",
       body: "Fairhaven Lake fills with families from late morning onwards. Arrive before 10am if you want the model boats and the paths around the water to yourselves.",
+      place: "Fairhaven Lake",
     },
     familyBeaches: {
       headline: "St Annes' dunes over Lytham's own stretch",
@@ -125,6 +131,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     hiddenGem: {
       headline: "Ashton Gardens' lake and aviary",
       body: "A proper formal park with its own lake and aviary, two minutes off the St Annes seafront, that most day-trippers heading straight for the beach never find.",
+      place: "Ashton Gardens",
     },
   },
 
@@ -136,18 +143,22 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     parkingToAvoid: {
       headline: "The seafront car parks by Jubilee Gardens",
       body: "The car parks closest to Jubilee Gardens fill first on sunny days. Parking a few streets back off Victoria Road West is usually easier and only adds a couple of minutes to the walk.",
+      place: "Jubilee Gardens Cleveleys",
     },
     bestTimes: {
       headline: "Anchorsholme's splash park at opening time",
       body: "Anchorsholme Park's splash park is at its busiest early-to-mid-afternoon on hot days. Arriving when it opens is the difference between a five-minute wait and none at all.",
+      place: "Anchorsholme Park",
     },
     familyBeaches: {
       headline: "The stretch near Anchorsholme Park",
       body: "Cleveleys' beach is flatter and considerably quieter than Blackpool's central stretch, especially near Anchorsholme Park - easier to keep an eye on younger children without the crowds.",
+      place: "Anchorsholme Park",
     },
     sunsetSpots: {
       headline: "North of Jubilee Gardens, towards Rossall",
       body: "The northern end of Cleveleys Promenade, past Jubilee Gardens towards Rossall, catches the same sunset as Blackpool's Promenade with a fraction of the people watching it.",
+      place: "Jubilee Gardens Cleveleys",
     },
     quietAlternatives: {
       headline: "Cleveleys' Promenade over Blackpool's",
@@ -160,6 +171,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     hiddenGem: {
       headline: "Rossall Point Tower at low tide",
       body: "A striking modern coastal viewpoint a short walk north of Cleveleys that most visitors to the wider coast never walk far enough to find - best at low tide, when the sands stretch out below it.",
+      place: "Rossall Point Tower",
     },
   },
 
@@ -171,6 +183,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     parkingToAvoid: {
       headline: "Market days tighten everything near the Market itself",
       body: "Parking right by Fleetwood Market gets tight on market days. The streets around Marine Hall, a few minutes further out, are far easier, and it's a pleasant walk in along the seafront.",
+      place: "Marine Hall",
     },
     bestTimes: {
       headline: "Weekday mornings, before market-day crowds build",
@@ -183,6 +196,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     sunsetSpots: {
       headline: "The western Esplanade, looking towards the lighthouses",
       body: "Because you're looking across the mouth of the Wyre estuary rather than straight out to sea, Fleetwood's western Esplanade catches a genuinely different sunset from the rest of the coast - the lighthouses in silhouette make it worth the trip alone.",
+      place: "Fleetwood Pharos Lighthouse",
     },
     quietAlternatives: {
       headline: "Fleetwood itself, if Blackpool's queues put you off",
@@ -191,10 +205,12 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     shortcuts: {
       headline: "The Knott End ferry saves the drive round",
       body: "If you're exploring both banks of the Wyre estuary, the Knott End ferry is a genuine shortcut rather than just a novelty - it saves a long drive back around via Poulton-le-Fylde.",
+      place: "Fleetwood Ferry",
     },
     hiddenGem: {
       headline: "The working docks by the Museum",
       body: "The working end of Fleetwood's docks, right by the Museum, still has real trawlers and fishing activity that most visitors walk straight past on their way to the Market.",
+      place: "Fleetwood Museum",
     },
   },
 
@@ -226,10 +242,12 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     shortcuts: {
       headline: "Never drive into Blackpool - just take the tram",
       body: "The tram stop at Bispham means there's rarely a reason to drive into Blackpool at all - it's usually faster than finding parking once you're there.",
+      place: "Bispham Tramway Stop",
     },
     hiddenGem: {
       headline: "St Andrew's Church, just back from the cliffs",
       body: "One of the older buildings on this stretch of coast, tucked just back from the clifftop path, that most passing visitors walk straight past without a second look.",
+      place: "St Andrew's Church Bispham",
     },
   },
 };

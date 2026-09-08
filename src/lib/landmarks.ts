@@ -1,16 +1,16 @@
 /**
- * Real, named Fylde Coast landmarks with approximate coordinates, used to
- * show a guest genuine distances from a listing to things they'd actually
- * recognise (Blackpool Tower, the nearest railway station) - the same kind
- * of "0.3 miles from X" proximity callout Booking.com and Airbnb show,
- * built from this app's own real per-listing coordinates (src/lib/
- * geocoding.ts) rather than anything invented.
- *
- * Coordinates here are drawn from general geographic knowledge of well-
- * known public landmarks, not a verified geocoding lookup - close enough
- * for "about a mile away", not survey-grade. Worth a manual spot-check
- * against a map before leaning on this for anything more precise.
+ * Real, named Fylde Coast landmarks, used to show a guest genuine
+ * distances from a listing to things they'd actually recognise (Blackpool
+ * Tower, the nearest railway station) - the same kind of "0.3 miles from
+ * X" proximity callout Booking.com and Airbnb show, built from this app's
+ * own real per-listing coordinates (src/lib/geocoding.ts) rather than
+ * anything invented. Coordinates come from src/lib/placeCoordinates.ts,
+ * the single source every distance calculation in the app reads from - see
+ * that file's own doc comment for how approximate they are.
  */
+import { PLACE_COORDINATES } from "@/lib/placeCoordinates";
+import { distanceMiles, estimateWalkMinutes } from "@/lib/geo";
+
 export type LandmarkCategory = "attraction" | "station";
 
 export type Landmark = {
@@ -22,51 +22,32 @@ export type Landmark = {
 
 export const LANDMARKS: Landmark[] = [
   // Blackpool
-  { name: "Blackpool Tower", category: "attraction", latitude: 53.8142, longitude: -3.0553 },
-  { name: "Blackpool Pleasure Beach", category: "attraction", latitude: 53.7877, longitude: -3.0522 },
-  { name: "North Pier", category: "attraction", latitude: 53.8168, longitude: -3.0592 },
-  { name: "Blackpool North", category: "station", latitude: 53.8168, longitude: -3.048 },
+  { name: "Blackpool Tower", category: "attraction", ...PLACE_COORDINATES["Blackpool Tower"] },
+  { name: "Blackpool Pleasure Beach", category: "attraction", ...PLACE_COORDINATES["Blackpool Pleasure Beach"] },
+  { name: "North Pier", category: "attraction", ...PLACE_COORDINATES["North Pier"] },
+  { name: "Blackpool North", category: "station", ...PLACE_COORDINATES["Blackpool North"] },
 
   // Lytham St Annes
-  { name: "Lytham Windmill", category: "attraction", latitude: 53.7423, longitude: -2.9611 },
-  { name: "St Annes Pier", category: "attraction", latitude: 53.7529, longitude: -3.0335 },
-  { name: "Fairhaven Lake", category: "attraction", latitude: 53.7469, longitude: -3.0035 },
-  { name: "Lytham", category: "station", latitude: 53.7423, longitude: -2.9583 },
-  { name: "Ansdell & Fairhaven", category: "station", latitude: 53.7457, longitude: -2.9814 },
+  { name: "Lytham Windmill", category: "attraction", ...PLACE_COORDINATES["Lytham Windmill"] },
+  { name: "St Annes Pier", category: "attraction", ...PLACE_COORDINATES["St Annes Pier"] },
+  { name: "Fairhaven Lake", category: "attraction", ...PLACE_COORDINATES["Fairhaven Lake"] },
+  { name: "Lytham", category: "station", ...PLACE_COORDINATES.Lytham },
+  { name: "Ansdell & Fairhaven", category: "station", ...PLACE_COORDINATES["Ansdell & Fairhaven"] },
 
   // Fleetwood
-  { name: "Fleetwood Pharos Lighthouse", category: "attraction", latitude: 53.9256, longitude: -3.0113 },
-  { name: "Fleetwood Ferry", category: "attraction", latitude: 53.9268, longitude: -3.0068 },
+  { name: "Fleetwood Pharos Lighthouse", category: "attraction", ...PLACE_COORDINATES["Fleetwood Pharos Lighthouse"] },
+  { name: "Fleetwood Ferry", category: "attraction", ...PLACE_COORDINATES["Fleetwood Ferry"] },
   // Fleetwood's own passenger line closed decades ago - Poulton-le-Fylde
   // is genuinely the nearest working station, not a stand-in for one.
-  { name: "Poulton-le-Fylde", category: "station", latitude: 53.8483, longitude: -2.9883 },
+  { name: "Poulton-le-Fylde", category: "station", ...PLACE_COORDINATES["Poulton-le-Fylde"] },
 
   // Cleveleys
-  { name: "Rossall Point Tower", category: "attraction", latitude: 53.9021, longitude: -3.0247 },
-  { name: "Anchorsholme Park", category: "attraction", latitude: 53.8654, longitude: -3.0472 },
+  { name: "Rossall Point Tower", category: "attraction", ...PLACE_COORDINATES["Rossall Point Tower"] },
+  { name: "Anchorsholme Park", category: "attraction", ...PLACE_COORDINATES["Anchorsholme Park"] },
 
   // Bispham
-  { name: "Bispham Tramway Stop", category: "attraction", latitude: 53.8459, longitude: -3.0453 },
+  { name: "Bispham Tramway Stop", category: "attraction", ...PLACE_COORDINATES["Bispham Tramway Stop"] },
 ];
-
-const EARTH_RADIUS_MILES = 3958.8;
-// A brisk-but-realistic average, matching the "about a 10 min walk" style
-// of estimate every major booking site shows next to a straight-line
-// distance - not a routed path, so kept as a round, honestly-approximate
-// figure rather than a falsely precise one.
-const WALKING_MPH = 3;
-const MAX_WALK_MINUTES_SHOWN = 30;
-
-function distanceMiles(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = toRad(b.latitude - a.latitude);
-  const dLon = toRad(b.longitude - a.longitude);
-  const lat1 = toRad(a.latitude);
-  const lat2 = toRad(b.latitude);
-
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return EARTH_RADIUS_MILES * 2 * Math.asin(Math.sqrt(h));
-}
 
 export type NearbyLandmark = {
   name: string;
@@ -106,13 +87,10 @@ export function nearbyLandmarks(
 
   return results
     .sort((a, b) => a.distance - b.distance)
-    .map(({ landmark, distance }) => {
-      const walkMinutes = Math.round(distance / WALKING_MPH * 60 / 5) * 5;
-      return {
-        name: landmark.name,
-        category: landmark.category,
-        distanceMiles: Math.round(distance * 10) / 10,
-        walkMinutes: walkMinutes > 0 && walkMinutes <= MAX_WALK_MINUTES_SHOWN ? walkMinutes : null,
-      };
-    });
+    .map(({ landmark, distance }) => ({
+      name: landmark.name,
+      category: landmark.category,
+      distanceMiles: Math.round(distance * 10) / 10,
+      walkMinutes: estimateWalkMinutes(distance),
+    }));
 }

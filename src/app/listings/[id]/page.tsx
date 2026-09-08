@@ -300,7 +300,7 @@ export default async function ListingDetailPage({
 
           {cityDestination && LOCAL_GUIDES[cityDestination.slug] && (
             <Link
-              href={`/destinations/${cityDestination.slug}#local-guide`}
+              href={`/destinations/${cityDestination.slug}?from=${listing.id}#local-guide`}
               className="focus-ring mt-10 flex items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800 transition hover:bg-brand-100"
             >
               <span className="flex items-center gap-2">

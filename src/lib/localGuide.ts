@@ -18,29 +18,39 @@ import {
 
 /**
  * ============================================================================
- * EDITORIAL CONTENT - PARTIALLY VERIFIED, ONGOING HUMAN REVIEW STILL NEEDED
+ * EDITORIAL CONTENT - TWO VERIFICATION PASSES DONE, FINAL HUMAN READ STILL OWED
  * ============================================================================
  * Originally written from general knowledge of these five towns, not
- * verified against a live source at publish time. A first verification pass
- * (web search, 2026) checked every specific named business this file
- * references and found three real problems since fixed: The Syndicate
- * nightclub (closed 2011, demolished 2015 - replaced with Viva Blackpool,
- * a real, currently-operating venue), The Cottage Restaurant's address
- * (it's on Newhouse Road, Marton, not Queen Street), and Fleetwood's outlet
- * village (renamed Affinity Lancashire in 2018, was still called
- * "Freeport"). Everything else checked (Coral Island, Big Blue Hotel, The
- * Taps, Clifton Arms Hotel, Booths Lytham, Grundy Art Gallery, SEA LIFE
- * Blackpool, Madame Tussauds Blackpool, Lowther Pavilion) came back current
- * and accurate.
+ * verified against a live source at publish time. Two web-search
+ * verification passes (2026) have since checked essentially every specific
+ * named business, venue and recurring event this file references.
  *
- * That pass covered the highest-risk, most-specific entries, not every
- * single line - generic street/area references ("Victoria Road West",
- * "Red Bank Road cafés") are low-risk by design and weren't individually
- * checked, and a handful of smaller named businesses further down each
- * town's list weren't re-verified either. Before this guide is presented
- * to guests as fully verified local knowledge, someone who actually knows
- * the current Fylde Coast should still read it end to end - this pass
- * closed the worst gaps, it isn't a substitute for that.
+ * Pass one found three real problems, since fixed: The Syndicate nightclub
+ * (closed 2011, demolished 2015 - replaced with Viva Blackpool, a real,
+ * currently-operating venue), The Cottage Restaurant's address (it's on
+ * Newhouse Road, Marton, not Queen Street), and Fleetwood's outlet village
+ * (renamed Affinity Lancashire in 2018, was still called "Freeport").
+ *
+ * Pass two checked the remaining named landmarks, attractions and annual
+ * events (Blackpool Air Show, Blackpool Victoria Hospital, Houndshill,
+ * Abingdon Street Market, the Blackpool Tramway route, Blackpool Zoo,
+ * Winter Gardens, Lytham Windmill, Lytham Festival, Royal Lytham & St
+ * Annes' Open Championship rotation, St Annes Carnival, Fairhaven Lake,
+ * Fleetwood's twin lighthouses, Fleetwood Market, Fleetwood Tram Sunday)
+ * and found two more: Abingdon Street Market has been fully reinvented as
+ * a food hall (bars, coffee, street food) rather than the gift-and-produce
+ * market it was, and "Cleveleys Carnival" isn't a findable current event -
+ * replaced with the real, currently-running Cleveleys Car Show. Everything
+ * else checked came back current and accurate.
+ *
+ * What's left unchecked is now deliberately low-risk by design: generic
+ * street/area references ("Victoria Road West", "Red Bank Road cafés",
+ * "seafront cafés") rather than single named businesses, plus a few
+ * enduring, unambiguous landmarks (Blackpool Tower, Pleasure Beach, the
+ * Illuminations) too well-established to be worth a search. Someone who
+ * actually knows the current Fylde Coast should still read this end to
+ * end before it's presented as fully verified local knowledge - two
+ * search passes close the worst gaps, they don't replace that read.
  * ============================================================================
  */
 
@@ -200,7 +210,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
       {
         name: "Abingdon Street Market",
-        note: "An indoor market for gifts, seaside novelties and local produce.",
+        note: "Blackpool's own food hall and indoor market after a full renovation - independent bars, coffee and street food stalls alongside retail units, right in the town centre.",
       },
     ],
     amenities: [
@@ -476,7 +486,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
       {
         name: "St Annes Carnival",
-        note: "A summer seafront event with its own programme through the season.",
+        note: "A long-running town carnival weekend at Ashton Gardens each July, with a parade, live music and stalls.",
       },
     ],
   },
@@ -644,7 +654,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
     ],
     events: [
-      { name: "Cleveleys Carnival", note: "A local summer event with a parade along the seafront." },
+      { name: "Cleveleys Car Show", note: "An annual show bringing hundreds of vehicles to Victoria Road West and the seafront each June, with live entertainment and stalls." },
       { name: "Seasonal markets", note: "Held on Victoria Road West through the year." },
       {
         name: "Illuminations",

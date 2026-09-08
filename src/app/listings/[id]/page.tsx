@@ -1,7 +1,20 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BedDouble, Bath, DoorOpen, Home, MapPin, ShieldCheck, Sparkles, Star, Users } from "lucide-react";
+import {
+  ArrowRight,
+  BedDouble,
+  Bath,
+  BookOpen,
+  DoorOpen,
+  Home,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, blockingRanges } from "@/lib/availability";
 import { resolveCancellationPolicy } from "@/lib/cancellationPolicy";
@@ -17,6 +30,7 @@ import { ReviewList } from "@/components/ReviewList";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Avatar } from "@/components/ui/Avatar";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
+import { LOCAL_GUIDES } from "@/lib/localGuide";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { averageRating } from "@/lib/reviews";
 
@@ -283,6 +297,19 @@ export default async function ListingDetailPage({
           )}
 
           <NearbyAttractions latitude={listing.latitude} longitude={listing.longitude} />
+
+          {cityDestination && LOCAL_GUIDES[cityDestination.slug] && (
+            <Link
+              href={`/destinations/${cityDestination.slug}#local-guide`}
+              className="focus-ring mt-10 flex items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800 transition hover:bg-brand-100"
+            >
+              <span className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
+                Read the full {listing.city} Local Guide - things to do, eat and explore nearby
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+            </Link>
+          )}
 
           <div className="mt-10">
             <SectionHeading icon={ShieldCheck} id="cancellation-policy">

@@ -2,9 +2,12 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BookOpen } from "lucide-react";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
+import { LocalGuide } from "@/components/LocalGuide";
 import { FYLDE_COAST_DESTINATIONS, type FyldeCoastDestination } from "@/lib/destinations";
+import { LOCAL_GUIDES } from "@/lib/localGuide";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -82,6 +85,16 @@ export default async function DestinationPage({
       </h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">{destination.description}</p>
 
+      {LOCAL_GUIDES[destination.slug] && (
+        <a
+          href="#local-guide"
+          className="focus-ring mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 hover:underline"
+        >
+          <BookOpen className="h-4 w-4" aria-hidden />
+          Jump to the {destination.name} Local Guide
+        </a>
+      )}
+
       <div className="mt-6">
         <Suspense fallback={<ListingsGridSkeleton />}>
           <ListingsGrid
@@ -90,6 +103,8 @@ export default async function DestinationPage({
           />
         </Suspense>
       </div>
+
+      <LocalGuide destination={destination} />
     </div>
   );
 }

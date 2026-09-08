@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { cn } from "@/lib/cn";
 import { SITE_NAME } from "@/lib/seo";
+import { sanitizeCallbackUrl } from "@/lib/safeRedirect";
 
 const roleOptions = [
   { value: "GUEST" as const, label: "Book stays", icon: Luggage },
@@ -22,7 +23,7 @@ const roleOptions = [
 function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

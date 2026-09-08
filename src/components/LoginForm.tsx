@@ -11,11 +11,12 @@ import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { safeRedirectPath } from "@/lib/safeRedirect";
 
 function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = safeRedirectPath(searchParams.get("callbackUrl"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -111,11 +112,7 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
       <p className="mt-6 text-center text-sm text-zinc-600">
         Don&apos;t have an account?{" "}
         <Link
-          href={
-            searchParams.get("callbackUrl")
-              ? `/register?callbackUrl=${encodeURIComponent(searchParams.get("callbackUrl")!)}`
-              : "/register"
-          }
+          href={callbackUrl !== "/" ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/register"}
           className="font-medium text-brand-700 hover:underline"
         >
           Sign up

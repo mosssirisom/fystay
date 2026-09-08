@@ -9,6 +9,7 @@ import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
 import { LocalGuide } from "@/components/LocalGuide";
 import { FYLDE_COAST_DESTINATIONS, type FyldeCoastDestination } from "@/lib/destinations";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
+import { loadConciergeSources } from "@/lib/localData/concierge";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 
 /**
@@ -73,7 +74,13 @@ export default async function DestinationPage({
   if (!destination) notFound();
 
   const fromParam = resolvedSearchParams.from;
-  const fromListing = await findOriginListing(typeof fromParam === "string" ? fromParam : undefined);
+  const hasGuide = Boolean(LOCAL_GUIDES[destination.slug]);
+  const [fromListing, conciergeSources] = await Promise.all([
+    findOriginListing(typeof fromParam === "string" ? fromParam : undefined),
+    hasGuide
+      ? loadConciergeSources(destination.slug)
+      : Promise.resolve({ weather: null, places: [], editorial: [] }),
+  ]);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -128,7 +135,7 @@ export default async function DestinationPage({
         </Suspense>
       </div>
 
-      <LocalGuide destination={destination} fromListing={fromListing} />
+      <LocalGuide destination={destination} fromListing={fromListing} conciergeSources={conciergeSources} />
     </div>
   );
 }

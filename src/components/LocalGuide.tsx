@@ -2,7 +2,9 @@ import { Compass, MapPin, Quote, Sparkles } from "lucide-react";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import type { FyldeCoastDestination } from "@/lib/destinations";
 import type { OriginListing } from "@/lib/guideLocation";
+import { buildConciergeSnapshot, type ConciergeSources } from "@/lib/localData/concierge";
 import { SectionHeading } from "@/components/SectionHeading";
+import { LocalConcierge } from "@/components/LocalConcierge";
 import { LocalGuideExplorer } from "@/components/LocalGuideExplorer";
 import { LocalKnowledge } from "@/components/LocalKnowledge";
 import { Badge } from "@/components/ui/Badge";
@@ -19,17 +21,27 @@ import { Badge } from "@/components/ui/Badge";
  * `fromListing`, when present (a guest arrived via a specific listing's
  * "Read the full Local Guide" link), makes the whole section
  * location-aware: real distance/walk/drive-time badges on every entry that
- * names a real place, and each category's entries reordered closest-first.
+ * names a real place, and each category's entries reordered closest-first -
+ * the same origin also drives the live "Right now" concierge panel's
+ * distances below.
+ *
+ * `conciergeSources` is the raw weather/places/editorial data the page
+ * already fetched in parallel with `fromListing`; merging it into a ranked
+ * snapshot happens here, synchronously, once both have resolved.
  */
 export function LocalGuide({
   destination,
   fromListing,
+  conciergeSources,
 }: {
   destination: FyldeCoastDestination;
   fromListing: OriginListing | null;
+  conciergeSources: ConciergeSources;
 }) {
   const guide = LOCAL_GUIDES[destination.slug];
   if (!guide) return null;
+
+  const concierge = buildConciergeSnapshot(conciergeSources, fromListing);
 
   return (
     <section id="local-guide" className="mt-14 scroll-mt-20 border-t border-border-subtle pt-10">
@@ -51,6 +63,8 @@ export function LocalGuide({
           Distances and order below are relative to {fromListing.title}
         </p>
       )}
+
+      <LocalConcierge destinationName={destination.name} snapshot={concierge} />
 
       <blockquote className="mt-6 flex gap-3 rounded-2xl border border-brand-100 bg-brand-50 p-5">
         <Quote className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />

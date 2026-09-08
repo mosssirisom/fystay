@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Host guide",
   description: "How to list and manage a property on FYStay, the Fylde Coast's local accommodation marketplace.",
-};
+  path: "/host-guide",
+});
 
 const STEPS = [
   {

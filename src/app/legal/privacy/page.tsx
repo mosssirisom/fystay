@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPageLayout, LegalSection } from "@/components/legal/LegalPageLayout";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Privacy Policy" };
+export const metadata = pageMetadata({
+  title: "Privacy Policy",
+  description: "How FYStay collects, uses and protects your personal data.",
+  path: "/legal/privacy",
+});
 
 const LAST_UPDATED = "31 August 2026";
 

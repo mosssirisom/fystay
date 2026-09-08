@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Lock, MapPin, Star } from "lucide-react";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "About",
   description: "Why FYStay exists: a local accommodation marketplace built for the Fylde Coast.",
-};
+  path: "/about",
+});
 
 const VALUES = [
   {

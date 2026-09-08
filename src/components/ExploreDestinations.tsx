@@ -69,16 +69,14 @@ function DestinationTile({
 }
 
 /**
- * A geographic index of the towns FYStay covers, each tile filtering
- * straight to that town's real search results today - and, since every
- * destination here is keyed by a stable slug, the same list a future
- * dedicated landing page (/destinations/[slug]) for "accommodation in
- * Blackpool"-style searches would read from, without this section having
- * to change shape when that page exists. Fetches its own listing counts
- * (one grouped count query) rather than taking them as a prop, matching
- * how the other independent homepage sections (FeaturedHero,
- * MarketplaceSections) each own their own data below their Suspense
- * boundary in page.tsx.
+ * A geographic index of the towns FYStay covers. Each tile links to that
+ * town's dedicated /destinations/[slug] landing page rather than the
+ * noindexed /search?city= results view, so the homepage's own internal
+ * links point at a real, indexable, "Accommodation in {town}"-titled page
+ * search engines can actually rank. Fetches its own listing counts (one
+ * grouped count query) rather than taking them as a prop, matching how the
+ * other independent homepage sections (FeaturedHero, MarketplaceSections)
+ * each own their own data below their Suspense boundary in page.tsx.
  */
 export async function ExploreDestinations() {
   const counts = await prisma.listing.groupBy({
@@ -97,7 +95,7 @@ export async function ExploreDestinations() {
           <DestinationTile
             key={destination.slug}
             name={destination.name}
-            href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
+            href={`/destinations/${destination.slug}`}
             icon={art.icon}
             gradient={art.gradient}
             subtitle={count > 0 ? `${count} stay${count === 1 ? "" : "s"} to explore` : "Coming soon"}

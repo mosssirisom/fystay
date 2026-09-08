@@ -1,17 +1,17 @@
 /**
  * The Fylde Coast towns FYStay covers - the same set as the homepage's
- * "Now covering" badges, but structured for reuse: today it backs the
- * homepage's "Explore the Fylde Coast" tiles, and is meant to double as the
- * data source for dedicated per-destination landing pages later (e.g.
+ * "Now covering" badges. Backs both the homepage's "Explore the Fylde
+ * Coast" tiles and the dedicated /destinations/[slug] landing pages (e.g.
  * /destinations/blackpool, targeting searches like "accommodation in
- * Blackpool") without having to re-derive this list. `searchCity` is the
- * exact `city` value used elsewhere (seed data, search filtering) so a tile
- * genuinely filters to that town's listings today, not a placeholder link.
+ * Blackpool"), so both read from one list rather than re-deriving it.
+ * `searchCity` is the exact `city` value used elsewhere (seed data, search
+ * filtering) so a tile or landing page genuinely filters to that town's
+ * listings, not a placeholder link.
  */
 export type FyldeCoastDestination = {
   slug: string;
   name: string;
-  /** Short, factual description - written for reuse as a future landing page's intro/meta description, not shown on the homepage tile itself. */
+  /** Short, factual description - doubles as a /destinations/[slug] page's intro copy and meta description; not shown on the homepage tile itself. */
   description: string;
   searchCity: string;
 };

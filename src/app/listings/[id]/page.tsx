@@ -16,6 +16,7 @@ import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Avatar } from "@/components/ui/Avatar";
+import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { averageRating } from "@/lib/reviews";
 
@@ -158,11 +159,43 @@ export default async function ListingDetailPage({
       : {}),
   };
 
+  // Home > city > this listing - lets a search result show the listing's
+  // place in the site instead of a bare URL, and gives an AI crawler the
+  // same "where does this page sit" signal a human gets from a breadcrumb
+  // trail. The city link points at that town's own indexable
+  // /destinations page when one exists, rather than the noindexed
+  // /search?city= results view - a breadcrumb is only useful to a crawler
+  // if it can actually follow it somewhere worth ranking.
+  const cityDestination = FYLDE_COAST_DESTINATIONS.find(
+    (destination) => destination.searchCity.toLowerCase() === listing.city.toLowerCase(),
+  );
+  const cityUrl = cityDestination
+    ? `${SITE_URL}/destinations/${cityDestination.slug}`
+    : `${SITE_URL}/search?city=${encodeURIComponent(listing.city)}`;
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: listing.city, item: cityUrl },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: listing.title,
+        item: `${SITE_URL}/listings/${listing.id}`,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{listing.title}</h1>

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Cancellation policies",
   description: "The Flexible, Moderate and Strict cancellation policies FYStay hosts can choose from.",
-};
+  path: "/cancellation-policies",
+});
 
 const POLICIES = [
   {

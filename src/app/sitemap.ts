@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_URL } from "@/lib/seo";
 
 // Rendered per-request rather than prerendered at build time: a build
@@ -49,6 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.3,
+    })),
+    ...FYLDE_COAST_DESTINATIONS.map((destination) => ({
+      url: `${SITE_URL}/destinations/${destination.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
     })),
     ...listings.map((listing) => ({
       url: `${SITE_URL}/listings/${listing.id}`,

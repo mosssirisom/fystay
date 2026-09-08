@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { HelpCircle, Home, ShieldAlert } from "lucide-react";
+import { pageMetadata, SUPPORT_EMAIL } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Contact us",
   description: "How to reach FYStay for booking questions, safety concerns, or hosting support.",
-};
+  path: "/contact",
+});
 
 const REASONS = [
   {
@@ -25,8 +26,6 @@ const REASONS = [
     description: "Questions about listing a property, payouts, or your host dashboard.",
   },
 ];
-
-const SUPPORT_EMAIL = "support@fystay.co.uk";
 
 export default function ContactPage() {
   return (

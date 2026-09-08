@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 /**
  * Small shared constants/helpers for page metadata - split out so the same
  * site URL and brand name aren't re-declared (and liable to drift) across
@@ -10,6 +12,43 @@
 export const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
 export const SITE_NAME = "FYStay";
+
+export const SUPPORT_EMAIL = "support@fystay.co.uk";
+
+/**
+ * A page's <title>/description already need to be page-specific for users
+ * and organic search - but Next's metadata merging only overrides the
+ * fields a route actually sets, so a route that skips `openGraph`/`twitter`
+ * silently inherits the root layout's homepage-flavoured versions of both.
+ * That's invisible in-browser (the tab title is still correct) but wrong
+ * everywhere a link gets unfurled - Slack, iMessage, WhatsApp, an AI
+ * assistant summarizing a shared link - which is exactly why a handful of
+ * marketing/legal pages were quietly sharing the homepage's OG title. This
+ * gives every simple content page (no listing photo, no special robots
+ * rule beyond "index it") the same canonical + OG + Twitter shape in one
+ * place instead of repeating it by hand per route.
+ */
+export function pageMetadata({
+  title,
+  description,
+  path,
+  robots,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  robots?: Metadata["robots"];
+}): Metadata {
+  const url = `${SITE_URL}${path}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
+    ...(robots ? { robots } : {}),
+  };
+}
 
 /**
  * A listing's own title usually already names its town (hosts write things

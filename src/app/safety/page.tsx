@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import { CreditCard, Flag, ShieldCheck, Star } from "lucide-react";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Safety information",
   description: "How FYStay keeps bookings, payments and stays on the Fylde Coast safe.",
-};
+  path: "/safety",
+});
 
 const POINTS = [
   {

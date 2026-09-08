@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPageLayout, LegalSection } from "@/components/legal/LegalPageLayout";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Terms and Conditions" };
+export const metadata = pageMetadata({
+  title: "Terms and Conditions",
+  description: "The terms that govern using FYStay to book or list accommodation on the Fylde Coast.",
+  path: "/legal/terms",
+});
 
 const LAST_UPDATED = "31 August 2026";
 

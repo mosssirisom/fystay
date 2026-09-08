@@ -19,7 +19,7 @@ import {
 import { Reveal } from "@/components/Reveal";
 import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
-import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/seo";
 import { cn } from "@/lib/cn";
 
 const TRUST_POINTS = [
@@ -175,10 +175,18 @@ export default async function Home() {
         "@type": "Organization",
         name: SITE_NAME,
         url: SITE_URL,
+        logo: `${SITE_URL}/apple-icon`,
+        description,
         areaServed: FYLDE_COAST_DESTINATIONS.map((destination) => ({
           "@type": "Place",
           name: destination.name,
         })),
+        contactPoint: {
+          "@type": "ContactPoint",
+          email: SUPPORT_EMAIL,
+          contactType: "customer support",
+          areaServed: "GB",
+        },
       },
     ],
   };

@@ -18,20 +18,29 @@ import {
 
 /**
  * ============================================================================
- * EDITORIAL CONTENT - HUMAN REVIEW NEEDED BEFORE THIS SHIPS TO PRODUCTION
+ * EDITORIAL CONTENT - PARTIALLY VERIFIED, ONGOING HUMAN REVIEW STILL NEEDED
  * ============================================================================
- * Everything below was written from general knowledge of these five towns,
- * not verified against a live source at publish time. The "things to do",
- * "beaches & walks", "transport" and "parking" categories describe stable,
- * long-standing landmarks and infrastructure and are low-risk. The
- * business-specific categories - "eat", "coffeeAndBreakfast",
- * "pubsAndNightlife", "shopping" and some "hiddenGems"/"dogFriendly" entries
- * - name real, well-known establishments and streets, but opening status,
- * ownership and quality can all change. Before this guide goes live, a
- * human who actually knows the current Fylde Coast should read every named
- * business entry (not the generic "along this street" ones) and confirm
- * it's still open and still worth recommending. Treat this file as a first
- * draft of real content, not a verified source of truth.
+ * Originally written from general knowledge of these five towns, not
+ * verified against a live source at publish time. A first verification pass
+ * (web search, 2026) checked every specific named business this file
+ * references and found three real problems since fixed: The Syndicate
+ * nightclub (closed 2011, demolished 2015 - replaced with Viva Blackpool,
+ * a real, currently-operating venue), The Cottage Restaurant's address
+ * (it's on Newhouse Road, Marton, not Queen Street), and Fleetwood's outlet
+ * village (renamed Affinity Lancashire in 2018, was still called
+ * "Freeport"). Everything else checked (Coral Island, Big Blue Hotel, The
+ * Taps, Clifton Arms Hotel, Booths Lytham, Grundy Art Gallery, SEA LIFE
+ * Blackpool, Madame Tussauds Blackpool, Lowther Pavilion) came back current
+ * and accurate.
+ *
+ * That pass covered the highest-risk, most-specific entries, not every
+ * single line - generic street/area references ("Victoria Road West",
+ * "Red Bank Road cafés") are low-risk by design and weren't individually
+ * checked, and a handful of smaller named businesses further down each
+ * town's list weren't re-verified either. Before this guide is presented
+ * to guests as fully verified local knowledge, someone who actually knows
+ * the current Fylde Coast should still read it end to end - this pass
+ * closed the worst gaps, it isn't a substitute for that.
  * ============================================================================
  */
 
@@ -107,8 +116,8 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
     ],
     eat: [
       {
-        name: "The Cottage Restaurant, Queen Street",
-        note: "A long-standing sit-down fish and chip restaurant, a step up from a seafront takeaway.",
+        name: "The Cottage Restaurant, Newhouse Road, Marton",
+        note: "A long-standing sit-down fish and chip restaurant, a step up from a seafront takeaway - a short drive or taxi inland from the seafront, not a walk-in on the Golden Mile.",
       },
       {
         name: "Bonny Street",
@@ -167,9 +176,8 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
     ],
     pubsAndNightlife: [
       {
-        name: "The Syndicate, Church Street",
-        note: "One of the UK's largest nightclubs, a genuine Blackpool nightlife landmark.",
-        place: "The Syndicate Blackpool",
+        name: "Viva Blackpool, next to the Tower",
+        note: "A cabaret, restaurant and events venue right on the Promenade, with a nightly variety show and a late bar.",
       },
       {
         name: "Seafront and town-centre Wetherspoon pubs",
@@ -739,8 +747,8 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         place: "Fleetwood Market",
       },
       {
-        name: "The outlet shopping village near the docks",
-        note: "Built on the site of the old Freeport development - worth checking current tenants before a special trip.",
+        name: "Affinity Lancashire, by the docks",
+        note: "An outlet shopping centre on the site of the old Freeport development - over 45 stores plus places to eat.",
       },
       { name: "Independent shops around the town centre", note: "A mix of everyday and gift shopping." },
     ],
@@ -812,7 +820,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       { name: "Fleetwood Museum", note: "Fully indoors and covers a good hour or two.", place: "Fleetwood Museum" },
       { name: "Fleetwood Market's indoor hall", note: "A dry way to spend a wet morning." },
       {
-        name: "The outlet shopping village near the docks",
+        name: "Affinity Lancashire, by the docks",
         note: "Largely under cover.",
       },
     ],

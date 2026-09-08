@@ -1,4 +1,4 @@
-import { CreditCard, Flag, ShieldCheck, Star } from "lucide-react";
+import { CreditCard, Flag, HeartPulse, ShieldCheck, Star } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -13,6 +13,12 @@ const POINTS = [
     title: "Pay through FYStay, not directly",
     description:
       "Always book and pay through FYStay's checkout. It's the only way your booking is protected by a host's cancellation policy and by our support team - never send money to a host directly.",
+  },
+  {
+    icon: HeartPulse,
+    title: "Physical safety at the property",
+    description:
+      "Hosts are required to meet UK safety standards for their property - working smoke alarms, a carbon monoxide alarm where relevant, a valid gas safety certificate, and fire-safe furniture. If you arrive somewhere that doesn't have working smoke alarms, or anything else feels unsafe, contact us immediately and don't hesitate to also contact the relevant emergency services if there's immediate danger.",
   },
   {
     icon: Star,

@@ -28,7 +28,6 @@ export const PLACE_COORDINATES: Record<string, { latitude: number; longitude: nu
   "Grundy Art Gallery": { latitude: 53.8175, longitude: -3.0505 },
   "Stanley Park Blackpool": { latitude: 53.8087, longitude: -3.0225 },
   "Comedy Carpet": { latitude: 53.8146, longitude: -3.0558 },
-  "The Syndicate Blackpool": { latitude: 53.8159, longitude: -3.0524 },
 
   // Lytham St Annes
   "Lytham Windmill": { latitude: 53.7423, longitude: -2.9611 },

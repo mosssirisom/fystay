@@ -35,6 +35,11 @@ const STEPS = [
     description:
       "Confirmed bookings, date-change requests, and cancellations all appear on your host dashboard. Respond to date-change requests and reviews from there too.",
   },
+  {
+    title: "6. Meet your legal and safety responsibilities",
+    description:
+      "As the host, you're responsible for your property meeting UK safety law, not FYStay: a valid gas safety (CP12) certificate if it has any gas appliances, working smoke alarms on every floor and a carbon monoxide alarm in any room with a solid fuel appliance, an up-to-date Energy Performance Certificate, and furniture that meets fire safety regulations. Public liability insurance covering paying guests is strongly recommended - a standard home insurance policy usually doesn't cover this. Check current requirements with gov.uk and your local council before you publish your first listing.",
+  },
 ];
 
 export default function HostGuidePage() {

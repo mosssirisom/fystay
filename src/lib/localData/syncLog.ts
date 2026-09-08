@@ -30,6 +30,28 @@ export async function runSync<T>(
   }
 }
 
+/**
+ * Whether a source has logged one of the given statuses for a town within
+ * the last ttlMs - the shared "is the cache still fresh" check every
+ * cache-aware fetch function (weather.ts, places.ts, events.ts) uses
+ * instead of a source-specific freshness heuristic, so "how long do we
+ * trust this before refreshing" always means the same thing: a real
+ * logged attempt, not just "does a data row happen to exist".
+ */
+export async function hasRecentLog(params: {
+  source: LocalDataSource;
+  townSlug?: string;
+  statuses: SyncStatus[];
+  ttlMs: number;
+}): Promise<boolean> {
+  const recent = await prisma.apiSyncLog.findFirst({
+    where: { source: params.source, townSlug: params.townSlug, status: { in: params.statuses } },
+    orderBy: { finishedAt: "desc" },
+    select: { finishedAt: true },
+  });
+  return Boolean(recent && Date.now() - recent.finishedAt.getTime() < params.ttlMs);
+}
+
 /** For a source that's configured off (no API key) rather than failing - see runSync's SKIPPED status doc comment on the SyncStatus enum. */
 export async function logSkipped(params: { source: LocalDataSource; townSlug?: string; reason: string }): Promise<void> {
   const now = new Date();

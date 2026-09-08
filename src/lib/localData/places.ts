@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ensureTownsSeeded } from "@/lib/localData/seedTowns";
 import { fetchOverpassPlaces } from "@/lib/localData/overpassSource";
 import { normalizeOverpassElement, type NormalizedPlace } from "@/lib/localData/overpassCategory";
-import { runSync } from "@/lib/localData/syncLog";
+import { hasRecentLog, runSync } from "@/lib/localData/syncLog";
 
 // OSM places don't meaningfully change (a restaurant doesn't close, or a
 // park doesn't move) fast enough to justify checking more than daily - and
@@ -11,15 +11,6 @@ import { runSync } from "@/lib/localData/syncLog";
 // which a 24-hour-per-town cache comfortably satisfies regardless of how
 // much guest traffic hits the pages that read this.
 const PLACES_TTL_MS = 24 * 60 * 60 * 1000;
-
-async function isCacheFresh(townSlug: string): Promise<boolean> {
-  const lastSuccess = await prisma.apiSyncLog.findFirst({
-    where: { source: "OSM", townSlug, status: "SUCCESS" },
-    orderBy: { finishedAt: "desc" },
-    select: { finishedAt: true },
-  });
-  return Boolean(lastSuccess && Date.now() - lastSuccess.finishedAt.getTime() < PLACES_TTL_MS);
-}
 
 async function upsertPlace(townSlug: string, place: NormalizedPlace): Promise<void> {
   await prisma.localPlace.upsert({
@@ -75,7 +66,7 @@ export async function getTownPlaces(townSlug: string, category?: LocalPlaceCateg
   const town = await prisma.localTown.findUnique({ where: { slug: townSlug } });
   if (!town) return [];
 
-  if (!(await isCacheFresh(townSlug))) {
+  if (!(await hasRecentLog({ source: "OSM", townSlug, statuses: ["SUCCESS"], ttlMs: PLACES_TTL_MS }))) {
     await runSync({ source: "OSM", townSlug }, async () => {
       const elements = await fetchOverpassPlaces(town);
       const places = elements

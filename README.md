@@ -218,6 +218,61 @@ Supabase Auth). To enable this:
 If these aren't set, `isStorageConfigured()` returns `false` and the upload API returns a clear
 error instead of crashing; the listing form's "paste an image URL" fallback still works.
 
+## Local Guide & live local data
+
+Every town's destination page (`/destinations/[slug]`) has a "FYStay Local Guide": curated,
+written-once content (`src/lib/localGuide.ts`, `src/lib/localKnowledge.ts`) plus a live "Right now
+in \<town\>" concierge panel showing current weather and a ranked spotlight of real places -
+without ever calling a third-party API from the browser, or paying for one, per FYStay's own
+cost/honesty rules.
+
+**Architecture** (`src/lib/localData/`): `API/data source → server-side fetch+cache function →
+Supabase (Postgres) → recommendation engine → frontend`. A React component never talks to Open-
+Meteo, Overpass, or Ticketmaster directly - only to `getTownWeather`/`getTownPlaces`/
+`getTownEvents`, which each read a Postgres cache, refresh it if stale, and fall back to
+whatever's already cached (or an honest empty state) if the live source fails. Nothing is ever
+fabricated: opening hours, ratings, and accessibility are `null` unless a real source actually says
+otherwise, and `src/lib/localData/openingHours.ts` only answers open/closed for `opening_hours`
+syntax it's fully confident about.
+
+- **Weather** - [Open-Meteo](https://open-meteo.com) (free, keyless). Cached per town for 45
+  minutes. The one function to call is `getTownWeather`; nothing else should import
+  `weatherSource.ts` directly, so swapping providers later never touches a caller.
+- **Places** - OpenStreetMap via the [Overpass API](https://overpass-api.de) (free, keyless):
+  restaurants, cafés, pubs, shops, supermarkets, pharmacies, parks, beaches, playgrounds,
+  attractions, museums, toilets, parking, and EV charging. Cached per town for 24 hours, since a
+  restaurant doesn't move or close that often and Overpass's fair-use policy asks for infrequent,
+  sequential requests.
+- **Events** - [Ticketmaster Discovery API](https://developer.ticketmaster.com) (free tier, needs
+  an API key). Cached for 6 hours. With no `TICKETMASTER_API_KEY` set, `/api/local/events` simply
+  returns no events (logged as `SKIPPED`, not faked) rather than failing - see `.env.example`.
+- **Editorial** - FYStay's own picks (`EditorialRecommendation`), migrated once from the existing
+  Local Guide/Local Knowledge content via `npm run db:seed-editorial`. Nine tags are supported
+  (FYStay Pick, Hidden Gem, Best for Families, Best for Couples, Best Cheap Eat, Best Breakfast,
+  Best Beach, Best Walk, Best Rainy Day), though the seed script only auto-assigns the seven it can
+  honestly infer from existing copy - it never guesses at a cheap-eat price or a couples angle that
+  isn't already there.
+- **Recommendation engine** (`recommendationEngine.ts`) merges OSM places and editorial picks into
+  one ranked list, scoring on real signals only: distance from the guest's booked property (when
+  known), an editorial boost, rating, weather fit (indoor picks score higher when it's raining),
+  the guest's selected mood, and live open/closed status. It never simply echoes raw API data.
+- **Freshness** is tracked via `ApiSyncLog` (one row per sync attempt, `SUCCESS`/`FAILURE`/
+  `SKIPPED`), not "does a cached row exist" - that would keep re-fetching a town with genuinely
+  zero matches forever. `hasRecentLog()` in `syncLog.ts` is the shared check every source uses.
+- **Scheduled refresh**: `vercel.json` runs `/api/cron/refresh-local-data` once daily (the free
+  Vercel Hobby-tier cron limit) so caches warm up on a schedule rather than on a guest's page load;
+  every source still self-heals on its own TTL regardless of whether the cron has ever run. Vercel's
+  own Cron feature authenticates automatically; triggering it manually needs a
+  `LOCAL_DATA_CRON_SECRET` bearer token (see `.env.example`).
+- **Admin dashboard** (`/admin/local-data`, requires the signed-in user's `role` to be `ADMIN` -
+  see that page for how to promote one, since there's no self-service invite flow yet): per-source
+  status, last successful refresh, record counts, failures in the last 7 days, sync activity in the
+  last 24h, and every currently-featured editorial recommendation.
+
+**Cost**: every source above is free at FYStay's scale. Google Places/Maps were deliberately never
+introduced - the brief this was built against explicitly asks to flag any paid API before adding
+one, and free/open sources cover every field the Local Guide needs today.
+
 ## Testing
 
 - **Unit tests** ([Vitest](https://vitest.dev)) cover pure logic in `src/lib/` (availability/overlap
@@ -288,3 +343,5 @@ src/components/            Shared UI (forms, booking widget, listing card, navba
 | `npm run test:e2e`    | Run Playwright end-to-end tests       |
 | `npm run db:migrate`  | Run Prisma migrations                |
 | `npm run db:seed`     | Seed the database                    |
+| `npm run db:backfill-coordinates` | One-off: backfill listing lat/lng from address |
+| `npm run db:seed-editorial` | Migrate Local Guide/Local Knowledge content into `EditorialRecommendation` rows |

@@ -79,18 +79,18 @@ enum ReviewReportStatus {
 }
 
 model User {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   name         String
-  email        String    @unique
+  email        String   @unique
   // Null for an account created via an OAuth provider (e.g. Google) that
   // has never also set a password - there's nothing to compare against on
   // a Credentials login, so authorize() must treat null as "deny" rather
   // than passing it to bcrypt.
   passwordHash String?
-  role         Role      @default(GUEST)
+  role         Role     @default(GUEST)
   image        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // A host's Stripe Express connected account, used to pay them out
   // directly via destination charges (see src/lib/stripeConnect.ts) rather
@@ -100,20 +100,21 @@ model User {
   // webhook) rather than being collapsed into one "ready" flag, since a host
   // can have charges enabled but payouts still restricted (e.g. missing bank
   // details) and the UI needs to tell those apart.
-  stripeConnectAccountId        String?  @unique
-  stripeConnectDetailsSubmitted Boolean  @default(false)
-  stripeConnectChargesEnabled   Boolean  @default(false)
-  stripeConnectPayoutsEnabled   Boolean  @default(false)
+  stripeConnectAccountId        String? @unique
+  stripeConnectDetailsSubmitted Boolean @default(false)
+  stripeConnectChargesEnabled   Boolean @default(false)
+  stripeConnectPayoutsEnabled   Boolean @default(false)
 
-  listings Listing[]
-  bookings Booking[]
-  reviews  Review[]
-  savedListings SavedListing[]
+  listings            Listing[]
+  bookings            Booking[]
+  reviews             Review[]
+  savedListings       SavedListing[]
+  savedPlaces         SavedPlace[]
   passwordResetTokens PasswordResetToken[]
-  reviewReports ReviewReport[]
-  guestConversations Conversation[] @relation("GuestConversations")
-  hostConversations  Conversation[] @relation("HostConversations")
-  sentMessages       Message[]
+  reviewReports       ReviewReport[]
+  guestConversations  Conversation[]       @relation("GuestConversations")
+  hostConversations   Conversation[]       @relation("HostConversations")
+  sentMessages        Message[]
 }
 
 // A single-use, time-limited token for the "forgot password" flow. Only a
@@ -134,25 +135,25 @@ model PasswordResetToken {
 }
 
 model Listing {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  city        String
-  country     String
-  address     String?
+  id                     String       @id @default(cuid())
+  title                  String
+  description            String
+  city                   String
+  country                String
+  address                String?
   // Both null until the listing's city matches a known Fylde Coast town
   // (see src/lib/geocoding.ts) - never a guessed or user-typed value, so a
   // city FYStay doesn't actually cover never gets a fabricated pin on the
   // map. Town-center coordinates with a small deterministic jitter, not a
   // real street address - this app has no per-property geocoding data.
-  latitude    Float?
-  longitude   Float?
-  propertyType PropertyType @default(OTHER)
-  pricePerNightCents Int
+  latitude               Float?
+  longitude              Float?
+  propertyType           PropertyType @default(OTHER)
+  pricePerNightCents     Int
   // A flat, once-per-stay fee (housekeeping between guests), separate from
   // the nightly rate. Zero means the host hasn't set one, in which case the
   // booking summary simply omits that line rather than showing "£0".
-  cleaningFeeCents  Int      @default(0)
+  cleaningFeeCents       Int          @default(0)
   // Percentage off the nightly subtotal for stays of 7+ / 28+ nights
   // (Airbnb-style length-of-stay discounts). Null means the host hasn't set
   // one, in which case no discount applies at that threshold - never
@@ -161,30 +162,30 @@ model Listing {
   // resolveLengthOfStayDiscount in src/lib/pricing.ts for how these combine.
   weeklyDiscountPercent  Int?
   monthlyDiscountPercent Int?
-  maxGuests   Int      @default(1)
-  bedrooms    Int      @default(1)
-  beds        Int      @default(1)
-  bathrooms   Int      @default(1)
-  photos      String[]
-  amenities   String[]
-  published   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  maxGuests              Int          @default(1)
+  bedrooms               Int          @default(1)
+  beds                   Int          @default(1)
+  bathrooms              Int          @default(1)
+  photos                 String[]
+  amenities              String[]
+  published              Boolean      @default(true)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 
-  cancellationPolicy CancellationPolicyKind @default(MODERATE)
+  cancellationPolicy              CancellationPolicyKind @default(MODERATE)
   // Only read when cancellationPolicy is CUSTOM; null otherwise. A null
   // value under CUSTOM falls back to a sane default (see
   // resolveCancellationPolicy) rather than failing.
-  customCancellationCutoffDays   Int?
+  customCancellationCutoffDays    Int?
   customCancellationRefundPercent Int?
 
-  hostId   String
-  host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  bookings Booking[]
-  reviews  Review[]
-  savedBy  SavedListing[]
+  hostId             String
+  host               User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings           Booking[]
+  reviews            Review[]
+  savedBy            SavedListing[]
   availabilityBlocks AvailabilityBlock[]
-  conversations Conversation[]
+  conversations      Conversation[]
 
   @@index([city])
   @@index([hostId])
@@ -210,32 +211,32 @@ model AvailabilityBlock {
 }
 
 model Booking {
-  id         String        @id @default(cuid())
+  id            String        @id @default(cuid())
   // A short, human-friendly code shown to the guest (e.g. on the
   // confirmation page and "My trips"), distinct from the internal cuid id.
-  reference  String        @unique
-  checkIn    DateTime
-  checkOut   DateTime
-  guests     Int           @default(1)
-  nights     Int
-  status     BookingStatus @default(PENDING)
+  reference     String        @unique
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int           @default(1)
+  nights        Int
+  status        BookingStatus @default(PENDING)
   paymentStatus PaymentStatus @default(UNPAID)
 
   // Price breakdown, snapshotted at booking time so a later change to the
   // listing's price or fees never rewrites the price a guest already agreed
   // to. totalPriceCents is always (nightlyPriceCents * nights) -
   // lengthOfStayDiscountCents + cleaningFeeCents + serviceFeeCents + taxCents.
-  nightlyPriceCents Int
+  nightlyPriceCents         Int
   // Amount and which threshold (weekly/monthly) applied, snapshotted the
   // same way as the other price fields - a later edit to the listing's
   // discount settings never rewrites what a guest already agreed to.
   // 0/null when no discount applied to this stay.
   lengthOfStayDiscountCents Int     @default(0)
   lengthOfStayDiscountLabel String?
-  cleaningFeeCents  Int @default(0)
-  serviceFeeCents   Int @default(0)
-  taxCents          Int @default(0)
-  totalPriceCents   Int
+  cleaningFeeCents          Int     @default(0)
+  serviceFeeCents           Int     @default(0)
+  taxCents                  Int     @default(0)
+  totalPriceCents           Int
 
   // Contact details for this specific stay, captured at checkout. Kept on
   // the booking (rather than read live off the account) so the record
@@ -245,7 +246,7 @@ model Booking {
   guestEmail String?
   guestPhone String?
 
-  stripeSessionId       String? @unique
+  stripeSessionId       String?   @unique
   stripePaymentIntentId String?
   // True only when this booking's payment actually routed to the host's
   // Stripe Connect account via transfer_data (see src/lib/stripeConnect.ts) -
@@ -253,19 +254,19 @@ model Booking {
   // connected after this booking was already paid for. Read before issuing
   // a refund: reverse_transfer/refund_application_fee only make sense, and
   // only succeed, on a PaymentIntent that actually carried a transfer.
-  hostPaidViaConnect Boolean @default(false)
+  hostPaidViaConnect    Boolean   @default(false)
   // The platform fee actually applied at charge time (application_fee_amount
   // on the PaymentIntent), snapshotted separately from serviceFeeCents -
   // normally identical, but kept apart so a future change to the fee rate
   // never rewrites what was actually charged on an existing booking.
-  applicationFeeCents Int?
-  paidAt     DateTime?
-  refundedAt DateTime?
+  applicationFeeCents   Int?
+  paidAt                DateTime?
+  refundedAt            DateTime?
   // The actual amount returned to the guest on cancellation, per the
   // listing's cancellation policy at the time. May be less than
   // totalPriceCents (partial refund) or 0 (no refund) - never assume a
   // cancelled, previously-paid booking was refunded in full.
-  refundedAmountCents Int?
+  refundedAmountCents   Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -276,7 +277,7 @@ model Booking {
   guestId String
   guest   User   @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
-  review Review?
+  review         Review?
   changeRequests BookingChangeRequest[]
 
   @@index([listingId])
@@ -299,7 +300,7 @@ model BookingChangeRequest {
   // priceDeltaCents - the original booking's totalPriceCents at
   // request time. Positive: guest owes more. Negative: guest is due a
   // refund. Zero: applied immediately on approval, no payment step.
-  priceDeltaCents Int
+  priceDeltaCents   Int
 
   // Snapshot of the booking's own values at the moment this request was
   // created. The booking itself gets overwritten once a change is applied,
@@ -307,20 +308,20 @@ model BookingChangeRequest {
   // after" once that's happened - originalTotalPriceCents + priceDeltaCents
   // always equals the requested total, regardless of what the booking looks
   // like by the time someone reads this request back.
-  originalCheckIn        DateTime
-  originalCheckOut       DateTime
-  originalGuests         Int
+  originalCheckIn         DateTime
+  originalCheckOut        DateTime
+  originalGuests          Int
   originalTotalPriceCents Int
 
-  stripeSessionId String?    @unique
+  stripeSessionId     String?   @unique
   // Same meaning as Booking.hostPaidViaConnect/applicationFeeCents - this
   // extra payment for an approved change gets its own destination charge,
   // separate from the original booking's.
-  hostPaidViaConnect  Boolean @default(false)
+  hostPaidViaConnect  Boolean   @default(false)
   applicationFeeCents Int?
-  paidAt          DateTime?
-  refundedAt      DateTime?
-  respondedAt     DateTime?
+  paidAt              DateTime?
+  refundedAt          DateTime?
+  respondedAt         DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -466,4 +467,244 @@ model SavedListing {
 
   @@unique([userId, listingId])
   @@index([listingId])
+}
+
+// ============================================================================
+// Live local-data platform (Local Guide) - a cached, unified view over
+// several free/keyless external sources (OpenStreetMap/Overpass, Open-Meteo,
+// Ticketmaster Discovery) plus FYStay's own hand-written editorial layer.
+// The app never calls these external APIs from a component or the browser -
+// only from src/lib/localData/*, which reads/writes the tables below. See
+// that directory's own doc comments for the source-by-source detail.
+// ============================================================================
+
+enum LocalDataSource {
+  OSM
+  TICKETMASTER
+  OPEN_METEO
+  EDITORIAL
+}
+
+enum LocalPlaceCategory {
+  RESTAURANT
+  CAFE
+  PUB
+  SHOP
+  SUPERMARKET
+  PHARMACY
+  PARK
+  BEACH
+  PLAYGROUND
+  ATTRACTION
+  MUSEUM
+  TOILET
+  PARKING
+  EV_CHARGING
+  VIEWPOINT
+  OTHER
+}
+
+enum EditorialTag {
+  FYSTAY_PICK
+  HIDDEN_GEM
+  BEST_FOR_FAMILIES
+  BEST_FOR_COUPLES
+  BEST_CHEAP_EAT
+  BEST_BREAKFAST
+  BEST_BEACH
+  BEST_WALK
+  BEST_RAINY_DAY
+}
+
+enum SyncStatus {
+  SUCCESS
+  PARTIAL
+  FAILURE
+  // The source was never called at all this run - e.g. Ticketmaster with
+  // no TICKETMASTER_API_KEY configured. Distinct from FAILURE so the admin
+  // dashboard can tell "broken" apart from "not switched on yet".
+  SKIPPED
+}
+
+// One row per Fylde Coast town FYStay covers - a real table (rather than
+// re-deriving src/lib/destinations.ts's FYLDE_COAST_DESTINATIONS constant
+// in SQL) so every table below can be queried and reported on by town.
+// Seeded from, and kept in sync with, that same constant - see
+// src/lib/localData/seedTowns.ts.
+model LocalTown {
+  slug      String @id
+  name      String
+  latitude  Float
+  longitude Float
+
+  places    LocalPlace[]
+  events    LocalEvent[]
+  weather   WeatherCache?
+  editorial EditorialRecommendation[]
+}
+
+// The unified local-place record every external source normalizes into -
+// a restaurant from OpenStreetMap and a hand-written FYStay editorial pick
+// live in the same shape, so the recommendation engine
+// (src/lib/localData/recommendationEngine.ts) can rank them together
+// without caring which source a place came from.
+model LocalPlace {
+  id     String          @id @default(cuid())
+  source LocalDataSource
+
+  // The source's own id for this place (an OSM node/way id, etc.) - null
+  // for a place with no external id yet. Nulls don't collide under the
+  // unique index below, so any number of sourceId-less rows can coexist.
+  sourceId String?
+
+  townSlug String
+  town     LocalTown @relation(fields: [townSlug], references: [slug], onDelete: Cascade)
+
+  name           String
+  category       LocalPlaceCategory
+  description    String?
+  latitude       Float
+  longitude      Float
+  address        String?
+  // Raw OSM opening_hours syntax (e.g. "Mo-Fr 09:00-17:30") when the
+  // source provides it - kept as the source's own text rather than
+  // reshaped into a custom schema, since opening_hours syntax already has
+  // a real parser (src/lib/localData/openingHours.ts) and reformatting it
+  // ourselves risks silently losing information.
+  openingHours   String?
+  website        String?
+  phone          String?
+  rating         Float?
+  priceLevel     Int?
+  imageUrl       String?
+  // Tri-state, not boolean: most source records simply don't tag this at
+  // all, which is a real "unknown" - collapsing that to false would
+  // assert something the data never actually said.
+  familyFriendly Boolean?
+  dogFriendly    Boolean?
+  // The source's own accessibility tag (OSM's wheelchair=yes/no/limited)
+  // kept as text rather than an enum, so a future source's own vocabulary
+  // doesn't fail an upsert just for being unexpected.
+  accessibility  String?
+
+  // The full normalized source payload, for debugging a bad-looking
+  // record without re-fetching it from the source.
+  rawData Json?
+
+  lastFetchedAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  editorial EditorialRecommendation[]
+  savedBy   SavedPlace[]
+
+  @@unique([source, sourceId])
+  @@index([townSlug, category])
+}
+
+model LocalEvent {
+  id       String          @id @default(cuid())
+  source   LocalDataSource @default(TICKETMASTER)
+  sourceId String          @unique
+
+  townSlug String
+  town     LocalTown @relation(fields: [townSlug], references: [slug], onDelete: Cascade)
+
+  name       String
+  category   String
+  venueName  String?
+  latitude   Float?
+  longitude  Float?
+  startsAt   DateTime
+  endsAt     DateTime?
+  url        String?
+  imageUrl   String?
+  priceRange String?
+
+  rawData Json?
+
+  lastFetchedAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([townSlug, startsAt])
+}
+
+// One row per town, replaced wholesale on every refresh rather than kept
+// as history - a guest only ever needs the latest forecast, and Open-
+// Meteo's own hourly/daily arrays already cover "what's the weather doing
+// over my stay", so there's nothing to gain from keeping old rows around.
+model WeatherCache {
+  townSlug String    @id
+  town     LocalTown @relation(fields: [townSlug], references: [slug], onDelete: Cascade)
+
+  // Open-Meteo's own current/daily response shapes, stored as-is (see
+  // src/lib/localData/weather.ts for the normalized view built from this
+  // on read) rather than flattened into columns - a field Open-Meteo adds
+  // later, or one this app starts using, needs no migration.
+  current Json
+  daily   Json
+
+  fetchedAt DateTime @default(now())
+}
+
+// FYStay's own manually-written layer on top of (or ahead of) live data -
+// this is what makes the guide read as curated rather than a raw API
+// dump. Not required to reference a LocalPlace: an editorial pick written
+// before any live source has that place synced still needs somewhere to
+// live, so `placeId` is optional and the entry carries its own
+// name/description until a real place row exists to link to.
+model EditorialRecommendation {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  townSlug String
+  town     LocalTown @relation(fields: [townSlug], references: [slug], onDelete: Cascade)
+
+  placeId String?
+  place   LocalPlace? @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  tag         EditorialTag
+  name        String
+  category    LocalPlaceCategory
+  description String
+  // Lower sorts first within the same town+tag - lets a small number of
+  // picks be ordered deliberately rather than falling back to insertion
+  // order or alphabetical.
+  rank        Int                @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([townSlug, tag])
+}
+
+model SavedPlace {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  placeId String
+  place   LocalPlace @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+}
+
+// One row per sync attempt, kept for the admin dashboard's "API status"
+// view (src/app/admin/local-data/page.tsx) - a running log rather than a
+// single "last sync" row per source, so a string of recent failures stays
+// visible instead of being masked by the next success.
+model ApiSyncLog {
+  id           String          @id @default(cuid())
+  source       LocalDataSource
+  townSlug     String?
+  status       SyncStatus
+  recordCount  Int             @default(0)
+  errorMessage String?
+  startedAt    DateTime
+  finishedAt   DateTime
+
+  @@index([source, startedAt])
 }

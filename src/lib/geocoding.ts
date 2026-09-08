@@ -8,7 +8,7 @@ import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
  * badges, so a listing only ever gets a map pin for a place FYStay
  * genuinely serves.
  */
-const TOWN_COORDINATES: Record<string, { latitude: number; longitude: number }> = {
+export const TOWN_COORDINATES: Record<string, { latitude: number; longitude: number }> = {
   blackpool: { latitude: 53.8175, longitude: -3.0357 },
   "lytham st annes": { latitude: 53.7519, longitude: -2.9622 },
   cleveleys: { latitude: 53.8767, longitude: -3.0472 },

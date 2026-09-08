@@ -1,7 +1,6 @@
 import type { EditorialRecommendation, EditorialTag, LocalPlace, LocalPlaceCategory } from "@prisma/client";
 import { distanceMiles, estimateDriveMinutes, estimateWalkMinutes } from "@/lib/geo";
 import { isOpenAt } from "@/lib/localData/openingHours";
-import type { TownWeather } from "@/lib/localData/weather";
 import type { MoodKey } from "@/lib/moods";
 
 export type RecommendationSource = "OSM" | "EDITORIAL";
@@ -50,11 +49,17 @@ const MOOD_CATEGORY_BOOST: Partial<Record<MoodKey, LocalPlaceCategory[]>> = {
   dogFriendly: ["PARK", "BEACH"],
   shopping: ["SHOP", "SUPERMARKET"],
   kids: ["PLAYGROUND", "PARK", "ATTRACTION"],
+  adventure: ["ATTRACTION", "VIEWPOINT", "BEACH"],
 };
 
 export type ScoringContext = {
   origin: { latitude: number; longitude: number } | null;
-  weather: TownWeather | null;
+  // Only the one signal scoreRecommendation actually reads from weather -
+  // never the full TownWeather shape - so this stays safely importable
+  // into a "use client" component (for instant client-side re-scoring when
+  // a guest picks a personalisation preference) without dragging in
+  // weather.ts's server-only Prisma-backed module or a Date to serialize.
+  weather: { rainy: boolean } | null;
   mood: MoodKey | null;
   now: Date;
 };
@@ -97,7 +102,7 @@ export function scoreRecommendation(rec: Omit<LocalRecommendation, "score">, con
     score += rec.rating;
   }
 
-  const isRainy = context.weather?.current.condition.rainy ?? false;
+  const isRainy = context.weather?.rainy ?? false;
   if (isRainy && INDOOR_CATEGORIES.has(rec.category)) score += 4;
   if (!isRainy && OUTDOOR_CATEGORIES.has(rec.category)) score += 2;
 

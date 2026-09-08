@@ -1,79 +1,104 @@
-import { Compass, MapPin, Quote, Sparkles } from "lucide-react";
+import { Quote } from "lucide-react";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import type { FyldeCoastDestination } from "@/lib/destinations";
 import type { OriginListing } from "@/lib/guideLocation";
-import { buildConciergeSnapshot, type ConciergeSources } from "@/lib/localData/concierge";
-import { SectionHeading } from "@/components/SectionHeading";
-import { LocalConcierge } from "@/components/LocalConcierge";
-import { LocalGuideExplorer } from "@/components/LocalGuideExplorer";
+import { buildConciergeSnapshot, eventsToday, type ConciergeSources } from "@/lib/localData/concierge";
+import { QuickDiscoveryNav } from "@/components/QuickDiscoveryNav";
+import { PersonalizedGuideSection } from "@/components/PersonalizedGuideSection";
+import { TodayInTown } from "@/components/TodayInTown";
+import { HiddenGems } from "@/components/HiddenGems";
+import { PerfectDays } from "@/components/PerfectDays";
+import { NearYourStay } from "@/components/NearYourStay";
+import { WhatsOn } from "@/components/WhatsOn";
 import { LocalKnowledge } from "@/components/LocalKnowledge";
-import { Badge } from "@/components/ui/Badge";
 
 /**
  * The FYStay Local Guide - the thing neither Airbnb nor Booking.com give a
- * guest: a full, opinionated brief on the town itself, not just the four
- * walls being booked. This wrapper (heading, intro, insider tip) stays a
- * server component with no interactivity of its own; the "what are you
- * looking for" mood picker and the category grid it reorders live in
- * LocalGuideExplorer, the one piece of this section that actually needs to
- * be a client component.
+ * guest: a full, premium concierge brief on the town itself, not just the
+ * four walls being booked. The hero and the "Accommodation in X" listings
+ * above this (see the destination page) are the only parts of the page not
+ * owned by this component; everything else - quick discovery, personalised
+ * picks, live "today" and "what's on", hidden gems, perfect days, and the
+ * distance-aware "near your stay" breakdown - lives here.
  *
  * `fromListing`, when present (a guest arrived via a specific listing's
  * "Read the full Local Guide" link), makes the whole section
- * location-aware: real distance/walk/drive-time badges on every entry that
- * names a real place, and each category's entries reordered closest-first -
- * the same origin also drives the live "Right now" concierge panel's
- * distances below.
+ * location-aware: real distance/walk/drive-time on every recommendation
+ * that has coordinates, and "Near Your Stay" only renders its real content
+ * once this is known.
  *
- * `conciergeSources` is the raw weather/places/editorial data the page
- * already fetched in parallel with `fromListing`; merging it into a ranked
- * snapshot happens here, synchronously, once both have resolved.
+ * `conciergeSources` is the raw weather/places/editorial/events data the
+ * page already fetched in parallel with `fromListing`; merging it into a
+ * ranked snapshot happens here, synchronously, once both have resolved.
  */
 export function LocalGuide({
   destination,
   fromListing,
   conciergeSources,
+  checkIn,
+  checkOut,
 }: {
   destination: FyldeCoastDestination;
   fromListing: OriginListing | null;
   conciergeSources: ConciergeSources;
+  checkIn: Date | null;
+  checkOut: Date | null;
 }) {
   const guide = LOCAL_GUIDES[destination.slug];
   if (!guide) return null;
 
-  const concierge = buildConciergeSnapshot(conciergeSources, fromListing);
+  const now = new Date();
+  const snapshot = buildConciergeSnapshot(conciergeSources, fromListing);
+  const rainy = snapshot.weather?.current.condition.rainy ?? false;
+  const todaysEvents = eventsToday(snapshot.events, now);
 
   return (
-    <section id="local-guide" className="mt-14 scroll-mt-20 border-t border-border-subtle pt-10">
-      <Badge variant="brand">
-        <Sparkles className="h-3 w-3" aria-hidden />
-        Only on FYStay
-      </Badge>
-      <div className="mt-3">
-        <SectionHeading icon={Compass}>{destination.name} Local Guide</SectionHeading>
+    <div className="mt-14 border-t border-border-subtle pt-8">
+      <div id="quick-discovery" className="scroll-mt-16">
+        <QuickDiscoveryNav />
       </div>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
-        Everything you need for a trip to {destination.name} in one place - written by people who
-        actually know this stretch of coast, not scraped from a review site.
-      </p>
 
-      {fromListing && (
-        <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-brand-700">
-          <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          Distances and order below are relative to {fromListing.title}
-        </p>
-      )}
-
-      <LocalConcierge destinationName={destination.name} snapshot={concierge} />
-
-      <blockquote className="mt-6 flex gap-3 rounded-2xl border border-brand-100 bg-brand-50 p-5">
+      <blockquote className="mt-8 flex gap-3 rounded-2xl border border-brand-100 bg-brand-50 p-5">
         <Quote className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
         <p className="text-sm italic leading-relaxed text-brand-900">{guide.insiderTip}</p>
       </blockquote>
 
-      <LocalKnowledge destinationName={destination.name} slug={destination.slug} fromListing={fromListing} />
+      <PersonalizedGuideSection
+        destinationName={destination.name}
+        recommendations={snapshot.recommendations}
+        rainy={rainy}
+        guide={guide}
+        fromListing={fromListing}
+      />
 
-      <LocalGuideExplorer guide={guide} destinationName={destination.name} fromListing={fromListing} />
-    </section>
+      <TodayInTown
+        destinationName={destination.name}
+        weather={snapshot.weather}
+        todaysEvents={todaysEvents}
+        recommended={snapshot.recommendations}
+      />
+
+      {/* snapshot.nearby, not snapshot.recommendations: the latter is capped
+          to a shared spotlight of 16, and a town with many FYSTAY_PICK
+          entries (which score slightly higher than HIDDEN_GEM) can fill
+          every one of those slots before a single hidden gem gets in.
+          nearby is the same ranking, uncapped, so HiddenGems always finds
+          every HIDDEN_GEM-tagged entry regardless of how the spotlight
+          above happened to fill up. */}
+      <HiddenGems destinationName={destination.name} recommendations={snapshot.nearby} />
+
+      <PerfectDays townSlug={destination.slug} destinationName={destination.name} fromListing={fromListing} />
+
+      <NearYourStay
+        destinationName={destination.name}
+        fromListing={fromListing}
+        nearby={snapshot.nearby}
+        guide={guide}
+      />
+
+      <WhatsOn destinationName={destination.name} events={snapshot.events} checkIn={checkIn} checkOut={checkOut} />
+
+      <LocalKnowledge destinationName={destination.name} slug={destination.slug} fromListing={fromListing} />
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { ChevronDown, X } from "lucide-react";
 import type { GuideCategoryKey, GuideEntry, TownGuide } from "@/lib/localGuide";
 import { MOOD_CATEGORY_PRIORITY, MOODS, orderCategoriesForMood, topPicksForMood, type MoodKey } from "@/lib/moods";
 import { entryMatchesCategory, locateEntry, prioritizeEntriesByDistance, type OriginListing } from "@/lib/guideLocation";
+import { categoryAnchorId } from "@/components/QuickDiscoveryNav";
 import { EntryLocationMeta } from "@/components/EntryLocationMeta";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/cn";
@@ -24,20 +25,34 @@ import { cn } from "@/lib/cn";
  * `fromListing`, when present, layers real distance on top of the mood
  * reordering: every category's own entries sort closest-first, and any
  * entry naming a real place gets a distance/walk/drive-time line.
+ *
+ * `mood`/`onMoodChange` make this controllable from outside: the premium
+ * town guide page's own "Personalised Experience" picker drives this
+ * component (and its FYStay Picks carousel) from one shared selection
+ * rather than each rendering a separate, redundant chip row. Omit both to
+ * keep this fully standalone (its own chips, its own state) - the default,
+ * used anywhere this hasn't been wired to an external picker.
  */
 export function LocalGuideExplorer({
   guide,
   destinationName,
   fromListing,
+  mood: controlledMood,
+  onMoodChange,
 }: {
   guide: TownGuide;
   destinationName: string;
   fromListing: OriginListing | null;
+  mood?: MoodKey | null;
+  onMoodChange?: (mood: MoodKey | null) => void;
 }) {
-  const [mood, setMood] = useState<MoodKey | null>(null);
+  const [internalMood, setInternalMood] = useState<MoodKey | null>(null);
+  const isControlled = controlledMood !== undefined;
+  const mood = isControlled ? controlledMood : internalMood;
+  const setMood = onMoodChange ?? setInternalMood;
 
   function toggleMood(key: MoodKey) {
-    setMood((current) => (current === key ? null : key));
+    setMood(mood === key ? null : key);
   }
 
   const selectedMood = MOODS.find((m) => m.key === mood);
@@ -47,50 +62,54 @@ export function LocalGuideExplorer({
 
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-foreground">What are you looking for?</p>
-        {selectedMood && (
-          <button
-            type="button"
-            onClick={() => setMood(null)}
-            className="focus-ring flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium text-zinc-500 hover:text-zinc-700"
-          >
-            <X className="h-3.5 w-3.5" aria-hidden />
-            Clear
-          </button>
-        )}
-      </div>
-
-      {/* Fixed-height wrapper + absolutely-positioned scroll row, same
-          technique as ListingsCarousel: an in-flow row wide enough to need
-          horizontal scrolling can make mobile browsers compute the page's
-          layout viewport from its full unscrolled width, letting a swipe
-          pan into blank space past the real content. Taking it out of flow
-          avoids that regardless of how many mood chips end up in this row. */}
-      <div className="relative mt-3 h-11 w-full">
-        <div className="absolute inset-0 flex snap-x snap-mandatory items-center gap-2 overflow-x-auto overscroll-x-contain scroll-smooth [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {MOODS.map(({ key, label, icon: Icon }) => {
-            const active = mood === key;
-            return (
+      {!isControlled && (
+        <>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-foreground">What are you looking for?</p>
+            {selectedMood && (
               <button
-                key={key}
                 type="button"
-                onClick={() => toggleMood(key)}
-                aria-pressed={active}
-                className={cn(
-                  "focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "border-brand-600 bg-brand-600 text-white"
-                    : "border-border-subtle bg-surface text-zinc-600 hover:bg-surface-muted",
-                )}
+                onClick={() => setMood(null)}
+                className="focus-ring flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium text-zinc-500 hover:text-zinc-700"
               >
-                <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                {label}
+                <X className="h-3.5 w-3.5" aria-hidden />
+                Clear
               </button>
-            );
-          })}
-        </div>
-      </div>
+            )}
+          </div>
+
+          {/* Fixed-height wrapper + absolutely-positioned scroll row, same
+              technique as ListingsCarousel: an in-flow row wide enough to need
+              horizontal scrolling can make mobile browsers compute the page's
+              layout viewport from its full unscrolled width, letting a swipe
+              pan into blank space past the real content. Taking it out of flow
+              avoids that regardless of how many mood chips end up in this row. */}
+          <div className="relative mt-3 h-11 w-full">
+            <div className="absolute inset-0 flex snap-x snap-mandatory items-center gap-2 overflow-x-auto overscroll-x-contain scroll-smooth [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {MOODS.map(({ key, label, icon: Icon }) => {
+                const active = mood === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleMood(key)}
+                    aria-pressed={active}
+                    className={cn(
+                      "focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "border-brand-600 bg-brand-600 text-white"
+                        : "border-border-subtle bg-surface text-zinc-600 hover:bg-surface-muted",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       <p aria-live="polite" className="sr-only">
         {selectedMood
@@ -125,8 +144,9 @@ export function LocalGuideExplorer({
           return (
             <details
               key={key}
+              id={categoryAnchorId(key)}
               className={cn(
-                "group rounded-2xl border bg-surface p-5 open:shadow-[var(--shadow-card)]",
+                "group scroll-mt-36 rounded-2xl border bg-surface p-5 open:shadow-[var(--shadow-card)]",
                 isPriority ? "border-brand-300" : "border-border-subtle",
               )}
             >

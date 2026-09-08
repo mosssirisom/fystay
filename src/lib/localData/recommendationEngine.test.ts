@@ -96,7 +96,7 @@ describe("scoreRecommendation", () => {
   });
 
   it("boosts indoor categories when it's rainy", () => {
-    const rainyContext = context({ weather: { current: { condition: { rainy: true } } } as never });
+    const rainyContext = context({ weather: { rainy: true } });
     const cafe = scoreRecommendation(baseRec({ category: "CAFE" }), rainyContext);
     const cafeDry = scoreRecommendation(baseRec({ category: "CAFE" }), context());
     expect(cafe).toBeGreaterThan(cafeDry);
@@ -104,7 +104,7 @@ describe("scoreRecommendation", () => {
 
   it("boosts outdoor categories when it's dry", () => {
     const beachDry = scoreRecommendation(baseRec({ category: "BEACH" }), context());
-    const rainyContext = context({ weather: { current: { condition: { rainy: true } } } as never });
+    const rainyContext = context({ weather: { rainy: true } });
     const beachRainy = scoreRecommendation(baseRec({ category: "BEACH" }), rainyContext);
     expect(beachDry).toBeGreaterThan(beachRainy);
   });

@@ -2,6 +2,7 @@ import {
   Baby,
   Beer,
   CloudRain,
+  Compass,
   Heart,
   PawPrint,
   ShoppingBag,
@@ -24,7 +25,8 @@ export type MoodKey =
   | "relaxing"
   | "dogFriendly"
   | "shopping"
-  | "kids";
+  | "kids"
+  | "adventure";
 
 export const MOODS: { key: MoodKey; label: string; icon: LucideIcon }[] = [
   { key: "family", label: "Family", icon: Users },
@@ -37,6 +39,27 @@ export const MOODS: { key: MoodKey; label: string; icon: LucideIcon }[] = [
   { key: "dogFriendly", label: "Dog friendly", icon: PawPrint },
   { key: "shopping", label: "Shopping", icon: ShoppingBag },
   { key: "kids", label: "Things to do with kids", icon: Baby },
+  { key: "adventure", label: "Adventure", icon: Compass },
+];
+
+/**
+ * The curated 8-preference picker for the premium town guide's
+ * "Personalised Experience" section - the same underlying MoodKey system
+ * as MOODS above (so it drives the exact same category/recommendation
+ * reordering), just a shorter, differently-labelled list matching what
+ * that section asks a guest for. Rainy day, shopping and kids-specific
+ * picks stay reachable via their own Quick Discovery buttons rather than
+ * needing a slot here too.
+ */
+export const PERSONALIZATION_PREFERENCES: { key: MoodKey; label: string; icon: LucideIcon }[] = [
+  { key: "family", label: "Family", icon: Users },
+  { key: "couples", label: "Couples", icon: Heart },
+  { key: "foodAndDrink", label: "Food", icon: UtensilsCrossed },
+  { key: "beachDay", label: "Beach", icon: Waves },
+  { key: "relaxing", label: "Relaxing", icon: Sun },
+  { key: "adventure", label: "Adventure", icon: Compass },
+  { key: "nightOut", label: "Nightlife", icon: Beer },
+  { key: "dogFriendly", label: "Dog Friendly", icon: PawPrint },
 ];
 
 /**
@@ -58,6 +81,7 @@ export const MOOD_CATEGORY_PRIORITY: Record<MoodKey, GuideCategoryKey[]> = {
   dogFriendly: ["dogFriendly", "beachesAndWalks", "eat", "coffeeAndBreakfast"],
   shopping: ["shopping", "coffeeAndBreakfast", "eat"],
   kids: ["family", "thingsToDo", "beachesAndWalks", "rainyDay", "events"],
+  adventure: ["thingsToDo", "beachesAndWalks", "hiddenGems", "events"],
 };
 
 const CATEGORY_LABEL: Record<GuideCategoryKey, string> = Object.fromEntries(

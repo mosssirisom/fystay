@@ -2,13 +2,14 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
 import { LocalGuide } from "@/components/LocalGuide";
+import { TownHero } from "@/components/TownHero";
 import { FYLDE_COAST_DESTINATIONS, type FyldeCoastDestination } from "@/lib/destinations";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
+import { TOWN_HERO_CONTENT } from "@/lib/townHero";
 import { loadConciergeSources } from "@/lib/localData/concierge";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 
@@ -36,6 +37,12 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 function findDestination(slug: string): FyldeCoastDestination | undefined {
   return FYLDE_COAST_DESTINATIONS.find((destination) => destination.slug === slug);
+}
+
+function parseDateParam(value: string | string[] | undefined): Date | null {
+  if (typeof value !== "string") return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 // One real, indexable page per town instead of everything funnelling
@@ -79,8 +86,12 @@ export default async function DestinationPage({
     findOriginListing(typeof fromParam === "string" ? fromParam : undefined),
     hasGuide
       ? loadConciergeSources(destination.slug)
-      : Promise.resolve({ weather: null, places: [], editorial: [] }),
+      : Promise.resolve({ weather: null, places: [], editorial: [], events: [] }),
   ]);
+
+  const checkIn = parseDateParam(resolvedSearchParams.checkIn);
+  const checkOut = parseDateParam(resolvedSearchParams.checkOut);
+  const heroContent = TOWN_HERO_CONTENT[destination.slug];
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -97,7 +108,7 @@ export default async function DestinationPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
@@ -111,31 +122,36 @@ export default async function DestinationPage({
         <span className="text-foreground">{destination.name}</span>
       </nav>
 
-      <h1 className="mt-2 text-2xl font-bold text-foreground sm:text-3xl">
-        Accommodation in {destination.name}
-      </h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">{destination.description}</p>
-
-      {LOCAL_GUIDES[destination.slug] && (
-        <a
-          href="#local-guide"
-          className="focus-ring mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 hover:underline"
-        >
-          <BookOpen className="h-4 w-4" aria-hidden />
-          Jump to the {destination.name} Local Guide
-        </a>
+      {heroContent && (
+        <TownHero
+          destination={destination}
+          hero={heroContent}
+          weather={conciergeSources.weather}
+          exploreHref="#quick-discovery"
+        />
       )}
 
-      <div className="mt-6">
-        <Suspense fallback={<ListingsGridSkeleton />}>
-          <ListingsGrid
-            searchParams={{ ...resolvedSearchParams, city: destination.searchCity }}
-            showResultsView
-          />
-        </Suspense>
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-foreground sm:text-2xl">Accommodation in {destination.name}</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">{destination.description}</p>
+
+        <div className="mt-6">
+          <Suspense fallback={<ListingsGridSkeleton />}>
+            <ListingsGrid
+              searchParams={{ ...resolvedSearchParams, city: destination.searchCity }}
+              showResultsView
+            />
+          </Suspense>
+        </div>
       </div>
 
-      <LocalGuide destination={destination} fromListing={fromListing} conciergeSources={conciergeSources} />
+      <LocalGuide
+        destination={destination}
+        fromListing={fromListing}
+        conciergeSources={conciergeSources}
+        checkIn={checkIn}
+        checkOut={checkOut}
+      />
     </div>
   );
 }

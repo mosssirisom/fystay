@@ -53,7 +53,7 @@ export default async function ListingCalendarPage({
   if (listing.hostId !== session.user.id) redirect("/host/dashboard");
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
       <Link
         href="/host/dashboard"
         className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"

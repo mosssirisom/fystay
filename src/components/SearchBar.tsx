@@ -26,9 +26,15 @@ function parseDateParam(value: string | null): Date | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
-function buildSearchQuery(city: string, range: DateRange | undefined, guestCounts: GuestCounts): string {
+function buildSearchQuery(
+  city: string,
+  range: DateRange | undefined,
+  guestCounts: GuestCounts,
+  nearLandmark?: string | null,
+): string {
   const params = new URLSearchParams();
   if (city) params.set("city", city);
+  if (nearLandmark) params.set("near", nearLandmark);
   if (range?.from) params.set("checkIn", format(range.from, "yyyy-MM-dd"));
   if (range?.to) params.set("checkOut", format(range.to, "yyyy-MM-dd"));
   if (guestCounts.adults !== 1) params.set("adults", String(guestCounts.adults));
@@ -49,6 +55,13 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
   // listing instead of a city-filtered results page. Any further free typing
   // clears it, since the field no longer reflects that exact selection.
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+  // Set only when the "Where" field's selection was a specific named place
+  // (e.g. "Blackpool Pleasure Beach") rather than a whole town - carries
+  // through to the results page as ?near=, which scopes results to that
+  // place's town and sorts them by real distance to it (see ListingsGrid
+  // and listingSearch.ts's "distance_asc"). Cleared by any further typing,
+  // same as selectedListingId, since the field no longer reflects it.
+  const [nearLandmark, setNearLandmark] = useState<string | null>(searchParams.get("near"));
   const [range, setRange] = useState<DateRange | undefined>(() => {
     const from = parseDateParam(searchParams.get("checkIn"));
     const to = parseDateParam(searchParams.get("checkOut"));
@@ -73,7 +86,7 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
   useEffect(() => {
     if (!liveUpdate || selectedListingId) return;
 
-    const nextQuery = buildSearchQuery(city, range, guestCounts);
+    const nextQuery = buildSearchQuery(city, range, guestCounts, nearLandmark);
     if (nextQuery === searchParams.toString()) return;
 
     const timeout = setTimeout(() => {
@@ -84,7 +97,7 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
 
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- router/searchParams/startTransition are stable
-  }, [city, range, guestCounts, selectedListingId, liveUpdate]);
+  }, [city, range, guestCounts, selectedListingId, nearLandmark, liveUpdate]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,7 +108,7 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
       if (selectedListingId) {
         router.push(`/listings/${selectedListingId}`);
       } else {
-        router.push(`${SEARCH_RESULTS_PATH}?${buildSearchQuery(city, range, guestCounts)}`);
+        router.push(`${SEARCH_RESULTS_PATH}?${buildSearchQuery(city, range, guestCounts, nearLandmark)}`);
       }
     });
   }
@@ -103,6 +116,7 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
   function handleCityChange(next: string) {
     setCity(next);
     setSelectedListingId(null);
+    setNearLandmark(null);
   }
 
   return (
@@ -127,9 +141,15 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
             if (payload.type === "destination") {
               setCity(payload.city);
               setSelectedListingId(null);
+              setNearLandmark(null);
+            } else if (payload.type === "landmark") {
+              setCity(payload.town);
+              setSelectedListingId(null);
+              setNearLandmark(payload.name);
             } else {
               setCity(payload.title);
               setSelectedListingId(payload.listingId);
+              setNearLandmark(null);
             }
           }}
           className="sm:flex-[1.15]"

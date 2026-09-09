@@ -13,6 +13,8 @@ import { averageRating as computeAverageRating } from "@/lib/reviews";
 import { AMENITY_CATEGORIES } from "@/lib/amenityCategories";
 import { cn } from "@/lib/cn";
 import { withCity } from "@/lib/seo";
+import { distanceMiles, estimateDriveMinutes, estimateWalkMinutes } from "@/lib/geo";
+import { EntryLocationMeta } from "@/components/EntryLocationMeta";
 
 export type ListingCardData = {
   id: string;
@@ -28,6 +30,8 @@ export type ListingCardData = {
   maxGuests: number;
   bedrooms: number;
   reviews: { rating: number }[];
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 const MAX_AMENITY_ICONS = 3;
@@ -38,6 +42,7 @@ export function ListingCard({
   isSaved = false,
   isLoggedIn = false,
   nights,
+  nearLandmark,
 }: {
   listing: ListingCardData;
   isSaved?: boolean;
@@ -46,8 +51,24 @@ export function ListingCard({
    * card shows the total price for that stay next to the nightly rate
    * (search results only; browse carousels don't have a date range). */
   nights?: number;
+  /** The specific named place the current search is scoped to, if any (see
+   * DestinationAutocomplete's landmark suggestions) - shown as a real
+   * distance/walk/drive line so a guest can see exactly why this result
+   * surfaced, not just trust an invisible sort order. */
+  nearLandmark?: { name: string; latitude: number; longitude: number };
 }) {
   const rating = computeAverageRating(listing.reviews);
+  const landmarkDistance =
+    nearLandmark && listing.latitude != null && listing.longitude != null
+      ? (() => {
+          const miles = distanceMiles(nearLandmark, { latitude: listing.latitude, longitude: listing.longitude });
+          return {
+            distanceMiles: Math.round(miles * 10) / 10,
+            walkMinutes: estimateWalkMinutes(miles),
+            driveMinutes: estimateDriveMinutes(miles),
+          };
+        })()
+      : null;
   const reviewCount = listing.reviews.length;
   const keyAmenities = AMENITY_CATEGORIES.filter((category) =>
     category.test(listing.amenities),
@@ -197,6 +218,7 @@ export function ListingCard({
             {listing.city}, {listing.country}
           </span>
         </p>
+        {landmarkDistance && <EntryLocationMeta location={landmarkDistance} />}
         <p className="flex items-center gap-1 text-xs text-zinc-500">
           <Users className="h-3.5 w-3.5 shrink-0" aria-hidden />
           {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}

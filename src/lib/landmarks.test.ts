@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nearbyLandmarks } from "./landmarks";
+import { findLandmarkByName, nearbyLandmarks } from "./landmarks";
 
 describe("nearbyLandmarks", () => {
   it("finds a landmark at its own coordinates as ~0 miles away", () => {
@@ -55,5 +55,17 @@ describe("nearbyLandmarks", () => {
     for (const landmark of result) {
       expect(landmark.distanceMiles).toBe(Math.round(landmark.distanceMiles * 10) / 10);
     }
+  });
+});
+
+describe("findLandmarkByName", () => {
+  it("finds a real landmark by exact, case-insensitive name", () => {
+    expect(findLandmarkByName("blackpool pleasure beach")?.name).toBe("Blackpool Pleasure Beach");
+    expect(findLandmarkByName("Blackpool Tower")?.town).toBe("Blackpool");
+  });
+
+  it("returns undefined for anything not in the curated list, never a guess", () => {
+    expect(findLandmarkByName("Made Up Place")).toBeUndefined();
+    expect(findLandmarkByName("")).toBeUndefined();
   });
 });

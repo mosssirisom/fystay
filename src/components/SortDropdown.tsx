@@ -8,7 +8,11 @@ export function SortDropdown() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentSort = parseSortParam(searchParams.get("sort") ?? undefined);
+  // Mirrors ListingsGrid's own default: a landmark search with no explicit
+  // sort yet is actually rendered nearest-first, so the dropdown should
+  // say that too rather than showing "Recommended" over a list that isn't.
+  const rawSort = searchParams.get("sort");
+  const currentSort = parseSortParam(rawSort ?? (searchParams.get("near") ? "distance_asc" : undefined));
 
   function handleChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());

@@ -2,6 +2,7 @@ import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, blockingRanges, isRangeAvailable, nightsBetween } from "@/lib/availability";
 import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
+import { findLandmarkByName } from "@/lib/landmarks";
 import { auth } from "@/auth";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
 import { ListingCard } from "@/components/ListingCard";
@@ -36,6 +37,13 @@ export async function ListingsGrid({
   showResultsView: boolean;
 }) {
   const city = typeof searchParams.city === "string" ? searchParams.city : "";
+  // A specific named place within that city (e.g. "Blackpool Pleasure
+  // Beach"), selected from the destination autocomplete's landmark
+  // suggestions - undefined for any value that isn't one of the app's own
+  // curated places, so an arbitrary/stale ?near= in the URL never trusts
+  // unverified coordinates.
+  const nearParam = typeof searchParams.near === "string" ? searchParams.near : "";
+  const landmark = nearParam ? findLandmarkByName(nearParam) : undefined;
   const checkInParam = typeof searchParams.checkIn === "string" ? searchParams.checkIn : "";
   const checkOutParam = typeof searchParams.checkOut === "string" ? searchParams.checkOut : "";
   const adults = parseGuestParam(searchParams.adults, 1);
@@ -129,10 +137,16 @@ export async function ListingsGrid({
   }));
 
   const filters = parseListingFiltersFromParams(searchParams, PROPERTY_TYPES);
-  const sort = parseSortParam(searchParams.sort);
+  // A landmark search with no explicit sort chosen yet defaults to nearest
+  // first, since that's the entire point of searching a specific place
+  // rather than a whole town - the SortDropdown mirrors this same default
+  // so it never shows "Recommended" while the list is actually ordered by
+  // distance.
+  const sort =
+    landmark && !searchParams.sort ? "distance_asc" : parseSortParam(searchParams.sort);
   const view = parseViewParam(searchParams.view);
 
-  const results = sortListings(applyListingFilters(petFiltered, filters), sort);
+  const results = sortListings(applyListingFilters(petFiltered, filters), sort, { near: landmark });
 
   const cityCounts = new Map<string, number>();
   for (const listing of results) {
@@ -205,6 +219,7 @@ export async function ListingsGrid({
               isSaved={savedListingIds.has(listing.id)}
               isLoggedIn={Boolean(session?.user)}
               nights={nights}
+              nearLandmark={landmark}
             />
           ))}
         </div>

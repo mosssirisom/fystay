@@ -4,6 +4,7 @@
  * directly; the API route (src/app/api/search/suggestions/route.ts) supplies
  * the real listing data and calls these functions.
  */
+import type { Landmark } from "@/lib/landmarks";
 
 export type DestinationSuggestion = {
   type: "destination";
@@ -34,6 +35,17 @@ export type HotelListing = {
   city: string;
   country: string;
   photos: string[];
+};
+
+export type LandmarkSuggestion = {
+  type: "landmark";
+  id: string;
+  name: string;
+  town: string;
+  label: string;
+  sublabel: string;
+  latitude: number;
+  longitude: number;
 };
 
 const HOTEL_PHRASE_PREFIXES = [
@@ -120,6 +132,39 @@ export function popularDestinations(
     .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city))
     .slice(0, limit)
     .map((entry) => destinationLabel(entry.city, entry.country));
+}
+
+/**
+ * Ranks real, named places (Blackpool Tower, Pleasure Beach...) against the
+ * query, so typing something more specific than a whole town - "Pleasure
+ * Beach" rather than "Blackpool" - surfaces that exact place rather than
+ * only the town it happens to be in. Selecting one scopes a search to that
+ * town *and* sorts by real distance to it (see the /search page), which is
+ * the whole point: a landmark match should read as more specific than a
+ * plain destination match, not just a same city result with a longer name.
+ */
+export function rankLandmarks(landmarks: Landmark[], query: string, limit = 4): LandmarkSuggestion[] {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return [];
+
+  const ranked = landmarks
+    .map((landmark) => {
+      const rank = matchRank(landmark.name, trimmedQuery);
+      return rank === null ? null : { landmark, rank };
+    })
+    .filter((x): x is { landmark: Landmark; rank: number } => x !== null)
+    .sort((a, b) => a.rank - b.rank || a.landmark.name.localeCompare(b.landmark.name));
+
+  return ranked.slice(0, limit).map(({ landmark }) => ({
+    type: "landmark" as const,
+    id: landmark.name,
+    name: landmark.name,
+    town: landmark.town,
+    label: landmark.name,
+    sublabel: `Near ${landmark.town}`,
+    latitude: landmark.latitude,
+    longitude: landmark.longitude,
+  }));
 }
 
 /** Ranks real listings (hotels/properties) by title against the raw query. */

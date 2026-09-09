@@ -4,9 +4,11 @@ import {
   popularDestinations,
   rankDestinations,
   rankHotels,
+  rankLandmarks,
   type CityAggregate,
   type HotelListing,
 } from "./searchSuggestions";
+import type { Landmark } from "./landmarks";
 
 const cities: CityAggregate[] = [
   { city: "Blackpool", country: "United Kingdom", count: 5 },
@@ -78,6 +80,35 @@ describe("popularDestinations", () => {
   it("ranks by listing count, largest first", () => {
     const results = popularDestinations(cities, { minPerSection: 2 });
     expect(results.map((r) => r.city)).toEqual(["Blackpool", "Lytham St Annes", "Orlando"]);
+  });
+});
+
+const landmarks: Landmark[] = [
+  { name: "Blackpool Pleasure Beach", category: "attraction", town: "Blackpool", latitude: 53.7877, longitude: -3.0522 },
+  { name: "Blackpool Tower", category: "attraction", town: "Blackpool", latitude: 53.8142, longitude: -3.0553 },
+  { name: "Fleetwood Market", category: "attraction", town: "Fleetwood", latitude: 53.9224, longitude: -3.0117 },
+];
+
+describe("rankLandmarks", () => {
+  it("matches a specific named place, more specific than its whole town", () => {
+    const results = rankLandmarks(landmarks, "Pleasure Beach");
+    expect(results.map((r) => r.name)).toEqual(["Blackpool Pleasure Beach"]);
+    expect(results[0].town).toBe("Blackpool");
+    expect(results[0].sublabel).toBe("Near Blackpool");
+  });
+
+  it("matches case-insensitively and by partial substring", () => {
+    expect(rankLandmarks(landmarks, "tower").map((r) => r.name)).toEqual(["Blackpool Tower"]);
+  });
+
+  it("returns nothing for an empty query", () => {
+    expect(rankLandmarks(landmarks, "")).toEqual([]);
+  });
+
+  it("carries real coordinates through for the search page to sort by", () => {
+    const [result] = rankLandmarks(landmarks, "Fleetwood Market");
+    expect(result.latitude).toBe(53.9224);
+    expect(result.longitude).toBe(-3.0117);
   });
 });
 

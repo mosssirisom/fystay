@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
+import { findLandmarkByName } from "@/lib/landmarks";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -20,6 +21,8 @@ export default async function SearchPage({
   searchParams: Promise<SearchParams>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const nearParam = typeof resolvedSearchParams.near === "string" ? resolvedSearchParams.near : "";
+  const landmark = nearParam ? findLandmarkByName(nearParam) : undefined;
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
@@ -28,9 +31,13 @@ export default async function SearchPage({
       </Suspense>
 
       <div className="mt-8">
-        <h1 className="text-xl font-bold text-foreground sm:text-2xl">Search results</h1>
+        <h1 className="text-xl font-bold text-foreground sm:text-2xl">
+          {landmark ? `Stays near ${landmark.name}` : "Search results"}
+        </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Refine with filters and sorting to find exactly what you&apos;re after.
+          {landmark
+            ? `Sorted by distance from ${landmark.name}, ${landmark.town} - use Sort to change that.`
+            : "Refine with filters and sorting to find exactly what you're after."}
         </p>
         <div className="mt-6">
           <Suspense fallback={<ListingsGridSkeleton />}>

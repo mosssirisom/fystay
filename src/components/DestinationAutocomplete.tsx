@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Building2, History, Loader2, MapPin, SearchX, Sparkles } from "lucide-react";
+import { Building2, History, Landmark, Loader2, MapPin, SearchX, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { DestinationSuggestion, HotelSuggestion } from "@/lib/searchSuggestions";
+import type { DestinationSuggestion, HotelSuggestion, LandmarkSuggestion } from "@/lib/searchSuggestions";
 
 // Deliberately shorter than the search-results debounce (350ms): suggestions
 // are a lightweight local query and should feel closer to instant as-you-type
@@ -14,12 +14,14 @@ const MAX_RECENT_SEARCHES = 5;
 
 type SelectPayload =
   | { type: "destination"; city: string }
+  | { type: "landmark"; name: string; town: string }
   | { type: "hotel"; listingId: string; title: string };
 
 type FlatItem =
   | { kind: "recent"; city: string }
   | { kind: "popular"; suggestion: DestinationSuggestion }
   | { kind: "destination"; suggestion: DestinationSuggestion }
+  | { kind: "landmark"; suggestion: LandmarkSuggestion }
   | { kind: "hotel"; suggestion: HotelSuggestion };
 
 function readRecentSearches(): string[] {
@@ -61,6 +63,7 @@ export function DestinationAutocomplete({
   const [errored, setErrored] = useState(false);
   const [popular, setPopular] = useState(true);
   const [destinations, setDestinations] = useState<DestinationSuggestion[]>([]);
+  const [landmarks, setLandmarks] = useState<LandmarkSuggestion[]>([]);
   const [hotels, setHotels] = useState<HotelSuggestion[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readRecentSearches());
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -108,21 +111,30 @@ export function DestinationAutocomplete({
             if (!res.ok) throw new Error("Search suggestions request failed");
             return res.json();
           })
-          .then((data: { popular: boolean; destinations: DestinationSuggestion[]; hotels: HotelSuggestion[] }) => {
-            // Guard against an older, slower request resolving after a newer
-            // one, so the dropdown never flashes back to stale results.
-            if (requestId !== requestIdRef.current) return;
-            setPopular(data.popular);
-            setDestinations(data.destinations ?? []);
-            setHotels(data.hotels ?? []);
-            setLoading(false);
-          })
+          .then(
+            (data: {
+              popular: boolean;
+              destinations: DestinationSuggestion[];
+              landmarks: LandmarkSuggestion[];
+              hotels: HotelSuggestion[];
+            }) => {
+              // Guard against an older, slower request resolving after a
+              // newer one, so the dropdown never flashes back to stale results.
+              if (requestId !== requestIdRef.current) return;
+              setPopular(data.popular);
+              setDestinations(data.destinations ?? []);
+              setLandmarks(data.landmarks ?? []);
+              setHotels(data.hotels ?? []);
+              setLoading(false);
+            },
+          )
           .catch((err) => {
             if (err instanceof DOMException && err.name === "AbortError") return;
             if (requestId !== requestIdRef.current) return;
             setErrored(true);
             setLoading(false);
             setDestinations([]);
+            setLandmarks([]);
             setHotels([]);
           });
       },
@@ -154,9 +166,10 @@ export function DestinationAutocomplete({
     }
     return [
       ...destinations.map((suggestion): FlatItem => ({ kind: "destination", suggestion })),
+      ...landmarks.map((suggestion): FlatItem => ({ kind: "landmark", suggestion })),
       ...hotels.map((suggestion): FlatItem => ({ kind: "hotel", suggestion })),
     ];
-  }, [popular, recentSearches, destinations, hotels]);
+  }, [popular, recentSearches, destinations, landmarks, hotels]);
 
   function select(item: FlatItem) {
     if (item.kind === "recent") {
@@ -167,6 +180,10 @@ export function DestinationAutocomplete({
       onChange(item.suggestion.city);
       onSelect({ type: "destination", city: item.suggestion.city });
       saveRecentSearch(item.suggestion.city);
+    } else if (item.kind === "landmark") {
+      onChange(item.suggestion.name);
+      onSelect({ type: "landmark", name: item.suggestion.name, town: item.suggestion.town });
+      saveRecentSearch(item.suggestion.name);
     } else {
       onChange(item.suggestion.label);
       onSelect({ type: "hotel", listingId: item.suggestion.id, title: item.suggestion.label });
@@ -274,7 +291,7 @@ export function DestinationAutocomplete({
           {!loading && !errored && showNoResults && (
             <div className="flex flex-col items-center gap-1.5 px-3 py-6 text-center">
               <SearchX className="h-5 w-5 text-zinc-300" aria-hidden />
-              <p className="text-sm font-medium text-foreground">No destinations or hotels found</p>
+              <p className="text-sm font-medium text-foreground">No destinations, places or hotels found</p>
               <p className="text-xs text-zinc-500">Try a city, town, region or hotel name.</p>
             </div>
           )}
@@ -336,10 +353,35 @@ export function DestinationAutocomplete({
                     </FirstOfGroup>
                   );
                 }
+                if (item.kind === "landmark") {
+                  itemIndex++;
+                  const index = itemIndex;
+                  return (
+                    <FirstOfGroup
+                      key={`landmark-${item.suggestion.id}`}
+                      show={index === destinations.length}
+                      label="Places"
+                    >
+                      <SuggestionRow
+                        id={`${id}-option-${index}`}
+                        active={highlightedIndex === index}
+                        icon={<Landmark className="h-4 w-4 text-brand-600" aria-hidden />}
+                        label={item.suggestion.label}
+                        sublabel={item.suggestion.sublabel}
+                        onSelect={() => select(item)}
+                        onHover={() => setHighlightedIndex(index)}
+                      />
+                    </FirstOfGroup>
+                  );
+                }
                 itemIndex++;
                 const index = itemIndex;
                 return (
-                  <FirstOfGroup key={`hotel-${item.suggestion.id}`} show={index === destinations.length} label="Hotels">
+                  <FirstOfGroup
+                    key={`hotel-${item.suggestion.id}`}
+                    show={index === destinations.length + landmarks.length}
+                    label="Hotels"
+                  >
                     <SuggestionRow
                       id={`${id}-option-${index}`}
                       active={highlightedIndex === index}

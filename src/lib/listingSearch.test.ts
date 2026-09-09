@@ -121,6 +121,24 @@ describe("sortListings", () => {
   it("sorts by most reviewed", () => {
     expect(sortListings(listings, "reviews_desc").map((l) => l.id)).toEqual(["b", "a", "c"]);
   });
+
+  it("distance_asc sorts nearest-first to the given point, sinking listings with no coordinates", () => {
+    const near = { latitude: 53.7877, longitude: -3.0522 }; // Blackpool Pleasure Beach
+    const placed = [
+      listing({ id: "far", latitude: 53.9256, longitude: -3.0113 }), // Fleetwood - miles away
+      listing({ id: "near", latitude: 53.7883, longitude: -3.0503 }), // Sandcastle Waterpark - right next door
+      listing({ id: "unplaced" }), // no coordinates at all
+    ];
+    expect(sortListings(placed, "distance_asc", { near }).map((l) => l.id)).toEqual([
+      "near",
+      "far",
+      "unplaced",
+    ]);
+  });
+
+  it("distance_asc is a no-op without a reference point, rather than crashing", () => {
+    expect(sortListings(listings, "distance_asc").map((l) => l.id)).toEqual(["a", "b", "c"]);
+  });
 });
 
 describe("parseListingFiltersFromParams", () => {

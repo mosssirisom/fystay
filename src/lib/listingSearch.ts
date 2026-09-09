@@ -1,5 +1,6 @@
 import { averageRating } from "@/lib/reviews";
 import { matchesAmenityCategories } from "@/lib/amenityCategories";
+import { distanceMiles } from "@/lib/geo";
 import type { PropertyType } from "@/lib/propertyType";
 
 export type SearchableListing = {
@@ -10,6 +11,8 @@ export type SearchableListing = {
   bathrooms: number;
   amenities: string[];
   reviews: { rating: number }[];
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export type ListingFilters = {
@@ -63,7 +66,13 @@ export function applyListingFilters<T extends SearchableListing>(
   });
 }
 
-export type SortKey = "recommended" | "price_asc" | "price_desc" | "rating_desc" | "reviews_desc";
+export type SortKey =
+  | "recommended"
+  | "price_asc"
+  | "price_desc"
+  | "rating_desc"
+  | "reviews_desc"
+  | "distance_asc";
 
 export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "recommended", label: "Recommended" },
@@ -71,6 +80,7 @@ export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "price_desc", label: "Price: high to low" },
   { key: "rating_desc", label: "Highest rated" },
   { key: "reviews_desc", label: "Most reviewed" },
+  { key: "distance_asc", label: "Distance: nearest first" },
 ];
 
 /**
@@ -78,9 +88,21 @@ export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
  * from the database query) rather than reshuffling - every other option
  * does a stable sort over that same order, so ties keep breaking the same
  * predictable way.
+ *
+ * `near`, when given, is the point "distance_asc" measures from - a named
+ * place a guest searched for (see landmarks.ts), not just the town it's
+ * in. Without a `near` point, "distance_asc" has nothing to measure from
+ * and is a deliberate no-op rather than a crash: a stale/typed-in
+ * ?sort=distance_asc with no ?near= should just fall back to the existing
+ * order, not error.
  */
-export function sortListings<T extends SearchableListing>(listings: T[], sort: SortKey): T[] {
+export function sortListings<T extends SearchableListing>(
+  listings: T[],
+  sort: SortKey,
+  { near }: { near?: { latitude: number; longitude: number } } = {},
+): T[] {
   if (sort === "recommended") return listings;
+  if (sort === "distance_asc" && !near) return listings;
 
   const withMeta = listings.map((listing) => ({
     listing,
@@ -102,6 +124,17 @@ export function sortListings<T extends SearchableListing>(listings: T[], sort: S
     case "reviews_desc":
       withMeta.sort((a, b) => b.reviewCount - a.reviewCount);
       break;
+    case "distance_asc": {
+      // A listing with no coordinates yet can't be placed relative to
+      // `near`, so it sinks to the bottom rather than being treated as 0
+      // miles away - the same "unknown isn't zero" rule rating_desc uses.
+      const distanceOf = (listing: T) =>
+        listing.latitude != null && listing.longitude != null
+          ? distanceMiles(near!, { latitude: listing.latitude, longitude: listing.longitude })
+          : Infinity;
+      withMeta.sort((a, b) => distanceOf(a.listing) - distanceOf(b.listing));
+      break;
+    }
   }
 
   return withMeta.map((entry) => entry.listing);

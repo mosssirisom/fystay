@@ -8,13 +8,46 @@ export type BookedRange = { checkIn: Date; checkOut: Date };
 // only block while recent enough that the guest might still complete it.
 export const PENDING_BOOKING_HOLD_MINUTES = 30;
 
-/** Prisma `where` clause selecting bookings that currently block availability. */
+// Request-to-book (Listing.instantBook = false - see BookingApprovalStatus):
+// how long a request holds its dates while the host hasn't yet responded.
+// Much longer than PENDING_BOOKING_HOLD_MINUTES since a host, unlike a
+// guest mid-checkout, isn't expected to be online right now.
+export const REQUEST_HOLD_HOURS = 24;
+
+/**
+ * Prisma `where` clause selecting bookings that currently block
+ * availability. A PENDING booking's hold window depends on which stage of
+ * request-to-book it's at (see BookingApprovalStatus): NONE (instant book,
+ * the common case) holds from creation for PENDING_BOOKING_HOLD_MINUTES,
+ * exactly as before this existed; AWAITING holds from creation for the
+ * much longer REQUEST_HOLD_HOURS, since the host - not the guest - is who
+ * needs time to respond; APPROVED holds from the moment of approval (not
+ * the original request) for the same short PENDING_BOOKING_HOLD_MINUTES a
+ * guest now has to actually pay. DECLINED/EXPIRED never appear here: both
+ * flip the booking's own status to CANCELLED immediately, which already
+ * never blocks.
+ */
 export function blockingBookingWhere(now: Date = new Date()) {
-  const cutoff = new Date(now.getTime() - PENDING_BOOKING_HOLD_MINUTES * 60 * 1000);
+  const holdCutoff = new Date(now.getTime() - PENDING_BOOKING_HOLD_MINUTES * 60 * 1000);
+  const requestCutoff = new Date(now.getTime() - REQUEST_HOLD_HOURS * 60 * 60 * 1000);
   return {
     OR: [
       { status: "CONFIRMED" as const },
-      { status: "PENDING" as const, createdAt: { gte: cutoff } },
+      {
+        status: "PENDING" as const,
+        approvalStatus: "NONE" as const,
+        createdAt: { gte: holdCutoff },
+      },
+      {
+        status: "PENDING" as const,
+        approvalStatus: "AWAITING" as const,
+        createdAt: { gte: requestCutoff },
+      },
+      {
+        status: "PENDING" as const,
+        approvalStatus: "APPROVED" as const,
+        hostRespondedAt: { gte: holdCutoff },
+      },
     ],
   };
 }

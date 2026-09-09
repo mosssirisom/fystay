@@ -52,11 +52,41 @@ export const AMENITY_CATEGORIES: AmenityCategory[] = [
     icon: PawPrint,
     test: (a) => isPetFriendly(a),
   },
+  // Five specific, independently-checkable features rather than one catch-
+  // all "Accessible" toggle - a guest who actually needs, say, a roll-in
+  // shower can't tell that from a single blanket badge, and a host ticking
+  // one shouldn't be read as claiming all five. Worded to match the
+  // specific AMENITY_OPTIONS entries in ListingForm.tsx one-for-one, the
+  // same convention as every other category above.
   {
-    key: "accessible",
-    label: "Accessible",
+    key: "step_free_entrance",
+    label: "Step-free entrance",
     icon: Accessibility,
-    test: (a) => a.some((x) => /accessib|wheelchair|step-?free/i.test(x)),
+    test: (a) => a.some((x) => /step-?free entr/i.test(x)),
+  },
+  {
+    key: "wide_doorways",
+    label: "Wide doorways",
+    icon: Accessibility,
+    test: (a) => a.some((x) => /wide doorway|wide hallway/i.test(x)),
+  },
+  {
+    key: "accessible_bathroom",
+    label: "Accessible bathroom",
+    icon: Accessibility,
+    test: (a) => a.some((x) => /accessible bathroom|roll-in shower|grab rail/i.test(x)),
+  },
+  {
+    key: "elevator_access",
+    label: "Elevator access",
+    icon: Accessibility,
+    test: (a) => a.some((x) => /elevator|lift access/i.test(x)),
+  },
+  {
+    key: "accessible_parking",
+    label: "Accessible parking",
+    icon: Accessibility,
+    test: (a) => a.some((x) => /accessible parking|disabled parking/i.test(x)),
   },
 ];
 

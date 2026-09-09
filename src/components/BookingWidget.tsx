@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { type DateRange } from "react-day-picker";
 import { format, subDays } from "date-fns";
 import { toast } from "sonner";
-import { ArrowRight, CalendarClock, Lock, MessageCircle, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, CalendarClock, Lock, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
@@ -35,6 +35,8 @@ type Props = {
   rating?: number | null;
   reviewCount?: number;
   cancellationPolicy: CancellationPolicy;
+  /** false means this listing is request-to-book: a guest submits a request and the host must accept it before any payment is offered. */
+  instantBook: boolean;
 };
 
 export function BookingWidget({
@@ -52,6 +54,7 @@ export function BookingWidget({
   rating = null,
   reviewCount = 0,
   cancellationPolicy,
+  instantBook,
 }: Props) {
   const router = useRouter();
   const [range, setRange] = useState<DateRange | undefined>();
@@ -200,7 +203,12 @@ export function BookingWidget({
         return;
       }
 
-      router.push(`/checkout/${bookingData.booking.id}`);
+      if (bookingData.booking.approvalStatus === "AWAITING") {
+        toast.success("Request sent - the host has 24 hours to respond.");
+        router.push(`/bookings/${bookingData.booking.id}`);
+      } else {
+        router.push(`/checkout/${bookingData.booking.id}`);
+      }
     } catch {
       setError("Something went wrong. Please try again.");
       toast.error("Something went wrong. Please try again.");
@@ -341,7 +349,7 @@ export function BookingWidget({
             size="lg"
             className="mt-4 w-full"
           >
-            Reserve your stay
+            {instantBook ? "Reserve your stay" : "Request to book"}
             <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
           </Button>
         ) : (
@@ -363,7 +371,22 @@ export function BookingWidget({
           {isLoggedIn && (
             <p className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-              {availabilityChecked ? "You won't be charged yet" : "We'll confirm your dates are free"}
+              {availabilityChecked
+                ? instantBook
+                  ? "You won't be charged yet"
+                  : "You won't be charged unless the host accepts"
+                : "We'll confirm your dates are free"}
+            </p>
+          )}
+          {instantBook ? (
+            <p className="flex items-center gap-2">
+              <Zap className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+              Instant Book - no approval needed
+            </p>
+          ) : (
+            <p className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+              The host has 24 hours to accept your request
             </p>
           )}
           <p className="flex items-center gap-2">

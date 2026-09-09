@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertTriangle, Camera, ClipboardList, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
+import { AlertTriangle, Camera, ClipboardList, Home, MapPin, ShieldCheck, Wallet, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -65,6 +65,7 @@ export type ListingFormValues = {
   customCancellationRefundPercent: string;
   minNights: string;
   maxNights: string;
+  instantBook: boolean;
   checkInTime: string;
   checkOutTime: string;
   selfCheckIn: boolean;
@@ -100,6 +101,7 @@ const emptyValues: ListingFormValues = {
   customCancellationRefundPercent: "50",
   minNights: "1",
   maxNights: "",
+  instantBook: true,
   checkInTime: "",
   checkOutTime: "",
   selfCheckIn: false,
@@ -131,7 +133,11 @@ const AMENITY_OPTIONS = [
   "Hot tub",
   "Gym",
   "Pet friendly",
-  "Wheelchair accessible",
+  "Step-free entrance",
+  "Wide doorways",
+  "Accessible bathroom",
+  "Elevator access",
+  "Accessible parking",
   "Sea view",
   "Garden",
   "Balcony",
@@ -255,6 +261,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
         : {}),
       minNights: values.minNights ? Number(values.minNights) : 1,
       maxNights: values.maxNights ? Number(values.maxNights) : null,
+      instantBook: values.instantBook,
       checkInTime: values.checkInTime.trim() || null,
       checkOutTime: values.checkOutTime.trim() || null,
       selfCheckIn: values.selfCheckIn,
@@ -681,6 +688,31 @@ export function ListingForm({ listingId, initialValues }: Props) {
               onChange={(e) => update("additionalRules", e.target.value)}
               placeholder="e.g. No shoes indoors, recycling goes in the blue bin"
             />
+          </Field>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <SectionHeading icon={Zap}>Booking settings</SectionHeading>
+        </CardHeader>
+        <CardContent>
+          <Field>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="instantBook" className="mb-0">
+                Instant Book
+              </Label>
+              <AmenityCheckbox
+                active={values.instantBook}
+                onClick={() => update("instantBook", !values.instantBook)}
+              >
+                {values.instantBook ? "On - guests book instantly" : "Off - you approve each request"}
+              </AmenityCheckbox>
+            </div>
+            <FieldHint>
+              With Instant Book off, a guest submits a request instead of paying right away - you
+              have 24 hours to accept or decline before it expires automatically.
+            </FieldHint>
           </Field>
         </CardContent>
       </Card>

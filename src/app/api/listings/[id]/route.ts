@@ -34,6 +34,7 @@ const updateListingSchema = z
     checkInTime: z.string().max(50).nullable().optional(),
     checkOutTime: z.string().max(50).nullable().optional(),
     selfCheckIn: z.boolean().optional(),
+    instantBook: z.boolean().optional(),
     checkInInstructions: z.string().max(2000).nullable().optional(),
     wifiNetwork: z.string().max(100).nullable().optional(),
     wifiPassword: z.string().max(100).nullable().optional(),

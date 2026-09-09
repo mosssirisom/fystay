@@ -8,12 +8,14 @@ import {
   blockingRanges,
   isRangeAvailable,
   nightsBetween,
+  REQUEST_HOLD_HOURS,
   stayLengthError,
 } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 import { generateBookingReference } from "@/lib/bookingReference";
-import { completePastBookings } from "@/lib/bookingLifecycle";
+import { completePastBookings, expireStaleBookingRequests } from "@/lib/bookingLifecycle";
 import { computeCreditToApply } from "@/lib/referral";
+import { sendBookingRequestReceivedEmail } from "@/lib/notificationEmails";
 
 const createBookingSchema = z.object({
   listingId: z.string().min(1),
@@ -29,6 +31,7 @@ export async function GET() {
   }
 
   await completePastBookings(prisma, session.user.id);
+  await expireStaleBookingRequests(prisma, { guestId: session.user.id });
 
   const bookings = await prisma.booking.findMany({
     where: { guestId: session.user.id },
@@ -87,11 +90,12 @@ export async function POST(request: Request) {
   // failure, which is caught below and turned into a normal 409.
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const booking = await prisma.$transaction(
+      const result = await prisma.$transaction(
         async (tx) => {
           const listing = await tx.listing.findUnique({
             where: { id: listingId },
             include: {
+              host: { select: { name: true, email: true } },
               bookings: {
                 where: blockingBookingWhere(),
                 select: { checkIn: true, checkOut: true },
@@ -157,7 +161,13 @@ export async function POST(request: Request) {
             });
           }
 
-          return tx.booking.create({
+          // instantBook is read at the moment of booking, not re-checked
+          // later - a host flipping the setting must never retroactively
+          // change a request that's already awaiting (or already got) a
+          // decision.
+          const requiresApproval = !listing.instantBook;
+
+          const createdBooking = await tx.booking.create({
             data: {
               reference: generateBookingReference(),
               listingId,
@@ -176,11 +186,41 @@ export async function POST(request: Request) {
               totalPriceCents: pricing.totalPriceCents - creditAppliedCents,
               guestName: guestAccount?.name,
               guestEmail: guestAccount?.email,
+              approvalStatus: requiresApproval ? "AWAITING" : "NONE",
+              requestExpiresAt: requiresApproval
+                ? new Date(Date.now() + REQUEST_HOLD_HOURS * 60 * 60 * 1000)
+                : null,
             },
           });
+
+          return { booking: createdBooking, listingTitle: listing.title, city: listing.city, host: listing.host };
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
+
+      const { booking, listingTitle, city, host } = result;
+
+      if (booking.approvalStatus === "AWAITING") {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+        await sendBookingRequestReceivedEmail(
+          {
+            reference: booking.reference,
+            listingTitle,
+            city,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            nights: booking.nights,
+            guests: booking.guests,
+            totalPriceCents: booking.totalPriceCents,
+            guestName: booking.guestName,
+            guestEmail: booking.guestEmail,
+            hostName: host.name,
+            hostEmail: host.email,
+            bookingUrl: `${baseUrl}/host/dashboard`,
+          },
+          REQUEST_HOLD_HOURS,
+        );
+      }
 
       return NextResponse.json({ booking }, { status: 201 });
     } catch (error) {

@@ -62,6 +62,7 @@ export default async function EditListingPage({
           ).toString(),
           minNights: listing.minNights.toString(),
           maxNights: listing.maxNights?.toString() ?? "",
+          instantBook: listing.instantBook,
           checkInTime: listing.checkInTime ?? "",
           checkOutTime: listing.checkOutTime ?? "",
           selfCheckIn: listing.selfCheckIn,

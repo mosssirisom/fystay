@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, DoorOpen, Wifi } from "lucide-react";
+import { ArrowLeft, DoorOpen, Hourglass, Wifi } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere } from "@/lib/availability";
-import { completePastBookings } from "@/lib/bookingLifecycle";
+import { completePastBookings, expireStaleBookingRequests } from "@/lib/bookingLifecycle";
+import { buttonVariants } from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
 import { canCancelBooking, canRequestBookingChange } from "@/lib/changeRequests";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -51,6 +53,7 @@ export default async function BookingDetailPage({
   }
 
   await completePastBookings(prisma, session.user.id);
+  await expireStaleBookingRequests(prisma, { guestId: session.user.id });
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -94,6 +97,21 @@ export default async function BookingDetailPage({
   const canRebook =
     booking.status === "COMPLETED" || booking.status === "CANCELLED" || booking.status === "REFUNDED";
 
+  // Request-to-book (see Listing.instantBook) overrides the plain
+  // status badge while its outcome is still worth calling out
+  // specifically - a guest declined by the host shouldn't read the same
+  // generic "Cancelled" as one who cancelled their own trip.
+  const requestBadge: { label: string; variant: BadgeProps["variant"] } | null =
+    booking.approvalStatus === "AWAITING"
+      ? { label: "Awaiting host approval", variant: "warning" }
+      : booking.approvalStatus === "APPROVED" && booking.status === "PENDING"
+        ? { label: "Approved - payment due", variant: "warning" }
+        : booking.approvalStatus === "DECLINED"
+          ? { label: "Request declined", variant: "neutral" }
+          : booking.approvalStatus === "EXPIRED"
+            ? { label: "Request expired", variant: "neutral" }
+            : null;
+
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 pb-24 lg:pb-8">
       <Link
@@ -112,10 +130,61 @@ export default async function BookingDetailPage({
           </p>
           <p className="mt-1 text-xs font-medium text-zinc-500">Booking #{booking.reference}</p>
         </div>
-        <Badge variant={statusVariant[booking.status]}>
-          {statusLabel[booking.status] ?? booking.status}
+        <Badge variant={requestBadge?.variant ?? statusVariant[booking.status]}>
+          {requestBadge?.label ?? statusLabel[booking.status] ?? booking.status}
         </Badge>
       </div>
+
+      {booking.approvalStatus !== "NONE" && (
+        <Card className="mt-4 flex flex-row items-start gap-3 border-brand-100 bg-brand-50 p-4">
+          <Hourglass className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
+          <div>
+            {booking.approvalStatus === "AWAITING" && (
+              <>
+                <p className="font-medium text-brand-900">
+                  Request sent to {booking.listing.host.name}
+                </p>
+                <p className="text-sm text-brand-800">
+                  You won&apos;t be charged unless they accept. They have until{" "}
+                  {booking.requestExpiresAt?.toLocaleString()} to respond.
+                </p>
+              </>
+            )}
+            {booking.approvalStatus === "APPROVED" && booking.status === "PENDING" && (
+              <>
+                <p className="font-medium text-brand-900">Your request was approved!</p>
+                <p className="text-sm text-brand-800">
+                  Complete payment to confirm your stay with {booking.listing.host.name}.
+                </p>
+                <Link
+                  href={`/checkout/${booking.id}`}
+                  className={cn(buttonVariants({ size: "sm" }), "mt-3")}
+                >
+                  Complete booking
+                </Link>
+              </>
+            )}
+            {booking.approvalStatus === "DECLINED" && (
+              <>
+                <p className="font-medium text-brand-900">Request declined</p>
+                <p className="text-sm text-brand-800">
+                  {booking.listing.host.name} wasn&apos;t able to accept this request. Any credit
+                  you applied has been returned to your balance.
+                </p>
+              </>
+            )}
+            {booking.approvalStatus === "EXPIRED" && (
+              <>
+                <p className="font-medium text-brand-900">Request expired</p>
+                <p className="text-sm text-brand-800">
+                  {booking.listing.host.name} didn&apos;t respond in time. Any credit you applied
+                  has been returned to your balance.
+                </p>
+              </>
+            )}
+          </div>
+        </Card>
+      )}
 
       <PhotoGallery photos={booking.listing.photos} title={booking.listing.title} />
 

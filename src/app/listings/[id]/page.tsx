@@ -438,6 +438,7 @@ export default async function ListingDetailPage({
             rating={rating}
             reviewCount={reviewCount}
             cancellationPolicy={cancellationPolicy}
+            instantBook={listing.instantBook}
           />
         </div>
       </div>

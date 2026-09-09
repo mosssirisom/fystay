@@ -6,6 +6,7 @@ import {
   nightsBetween,
   PENDING_BOOKING_HOLD_MINUTES,
   rangesOverlap,
+  REQUEST_HOLD_HOURS,
   stayLengthError,
 } from "./availability";
 
@@ -71,11 +72,35 @@ describe("blockingBookingWhere", () => {
     expect(where.OR).toContainEqual({ status: "CONFIRMED" });
   });
 
-  it("sets the PENDING cutoff to exactly the hold window before `now`", () => {
+  it("sets the instant-book PENDING cutoff to exactly the hold window before `now`", () => {
     const now = d("2026-06-01T12:00:00Z");
     const where = blockingBookingWhere(now);
-    const pendingClause = where.OR.find((clause) => clause.status === "PENDING");
+    const pendingClause = where.OR.find(
+      (clause) => clause.status === "PENDING" && clause.approvalStatus === "NONE",
+    );
     expect(pendingClause?.createdAt.gte.toISOString()).toBe(
+      new Date(now.getTime() - PENDING_BOOKING_HOLD_MINUTES * 60_000).toISOString(),
+    );
+  });
+
+  it("holds an AWAITING request's dates for the much longer REQUEST_HOLD_HOURS from creation", () => {
+    const now = d("2026-06-01T12:00:00Z");
+    const where = blockingBookingWhere(now);
+    const awaitingClause = where.OR.find(
+      (clause) => clause.status === "PENDING" && clause.approvalStatus === "AWAITING",
+    );
+    expect(awaitingClause?.createdAt.gte.toISOString()).toBe(
+      new Date(now.getTime() - REQUEST_HOLD_HOURS * 60 * 60_000).toISOString(),
+    );
+  });
+
+  it("holds an APPROVED request from the moment of approval, not the original request", () => {
+    const now = d("2026-06-01T12:00:00Z");
+    const where = blockingBookingWhere(now);
+    const approvedClause = where.OR.find(
+      (clause) => clause.status === "PENDING" && clause.approvalStatus === "APPROVED",
+    );
+    expect(approvedClause?.hostRespondedAt.gte.toISOString()).toBe(
       new Date(now.getTime() - PENDING_BOOKING_HOLD_MINUTES * 60_000).toISOString(),
     );
   });

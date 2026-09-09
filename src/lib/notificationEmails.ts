@@ -142,3 +142,75 @@ export async function sendBookingCancelledEmails(
 
   await Promise.allSettled(sends);
 }
+
+/**
+ * Sent to the host the moment a guest submits a request-to-book request
+ * (Listing.instantBook = false) - the host's card-free equivalent of
+ * sendBookingConfirmedEmails' "new booking" alert, since nothing has been
+ * charged yet for a request. hoursToRespond is REQUEST_HOLD_HOURS from
+ * availability.ts, passed in rather than imported so this file keeps its
+ * existing "just builds and sends messages" shape.
+ */
+export async function sendBookingRequestReceivedEmail(
+  ctx: BookingEmailContext,
+  hoursToRespond: number,
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend) return;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.hostEmail,
+    subject: `Booking request: ${ctx.listingTitle}`,
+    html: `
+      <p>Hi ${ctx.hostName},</p>
+      <p>${ctx.guestName ?? "A guest"} would like to book <strong>${ctx.listingTitle}</strong>.</p>
+      <p>${stayLine(ctx)}<br>
+      Total: ${formatPrice(ctx.totalPriceCents)}</p>
+      <p>Please respond within ${hoursToRespond} hours, or the request expires and the guest is notified automatically.</p>
+      <p><a href="${ctx.bookingUrl}">Review this request</a></p>
+    `,
+  });
+}
+
+/**
+ * Sent to the guest once their request-to-book request has been resolved,
+ * one way or another. "approved" points them at the checkout link they
+ * still need to complete (bookingUrl doubles as that link - see the
+ * approve branch of /api/bookings/[id]/respond); "declined" and "expired"
+ * both mean the same practical thing (no reservation, dates released) but
+ * read very differently to a guest, so they're worded apart rather than
+ * collapsed into one generic "not approved" message.
+ */
+export async function sendBookingRequestRespondedEmail(
+  ctx: BookingEmailContext,
+  outcome: "approved" | "declined" | "expired",
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  const subject =
+    outcome === "approved"
+      ? `Request approved: ${ctx.listingTitle}`
+      : `Request not approved: ${ctx.listingTitle}`;
+  const bodyLine =
+    outcome === "approved"
+      ? `Great news - ${ctx.hostName} approved your request. Complete payment to confirm your stay.`
+      : outcome === "declined"
+        ? `${ctx.hostName} wasn't able to accept your request for these dates.`
+        : `${ctx.hostName} didn't respond in time, so this request has expired. Any credit you applied has been returned to your account.`;
+  const linkLabel = outcome === "approved" ? "Complete your booking" : "View details";
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject,
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>${bodyLine}</p>
+      <p><strong>${ctx.listingTitle}</strong><br>
+      ${stayLine(ctx)}</p>
+      <p><a href="${ctx.bookingUrl}">${linkLabel}</a></p>
+    `,
+  });
+}

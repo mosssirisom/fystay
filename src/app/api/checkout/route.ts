@@ -58,6 +58,12 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
+  if (booking.approvalStatus === "AWAITING") {
+    return NextResponse.json(
+      { error: "This booking is still awaiting host approval" },
+      { status: 403 },
+    );
+  }
 
   // Guest details entered/confirmed on the checkout page are saved onto the
   // booking right before payment, so they're captured even if the guest

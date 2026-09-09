@@ -52,6 +52,22 @@ enum ChangeRequestStatus {
   DECLINED
 }
 
+// NONE: this booking never needed host approval (Listing.instantBook was
+// true at creation) - the overwhelming majority of bookings. The other four
+// only ever apply to a Listing.instantBook = false request: AWAITING while
+// the host has yet to respond, then exactly one of APPROVED (booking stays
+// PENDING, now payable), DECLINED (host said no), or EXPIRED (host never
+// responded within REQUEST_HOLD_HOURS) - the latter two both also flip the
+// booking's own status straight to CANCELLED, since a request nobody
+// accepted was never a reservation to begin with.
+enum BookingApprovalStatus {
+  NONE
+  AWAITING
+  APPROVED
+  DECLINED
+  EXPIRED
+}
+
 enum PropertyType {
   APARTMENT
   HOUSE
@@ -186,6 +202,12 @@ model Listing {
   photos                 String[]
   amenities              String[]
   published              Boolean      @default(true)
+  // true (the default, preserving every existing listing's behavior): a
+  // guest's booking goes straight to payment, same as today. false: the
+  // guest instead submits a request (see Booking.approvalStatus) that the
+  // host must accept within REQUEST_HOLD_HOURS before payment is even
+  // offered - no card is touched until the host says yes.
+  instantBook            Boolean      @default(true)
   createdAt              DateTime     @default(now())
   updatedAt              DateTime     @updatedAt
 
@@ -317,6 +339,18 @@ model Booking {
   // never the host's share. 0 when the guest had no balance to spend.
   creditAppliedCents        Int     @default(0)
   totalPriceCents           Int
+
+  // Request-to-book (see Listing.instantBook and BookingApprovalStatus).
+  // requestExpiresAt is only ever set alongside approvalStatus AWAITING -
+  // the deadline by which the host must respond before
+  // expireStaleBookingRequests treats the request as expired.
+  // hostRespondedAt is when the host actually approved/declined (or, for
+  // an EXPIRED request, when the expiry itself was processed) - distinct
+  // from paidAt, which is about the guest's payment, not the host's
+  // decision.
+  approvalStatus   BookingApprovalStatus @default(NONE)
+  requestExpiresAt DateTime?
+  hostRespondedAt  DateTime?
 
   // Contact details for this specific stay, captured at checkout. Kept on
   // the booking (rather than read live off the account) so the record

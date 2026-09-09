@@ -40,6 +40,12 @@ export default async function CheckoutPage({
   if (booking.status !== "PENDING") {
     redirect(`/bookings/${booking.id}/confirmation`);
   }
+  // Awaiting a host decision (see Listing.instantBook) - nothing to pay for
+  // yet, so send the guest to their booking's own status page instead of a
+  // payment form they can't use.
+  if (booking.approvalStatus === "AWAITING") {
+    redirect(`/bookings/${booking.id}`);
+  }
 
   const holdExpiresAt = new Date(
     booking.createdAt.getTime() + PENDING_BOOKING_HOLD_MINUTES * 60 * 1000,

@@ -21,6 +21,23 @@ describe("AMENITY_CATEGORIES", () => {
     expect(petFriendly.test(["Pet friendly"])).toBe(true);
     expect(petFriendly.test(["Kitchen"])).toBe(false);
   });
+
+  it("treats each accessibility feature as its own filter, not one blanket toggle", () => {
+    const stepFree = AMENITY_CATEGORIES.find((c) => c.key === "step_free_entrance")!;
+    expect(stepFree.test(["Step-free entrance"])).toBe(true);
+    expect(stepFree.test(["Wide doorways"])).toBe(false);
+
+    const bathroom = AMENITY_CATEGORIES.find((c) => c.key === "accessible_bathroom")!;
+    expect(bathroom.test(["Accessible bathroom"])).toBe(true);
+    expect(bathroom.test(["Roll-in shower available"])).toBe(true);
+    expect(bathroom.test(["Step-free entrance"])).toBe(false);
+
+    const parking = AMENITY_CATEGORIES.find((c) => c.key === "accessible_parking")!;
+    expect(parking.test(["Accessible parking"])).toBe(true);
+    // A listing tagged only with the general parking amenity hasn't
+    // actually confirmed the accessible-parking feature specifically.
+    expect(parking.test(["Free parking"])).toBe(false);
+  });
 });
 
 describe("matchesAmenityCategories", () => {
@@ -45,7 +62,7 @@ describe("availableAmenityCategories", () => {
     const available = availableAmenityCategories(listings).map((c) => c.key);
     expect(available).toEqual(expect.arrayContaining(["wifi", "kitchen", "parking"]));
     expect(available).not.toContain("pet_friendly");
-    expect(available).not.toContain("accessible");
+    expect(available).not.toContain("step_free_entrance");
   });
 
   it("returns nothing when no listings are given", () => {

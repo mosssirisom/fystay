@@ -6,10 +6,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { averageRating } from "@/lib/reviews";
 import { computeOccupancyRate, summarizeEarnings } from "@/lib/hostStats";
+import { expireStaleBookingRequests } from "@/lib/bookingLifecycle";
 import { isConnectReady } from "@/lib/stripeConnect";
 import { formatPrice } from "@/lib/format";
 import { HostListingRow } from "@/components/HostListingRow";
-import { NeedsAttention, type PendingChangeRequest } from "@/components/host/NeedsAttention";
+import { NeedsAttention, type AttentionItem } from "@/components/host/NeedsAttention";
 import { StatCard } from "@/components/host/StatCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Card } from "@/components/ui/Card";
@@ -22,6 +23,8 @@ export default async function HostDashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login?callbackUrl=/host/dashboard");
   if (session.user.role !== "HOST") redirect("/");
+
+  await expireStaleBookingRequests(prisma, { hostId: session.user.id });
 
   const listings = await prisma.listing.findMany({
     where: { hostId: session.user.id },
@@ -60,11 +63,12 @@ export default async function HostDashboardPage() {
   const allReviews = listings.flatMap((l) => l.reviews);
   const overallRating = averageRating(allReviews);
 
-  const pendingRequests: PendingChangeRequest[] = listings.flatMap((listing) =>
+  const pendingChangeRequests: AttentionItem[] = listings.flatMap((listing) =>
     listing.bookings.flatMap((booking) =>
       booking.changeRequests
         .filter((cr) => cr.status === "PENDING")
         .map((cr) => ({
+          kind: "change" as const,
           id: cr.id,
           bookingId: booking.id,
           listingId: listing.id,
@@ -76,6 +80,22 @@ export default async function HostDashboardPage() {
         })),
     ),
   );
+  const pendingBookingRequests: AttentionItem[] = listings.flatMap((listing) =>
+    listing.bookings
+      .filter((booking) => booking.approvalStatus === "AWAITING")
+      .map((booking) => ({
+        kind: "booking" as const,
+        id: booking.id,
+        listingId: listing.id,
+        listingTitle: listing.title,
+        guestName: booking.guestName,
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        guests: booking.guests,
+        totalPriceCents: booking.totalPriceCents,
+      })),
+  );
+  const pendingRequests: AttentionItem[] = [...pendingBookingRequests, ...pendingChangeRequests];
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">

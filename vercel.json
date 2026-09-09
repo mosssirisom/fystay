@@ -9,6 +9,10 @@
     {
       "path": "/api/cron/sync-ical-imports",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/expire-booking-requests",
+      "schedule": "0 7 * * *"
     }
   ]
 }

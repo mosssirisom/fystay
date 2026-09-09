@@ -230,9 +230,9 @@ test.describe("availability system", () => {
 
     await Promise.all([
       page.waitForResponse((r) => r.url().includes("/availability") && r.request().method() === "GET"),
-      page.getByRole("button", { name: "Check availability" }).click(),
+      page.getByRole("button", { name: "Check dates & price" }).click(),
     ]);
-    await expect(page.getByRole("button", { name: "Continue to payment" })).toBeVisible({
+    await expect(page.getByRole("button", { name: "Reserve your stay" })).toBeVisible({
       timeout: 15_000,
     });
 
@@ -255,7 +255,7 @@ test.describe("availability system", () => {
     });
 
     try {
-      await page.getByRole("button", { name: "Continue to payment" }).click();
+      await page.getByRole("button", { name: "Reserve your stay" }).click();
 
       // Scoped to the widget itself: the same message is also shown in a
       // toast notification, which would otherwise make this an ambiguous
@@ -263,7 +263,7 @@ test.describe("availability system", () => {
       await expect(page.locator("#booking-widget").getByText(/not available/i)).toBeVisible();
       // The flow requires re-checking, rather than silently letting a stale
       // "available" state through to checkout.
-      await expect(page.getByRole("button", { name: "Check availability" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Check dates & price" })).toBeVisible();
       expect(page.url()).not.toContain("/checkout/");
     } finally {
       await prisma.booking.delete({ where: { id: racingBooking.id } });

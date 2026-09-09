@@ -17,6 +17,10 @@ export function isPetFriendly(amenities: string[]): boolean {
   return amenities.some((amenity) => /pet/i.test(amenity));
 }
 
+export function hasParking(amenities: string[]): boolean {
+  return amenities.some((amenity) => /parking/i.test(amenity));
+}
+
 export function summarizeGuests({ adults, children, infants, pets }: GuestCounts): string {
   const guests = adults + children;
   const parts: string[] = [];

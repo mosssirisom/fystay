@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Camera, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
+import { AlertTriangle, Camera, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { SectionHeading } from "@/components/SectionHeading";
 import { resolveCancellationPolicy, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
+import { hasBedroomCountMismatch } from "@/lib/listingDataQuality";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL, type PropertyType } from "@/lib/propertyType";
 import { cn } from "@/lib/cn";
 
@@ -153,6 +154,16 @@ export function ListingForm({ listingId, initialValues }: Props) {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  // A guest sees the Bedrooms field, not this text - if the two disagree
+  // ("2-bedroom apartment" with Bedrooms set to 1), the listing page reads
+  // as untrustworthy the moment someone notices. Purely advisory: it never
+  // blocks saving, since the description might be right and the number
+  // wrong, not the other way round.
+  const bedroomMismatch =
+    values.description.trim().length > 0 &&
+    Number(values.bedrooms) > 0 &&
+    hasBedroomCountMismatch(values.description, Number(values.bedrooms));
+
   function toggleAmenity(amenity: string) {
     setSelectedAmenities((prev) =>
       prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity],
@@ -263,6 +274,14 @@ export function ListingForm({ listingId, initialValues }: Props) {
               value={values.description}
               onChange={(e) => update("description", e.target.value)}
             />
+            {bedroomMismatch && (
+              <p className="mt-1.5 flex items-start gap-2 text-sm text-amber-700">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                Your description mentions a different bedroom count than the Bedrooms field below
+                ({values.bedrooms}). Update whichever one is wrong so guests see consistent
+                information.
+              </p>
+            )}
           </Field>
           <Field>
             <Label htmlFor="propertyType">Property type</Label>

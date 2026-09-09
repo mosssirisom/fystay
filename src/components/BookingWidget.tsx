@@ -3,14 +3,16 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type DateRange } from "react-day-picker";
+import { format, subDays } from "date-fns";
 import { toast } from "sonner";
-import { CalendarClock, Lock, MessageCircle, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, CalendarClock, Lock, MessageCircle, ShieldCheck, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap } from "@/lib/availability";
+import type { CancellationPolicy } from "@/lib/cancellationPolicy";
 import {
   computeBookingPricing,
   MONTHLY_DISCOUNT_MIN_NIGHTS,
@@ -30,7 +32,7 @@ type Props = {
   isLoggedIn: boolean;
   rating?: number | null;
   reviewCount?: number;
-  cancellationPolicyLabel: string;
+  cancellationPolicy: CancellationPolicy;
 };
 
 export function BookingWidget({
@@ -45,7 +47,7 @@ export function BookingWidget({
   isLoggedIn,
   rating = null,
   reviewCount = 0,
-  cancellationPolicyLabel,
+  cancellationPolicy,
 }: Props) {
   const router = useRouter();
   const [range, setRange] = useState<DateRange | undefined>();
@@ -85,6 +87,18 @@ export function BookingWidget({
   );
 
   const nights = range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
+
+  // The most guest-friendly tier is always authored first (see
+  // cancellationPolicy.ts) - once real check-in dates are picked, that
+  // turns into a real calendar date rather than just "5 days before
+  // check-in", the same way Booking.com/Airbnb show an actual cutoff date
+  // instead of leaving a guest to do the maths themselves.
+  const bestTier = cancellationPolicy.tiers[0];
+  const cancellationCutoffDate =
+    range?.from && bestTier && bestTier.refundPercent > 0
+      ? subDays(range.from, bestTier.minDaysBeforeCheckIn)
+      : null;
+
   const pricing = computeBookingPricing({
     nights,
     pricePerNightCents,
@@ -265,6 +279,23 @@ export function BookingWidget({
               <span>Total</span>
               <span>{formatPrice(pricing.totalPriceCents)}</span>
             </div>
+            <p className="text-xs text-zinc-500">Taxes aren&apos;t charged today - the total above is everything you pay.</p>
+          </div>
+        )}
+
+        {cancellationCutoffDate && (
+          <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-brand-50 px-3.5 py-3 text-sm text-brand-800">
+            <CalendarClock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            <p>
+              <span className="font-semibold">
+                {bestTier.refundPercent === 100 ? "Free cancellation" : `${bestTier.refundPercent}% refund`} until{" "}
+                {format(cancellationCutoffDate, "d MMM yyyy")}
+              </span>
+              <br />
+              <a href="#cancellation-policy" className="underline underline-offset-2 hover:text-brand-900">
+                View cancellation policy
+              </a>
+            </p>
           </div>
         )}
 
@@ -285,7 +316,8 @@ export function BookingWidget({
             size="lg"
             className="mt-4 w-full"
           >
-            Continue to payment
+            Reserve your stay
+            <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
           </Button>
         ) : (
           <Button
@@ -295,11 +327,14 @@ export function BookingWidget({
             size="lg"
             className="mt-4 w-full"
           >
-            Check availability
+            Check dates & price
           </Button>
         )}
 
         <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-xs text-zinc-500">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+            Book with confidence
+          </p>
           {isLoggedIn && (
             <p className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
@@ -309,7 +344,7 @@ export function BookingWidget({
           <p className="flex items-center gap-2">
             <CalendarClock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             <span>
-              <span className="font-medium text-zinc-700">{cancellationPolicyLabel}</span> cancellation
+              <span className="font-medium text-zinc-700">{cancellationPolicy.label}</span> cancellation
               -{" "}
               <a href="#cancellation-policy" className="underline hover:text-brand-700">
                 see policy

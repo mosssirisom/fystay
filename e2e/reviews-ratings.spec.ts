@@ -107,7 +107,9 @@ test.describe("reviews and ratings", () => {
       const main = page.locator("#main-content");
       await expect(main.getByText("1 review", { exact: true })).toBeVisible();
       await expect(main.getByText("Cleanliness")).toBeVisible();
-      await expect(main.getByText("Verified stay")).toBeVisible();
+      // exact: true to avoid also matching the page header's own "1 verified
+      // stay" trust line, a substring match of the same words.
+      await expect(main.getByText("Verified stay", { exact: true })).toBeVisible();
       // First name only, not the full seeded "Jamie Guest".
       await expect(main.getByText("Jamie", { exact: true })).toBeVisible();
       await expect(main.getByText("Jamie Guest")).toHaveCount(0);

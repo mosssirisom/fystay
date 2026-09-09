@@ -46,6 +46,14 @@ export const REVIEW_CATEGORIES = [
 
 export type ReviewCategory = (typeof REVIEW_CATEGORIES)[number];
 
+export const REVIEW_CATEGORY_LABEL: Record<ReviewCategory, string> = {
+  cleanliness: "Cleanliness",
+  accuracy: "Accuracy",
+  communication: "Communication",
+  location: "Location",
+  value: "Value",
+};
+
 export type RatableReview = {
   rating: number;
   cleanlinessRating?: number | null;

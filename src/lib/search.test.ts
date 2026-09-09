@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPetFriendly, parseGuestParam, summarizeGuests, totalOccupants } from "./search";
+import { hasParking, isPetFriendly, parseGuestParam, summarizeGuests, totalOccupants } from "./search";
 
 describe("totalOccupants", () => {
   it("sums adults and children, ignoring infants", () => {
@@ -23,6 +23,21 @@ describe("isPetFriendly", () => {
 
   it("returns false for an empty amenities list", () => {
     expect(isPetFriendly([])).toBe(false);
+  });
+});
+
+describe("hasParking", () => {
+  it("matches an amenity containing 'parking', case-insensitively", () => {
+    expect(hasParking(["Wifi", "Free parking"])).toBe(true);
+    expect(hasParking(["STREET PARKING"])).toBe(true);
+  });
+
+  it("returns false when no amenity mentions parking", () => {
+    expect(hasParking(["Wifi", "Kitchen"])).toBe(false);
+  });
+
+  it("returns false for an empty amenities list", () => {
+    expect(hasParking([])).toBe(false);
   });
 });
 

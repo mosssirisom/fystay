@@ -1,13 +1,10 @@
 import { StarRating } from "@/components/ui/StarRating";
-import { computeRatingBreakdown, REVIEW_CATEGORIES, type RatableReview } from "@/lib/reviews";
-
-const CATEGORY_LABEL: Record<string, string> = {
-  cleanliness: "Cleanliness",
-  accuracy: "Accuracy",
-  communication: "Communication",
-  location: "Location",
-  value: "Value",
-};
+import {
+  computeRatingBreakdown,
+  REVIEW_CATEGORIES,
+  REVIEW_CATEGORY_LABEL,
+  type RatableReview,
+} from "@/lib/reviews";
 
 export function ReviewSummary({ reviews }: { reviews: RatableReview[] }) {
   const { count, average, starCounts, categoryAverages } = computeRatingBreakdown(reviews);
@@ -51,7 +48,7 @@ export function ReviewSummary({ reviews }: { reviews: RatableReview[] }) {
             const value = categoryAverages[category] as number;
             return (
               <div key={category}>
-                <dt className="text-sm text-zinc-500">{CATEGORY_LABEL[category]}</dt>
+                <dt className="text-sm text-zinc-500">{REVIEW_CATEGORY_LABEL[category]}</dt>
                 <dd className="mt-1 flex items-center gap-2 text-sm font-medium text-foreground">
                   <span className="w-6">{value.toFixed(1)}</span>
                   <span className="h-1 w-16 overflow-hidden rounded-full bg-surface-muted">

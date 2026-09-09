@@ -118,14 +118,14 @@ test.describe("booking engine", () => {
     // can comfortably exceed a 5s default.
     await Promise.all([
       page.waitForResponse((r) => r.url().includes("/availability") && r.request().method() === "GET"),
-      page.getByRole("button", { name: "Check availability" }).click(),
+      page.getByRole("button", { name: "Check dates & price" }).click(),
     ]);
-    await expect(page.getByRole("button", { name: "Continue to payment" })).toBeVisible({
+    await expect(page.getByRole("button", { name: "Reserve your stay" })).toBeVisible({
       timeout: 15_000,
     });
     await Promise.all([
       page.waitForResponse((r) => r.url().includes("/api/bookings") && r.request().method() === "POST"),
-      page.getByRole("button", { name: "Continue to payment" }).click(),
+      page.getByRole("button", { name: "Reserve your stay" }).click(),
     ]);
     await page.waitForURL(/\/checkout\//, { timeout: 15_000 });
 

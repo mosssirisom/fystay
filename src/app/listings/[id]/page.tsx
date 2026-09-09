@@ -4,12 +4,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowRight,
-  BedDouble,
   Bath,
+  BedDouble,
   BookOpen,
+  ClipboardList,
   DoorOpen,
   Home,
   MapPin,
+  ParkingSquare,
+  PawPrint,
   ShieldCheck,
   Sparkles,
   Star,
@@ -18,27 +21,36 @@ import {
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere, blockingRanges } from "@/lib/availability";
 import { resolveCancellationPolicy } from "@/lib/cancellationPolicy";
+import { hasParking, isPetFriendly } from "@/lib/search";
 import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { PhotoGallery } from "@/components/PhotoGallery";
-import { AmenityList } from "@/components/AmenityList";
+import { AmenitiesSection } from "@/components/AmenitiesSection";
 import { NearbyAttractions } from "@/components/NearbyAttractions";
-import { ContactHostButton } from "@/components/ContactHostButton";
+import { HostCard } from "@/components/HostCard";
+import { ReadMoreText } from "@/components/ReadMoreText";
+import { WhatGuestsLove } from "@/components/WhatGuestsLove";
+import { GoodToKnow, type GoodToKnowRow } from "@/components/GoodToKnow";
+import { WhyBookWithFYStay } from "@/components/WhyBookWithFYStay";
+import { TrustLine } from "@/components/TrustLine";
+import { ListingsMap } from "@/components/ListingsMap";
 import { ReviewSummary } from "@/components/ReviewSummary";
 import { ReviewList } from "@/components/ReviewList";
 import { SectionHeading } from "@/components/SectionHeading";
-import { Avatar } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
-import { averageRating } from "@/lib/reviews";
+import { computeRatingBreakdown } from "@/lib/reviews";
+import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
+import { formatPrice } from "@/lib/format";
 
 const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
     where: { id },
     include: {
-      host: { select: { name: true, createdAt: true } },
+      host: { select: { name: true, image: true, createdAt: true } },
       bookings: {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
@@ -65,7 +77,7 @@ export async function generateMetadata({
   if (!listing || !listing.published) return {};
 
   const title = withCity(listing.title, listing.city);
-  const description = `${listing.title} in ${listing.city}, ${listing.country}. ${listing.description.slice(0, 140)}`;
+  const description = `${PROPERTY_TYPE_LABEL[listing.propertyType]} in ${listing.city}, ${listing.country} - ${listing.bedrooms} bedroom${listing.bedrooms === 1 ? "" : "s"}, sleeps ${listing.maxGuests}, from ${formatPrice(listing.pricePerNightCents)}/night. ${listing.description.slice(0, 110)}`;
   const url = `${SITE_URL}/listings/${listing.id}`;
 
   return {
@@ -136,9 +148,18 @@ export default async function ListingDetailPage({
     { icon: Bath, label: `${listing.bathrooms} bath${listing.bathrooms === 1 ? "" : "s"}` },
   ];
 
-  const rating = averageRating(listing.reviews);
+  const ratingBreakdown = computeRatingBreakdown(listing.reviews);
+  const rating = ratingBreakdown.average;
   const reviewCount = listing.reviews.length;
   const cancellationPolicy = resolveCancellationPolicy(listing);
+  const petsAllowed = isPetFriendly(listing.amenities);
+  const parkingAvailable = hasParking(listing.amenities);
+
+  const goodToKnowRows: GoodToKnowRow[] = [
+    { icon: Users, label: "Maximum guests", value: `${listing.maxGuests}` },
+    ...(parkingAvailable ? [{ icon: ParkingSquare, label: "Parking", value: "Available" }] : []),
+    ...(petsAllowed ? [{ icon: PawPrint, label: "Pets", value: "Allowed" }] : []),
+  ];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -148,11 +169,18 @@ export default async function ListingDetailPage({
     image: listing.photos,
     url: `${SITE_URL}/listings/${listing.id}`,
     brand: { "@type": "Brand", name: SITE_NAME },
+    category: PROPERTY_TYPE_LABEL[listing.propertyType],
     address: {
       "@type": "PostalAddress",
       addressLocality: listing.city,
       addressCountry: listing.country,
     },
+    additionalProperty: [
+      { "@type": "PropertyValue", name: "Bedrooms", value: listing.bedrooms },
+      { "@type": "PropertyValue", name: "Beds", value: listing.beds },
+      { "@type": "PropertyValue", name: "Bathrooms", value: listing.bathrooms },
+      { "@type": "PropertyValue", name: "Maximum occupancy", value: listing.maxGuests },
+    ],
     offers: {
       "@type": "Offer",
       price: (listing.pricePerNightCents / 100).toFixed(2),
@@ -160,14 +188,12 @@ export default async function ListingDetailPage({
       availability: "https://schema.org/InStock",
       url: `${SITE_URL}/listings/${listing.id}`,
     },
-    ...(listing.reviews.length > 0
+    ...(reviewCount > 0 && rating !== null
       ? {
           aggregateRating: {
             "@type": "AggregateRating",
-            ratingValue: (
-              listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length
-            ).toFixed(1),
-            reviewCount: listing.reviews.length,
+            ratingValue: rating.toFixed(1),
+            reviewCount,
           },
         }
       : {}),
@@ -201,6 +227,9 @@ export default async function ListingDetailPage({
     ],
   };
 
+  const localGuide = cityDestination ? LOCAL_GUIDES[cityDestination.slug] : undefined;
+  const isOwnListing = session?.user?.id === listing.hostId;
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
       <script
@@ -211,31 +240,6 @@ export default async function ListingDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{listing.title}</h1>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-600">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            {listing.city}, {listing.country}
-          </span>
-          {rating !== null && (
-            <>
-              <span aria-hidden className="text-zinc-300">
-                ·
-              </span>
-              {/* Jumps straight to the full review breakdown below, rather
-                  than repeating it here as inert text. */}
-              <a href="#reviews" className="flex items-center gap-1 font-medium text-foreground hover:underline">
-                <Star className="h-4 w-4 fill-accent-500 text-accent-500" aria-hidden />
-                {rating.toFixed(1)}
-                <span className="font-normal text-zinc-500">
-                  ({reviewCount} review{reviewCount === 1 ? "" : "s"})
-                </span>
-              </a>
-            </>
-          )}
-        </div>
-      </div>
 
       <PhotoGallery
         photos={listing.photos}
@@ -245,63 +249,87 @@ export default async function ListingDetailPage({
         isLoggedIn={Boolean(session?.user)}
       />
 
+      <div className="mt-6 flex flex-col gap-3">
+        <p className="flex items-center gap-1.5 text-sm text-zinc-500">
+          <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+          {listing.city}, {listing.country}
+        </p>
+        <Badge variant="brand" className="w-fit">
+          {PROPERTY_TYPE_LABEL[listing.propertyType]}
+        </Badge>
+        <h1 className="text-[26px] font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+          {listing.title}
+        </h1>
+        <TrustLine rating={rating} reviewCount={reviewCount} />
+        <div className="mt-1 flex flex-wrap gap-x-5 gap-y-2 text-zinc-700">
+          {stats.map(({ icon: Icon, label }) => (
+            <span key={label} className="flex items-center gap-2">
+              <Icon className="h-4.5 w-4.5 text-brand-600" />
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border-subtle pb-6">
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {stats.map(({ icon: Icon, label }) => (
-                <span key={label} className="flex items-center gap-2 text-zinc-700">
-                  <Icon className="h-4.5 w-4.5 text-brand-600" />
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div className="flex shrink-0 items-center gap-3">
-              <Avatar name={listing.host.name} size={48} className="ring-2 ring-brand-50" />
-              <div className="hidden text-sm sm:block">
-                <p className="text-zinc-500">Hosted by</p>
-                <p className="font-medium text-foreground">{listing.host.name}</p>
-                {/* Join date and review count are the two things this app
-                    can actually vouch for about a host - real columns on
-                    real rows, not a response-rate or "verified ID" claim
-                    this codebase has no data behind. */}
-                <p className="mt-0.5 text-xs text-zinc-500">
-                  Hosting since {listing.host.createdAt.getFullYear()}
-                  {hostReviewCount > 0 &&
-                    ` · ${hostReviewCount} review${hostReviewCount === 1 ? "" : "s"}`}
-                </p>
-              </div>
-            </div>
-          </div>
+          <HostCard
+            hostName={listing.host.name}
+            hostImage={listing.host.image}
+            hostingSinceYear={listing.host.createdAt.getFullYear()}
+            reviewCount={hostReviewCount}
+            listingId={listing.id}
+            isLoggedIn={Boolean(session?.user)}
+            isOwnListing={isOwnListing}
+          />
 
-          {session?.user?.id !== listing.hostId && (
-            <div className="mt-4">
-              <ContactHostButton
-                listingId={listing.id}
-                hostName={listing.host.name}
-                isLoggedIn={Boolean(session?.user)}
-              />
-            </div>
-          )}
-
-          <div className="mt-8">
-            <SectionHeading icon={Home}>About this place</SectionHeading>
-            <p className="mt-3 whitespace-pre-line text-zinc-700">{listing.description}</p>
+          <div className="mt-10 border-t border-border-subtle pt-8">
+            <SectionHeading icon={Home}>About this stay</SectionHeading>
+            <ReadMoreText text={listing.description} className="mt-3 whitespace-pre-line text-zinc-700" />
+            <WhatGuestsLove categoryAverages={ratingBreakdown.categoryAverages} reviewCount={reviewCount} />
           </div>
 
           {listing.amenities.length > 0 && (
-            <div className="mt-10">
+            <div className="mt-10 border-t border-border-subtle pt-8">
               <SectionHeading icon={Sparkles}>What this place offers</SectionHeading>
-              <AmenityList amenities={listing.amenities} />
+              <AmenitiesSection amenities={listing.amenities} />
             </div>
           )}
 
-          <NearbyAttractions latitude={listing.latitude} longitude={listing.longitude} />
+          <div className="mt-10 border-t border-border-subtle pt-8">
+            <SectionHeading icon={MapPin}>Where you&apos;ll be</SectionHeading>
+            <p className="mt-3 text-zinc-700">
+              {listing.city}, {listing.country}
+            </p>
+            {listing.latitude !== null && listing.longitude !== null && (
+              <div className="mt-4">
+                <ListingsMap
+                  listings={[
+                    {
+                      id: listing.id,
+                      title: listing.title,
+                      city: listing.city,
+                      photo: listing.photos[0] ?? null,
+                      pricePerNightCents: listing.pricePerNightCents,
+                      latitude: listing.latitude,
+                      longitude: listing.longitude,
+                    },
+                  ]}
+                />
+              </div>
+            )}
+            {localGuide?.insiderTip && (
+              <p className="mt-4 border-l-2 border-brand-200 pl-4 text-sm italic text-zinc-600">
+                &ldquo;{localGuide.insiderTip}&rdquo;
+              </p>
+            )}
+            <NearbyAttractions latitude={listing.latitude} longitude={listing.longitude} />
+          </div>
 
-          {cityDestination && LOCAL_GUIDES[cityDestination.slug] && (
+          {cityDestination && localGuide && (
             <Link
               href={`/destinations/${cityDestination.slug}?from=${listing.id}#local-guide`}
-              className="focus-ring mt-10 flex items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800 transition hover:bg-brand-100"
+              className="focus-ring mt-8 flex items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800 transition hover:bg-brand-100"
             >
               <span className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
@@ -311,7 +339,12 @@ export default async function ListingDetailPage({
             </Link>
           )}
 
-          <div className="mt-10">
+          <div className="mt-10 border-t border-border-subtle pt-8">
+            <SectionHeading icon={ClipboardList}>Good to know</SectionHeading>
+            <GoodToKnow rows={goodToKnowRows} />
+          </div>
+
+          <div className="mt-10 border-t border-border-subtle pt-8">
             <SectionHeading icon={ShieldCheck} id="cancellation-policy">
               Cancellation policy
             </SectionHeading>
@@ -321,22 +354,34 @@ export default async function ListingDetailPage({
             </p>
           </div>
 
-          {listing.reviews.length > 0 && (
-            <div className="mt-10">
-              <SectionHeading icon={Star} id="reviews">
-                Reviews
-              </SectionHeading>
-              <div className="mt-4">
-                <ReviewSummary reviews={listing.reviews} />
+          <div className="border-t border-border-subtle pt-2">
+            <WhyBookWithFYStay />
+          </div>
+
+          <div className="mt-10 border-t border-border-subtle pt-8" id="reviews">
+            <SectionHeading icon={Star}>Guest reviews</SectionHeading>
+            {reviewCount > 0 ? (
+              <>
+                <div className="mt-4">
+                  <ReviewSummary reviews={listing.reviews} />
+                </div>
+                <ReviewList
+                  reviews={listing.reviews}
+                  hostName={listing.host.name}
+                  viewerId={session?.user?.id}
+                  reportedReviewIds={reportedReviewIds}
+                />
+              </>
+            ) : (
+              <div className="mt-4 flex flex-col items-start gap-2">
+                <TrustLine rating={null} reviewCount={0} />
+                <p className="text-zinc-700">
+                  Be one of the first guests to stay here and leave a review - reviews only appear
+                  once a guest has completed a real, paid booking.
+                </p>
               </div>
-              <ReviewList
-                reviews={listing.reviews}
-                hostName={listing.host.name}
-                viewerId={session?.user?.id}
-                reportedReviewIds={reportedReviewIds}
-              />
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div id="booking-widget">
@@ -354,7 +399,7 @@ export default async function ListingDetailPage({
             isLoggedIn={Boolean(session?.user)}
             rating={rating}
             reviewCount={reviewCount}
-            cancellationPolicyLabel={cancellationPolicy.label}
+            cancellationPolicy={cancellationPolicy}
           />
         </div>
       </div>

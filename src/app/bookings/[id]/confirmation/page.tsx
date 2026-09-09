@@ -49,6 +49,7 @@ export default async function BookingConfirmationPage({
         cleaningFeeCents={booking.cleaningFeeCents}
         serviceFeeCents={booking.serviceFeeCents}
         taxCents={booking.taxCents}
+        creditAppliedCents={booking.creditAppliedCents}
         totalPriceCents={booking.totalPriceCents}
         guestName={booking.guestName}
         guestEmail={booking.guestEmail}

@@ -289,6 +289,7 @@ export default async function BookingDetailPage({
             cleaningFeeCents={booking.cleaningFeeCents}
             serviceFeeCents={booking.serviceFeeCents}
             taxCents={booking.taxCents}
+            creditAppliedCents={booking.creditAppliedCents}
             totalPriceCents={booking.totalPriceCents}
             reference={booking.reference}
             guestName={booking.guestName}

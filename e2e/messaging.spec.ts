@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { generateBookingReference } from "../src/lib/bookingReference";
+import { generateReferralCode } from "../src/lib/referral";
 
 try {
   process.loadEnvFile();
@@ -122,6 +123,7 @@ test("a host can't start a conversation with a guest who never booked their list
       email: strangerEmail,
       passwordHash: await bcrypt.hash("strangerpass123", 10),
       role: "GUEST",
+      referralCode: generateReferralCode(),
     },
   });
 

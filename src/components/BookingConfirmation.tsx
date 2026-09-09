@@ -43,6 +43,7 @@ export function BookingConfirmation({
   cleaningFeeCents,
   serviceFeeCents,
   taxCents,
+  creditAppliedCents,
   totalPriceCents,
   guestName,
   guestEmail,
@@ -63,6 +64,7 @@ export function BookingConfirmation({
   cleaningFeeCents: number;
   serviceFeeCents: number;
   taxCents: number;
+  creditAppliedCents: number;
   totalPriceCents: number;
   guestName: string | null;
   guestEmail: string | null;
@@ -199,6 +201,7 @@ export function BookingConfirmation({
           cleaningFeeCents={cleaningFeeCents}
           serviceFeeCents={serviceFeeCents}
           taxCents={taxCents}
+          creditAppliedCents={creditAppliedCents}
           totalPriceCents={totalPriceCents}
           reference={reference}
           guestName={guestName}

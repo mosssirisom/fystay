@@ -5,7 +5,9 @@ import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { decideExistingSessionAction } from "@/lib/checkoutSession";
 import { isConnectReady } from "@/lib/stripeConnect";
+import { applyReferralCreditToApplicationFee } from "@/lib/pricing";
 import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
+import { awardReferralBonusIfEligible } from "@/lib/referral";
 
 const checkoutSchema = z.object({
   bookingId: z.string().min(1),
@@ -98,6 +100,7 @@ export async function POST(request: Request) {
       hostEmail: booking.listing.host.email,
       bookingUrl: `${baseUrl}/bookings/${booking.id}`,
     });
+    await awardReferralBonusIfEligible(prisma, booking.guestId);
     return NextResponse.json({
       url: `${confirmationUrl}?dev_confirmed=1`,
       devMode: true,
@@ -171,13 +174,40 @@ export async function POST(request: Request) {
   // simply sits in FYStay's own Stripe balance until they connect, the same
   // as before Connect existed, rather than blocking the booking outright.
   const connectReady = isConnectReady(booking.listing.host);
-  const applicationFeeCents = booking.serviceFeeCents + booking.taxCents;
+  // A referral credit (see referral.ts) is a marketing cost FYStay bears,
+  // not the host - see applyReferralCreditToApplicationFee's own comment
+  // for why it comes out of this fee first, not the host's transfer.
+  const applicationFeeCents = applyReferralCreditToApplicationFee(
+    booking.serviceFeeCents + booking.taxCents,
+    booking.creditAppliedCents,
+  );
+
+  // The line items above total the pre-credit price; a one-off coupon
+  // brings what's actually charged down to booking.totalPriceCents
+  // (already net of credit - see /api/bookings), the same way Stripe
+  // Checkout expects any discount to be represented, since a line item's
+  // own unit_amount can never be negative.
+  const discounts = booking.creditAppliedCents > 0
+    ? [
+        {
+          coupon: (
+            await stripe.coupons.create({
+              amount_off: booking.creditAppliedCents,
+              currency: "gbp",
+              duration: "once",
+              name: "Referral credit",
+            })
+          ).id,
+        },
+      ]
+    : undefined;
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
     customer_email: booking.guestEmail ?? undefined,
     line_items: lineItems,
+    ...(discounts && { discounts }),
     metadata: { bookingId: booking.id },
     success_url: `${confirmationUrl}?success=1`,
     cancel_url: `${baseUrl}/checkout/${booking.id}?cancelled=1`,

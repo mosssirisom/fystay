@@ -13,6 +13,7 @@ import {
 import { computeBookingPricing } from "@/lib/pricing";
 import { generateBookingReference } from "@/lib/bookingReference";
 import { completePastBookings } from "@/lib/bookingLifecycle";
+import { computeCreditToApply } from "@/lib/referral";
 
 const createBookingSchema = z.object({
   listingId: z.string().min(1),
@@ -133,6 +134,29 @@ export async function POST(request: Request) {
             monthlyDiscountPercent: listing.monthlyDiscountPercent,
           });
 
+          // Read-and-decrement the guest's referral credit inside this same
+          // transaction, not from the guestAccount fetched earlier - two
+          // bookings by the same guest racing each other must not both
+          // spend the same balance. Spent at creation, not at payment: if
+          // this PENDING booking is later abandoned and expires unpaid (see
+          // PENDING_BOOKING_HOLD_MINUTES), the credit isn't currently
+          // refunded back to the balance - the same trade-off as a guest
+          // simply not completing checkout in time.
+          const guestCredit = await tx.user.findUniqueOrThrow({
+            where: { id: session.user.id },
+            select: { creditBalanceCents: true },
+          });
+          const creditAppliedCents = computeCreditToApply(
+            guestCredit.creditBalanceCents,
+            pricing.totalPriceCents,
+          );
+          if (creditAppliedCents > 0) {
+            await tx.user.update({
+              where: { id: session.user.id },
+              data: { creditBalanceCents: { decrement: creditAppliedCents } },
+            });
+          }
+
           return tx.booking.create({
             data: {
               reference: generateBookingReference(),
@@ -148,7 +172,8 @@ export async function POST(request: Request) {
               cleaningFeeCents: pricing.cleaningFeeCents,
               serviceFeeCents: pricing.serviceFeeCents,
               taxCents: pricing.taxCents,
-              totalPriceCents: pricing.totalPriceCents,
+              creditAppliedCents,
+              totalPriceCents: pricing.totalPriceCents - creditAppliedCents,
               guestName: guestAccount?.name,
               guestEmail: guestAccount?.email,
             },

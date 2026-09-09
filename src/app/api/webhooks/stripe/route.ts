@@ -4,6 +4,7 @@ import { getStripeClient } from "@/lib/stripe";
 import { applyApprovedChange } from "@/app/api/bookings/[id]/change-requests/[requestId]/pay/route";
 import { connectFlagsFromAccount } from "@/lib/stripeConnect";
 import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
+import { awardReferralBonusIfEligible } from "@/lib/referral";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
           hostEmail: booking.listing.host.email,
           bookingUrl: `${baseUrl}/bookings/${booking.id}`,
         });
+        await awardReferralBonusIfEligible(prisma, booking.guestId);
       }
     } else if (changeRequestId) {
       await applyApprovedChange(changeRequestId);

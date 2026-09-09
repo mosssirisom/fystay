@@ -4,7 +4,9 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Home, Luggage } from "lucide-react";
+import { Gift, Home, Luggage } from "lucide-react";
+import { REFERRAL_CREDIT_CENTS } from "@/lib/referral";
+import { formatPrice } from "@/lib/format";
 import { Logo } from "@/components/Logo";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
@@ -24,6 +26,9 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
+  // Only ever read, never validated client-side - an invalid or stale code
+  // simply gets no welcome credit (see /api/signup), never a signup error.
+  const referralCode = searchParams.get("ref")?.trim() || undefined;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,7 +65,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
     const res = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role }),
+      body: JSON.stringify({ name, email, password, role, referralCode }),
     });
 
     if (!res.ok) {
@@ -94,6 +99,14 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         <h1 className="text-2xl font-bold">Create your account</h1>
         <p className="mt-1 text-sm text-zinc-500">Join {SITE_NAME} in a few seconds</p>
       </div>
+
+      {referralCode && (
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-800">
+          <Gift className="h-4 w-4 shrink-0" aria-hidden />
+          You&apos;ve been invited - sign up to get {formatPrice(REFERRAL_CREDIT_CENTS)} credit
+          toward your first stay.
+        </div>
+      )}
 
       <Card>
         <CardContent className="pt-5">

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, clientIp, rateLimitedResponse } from "@/lib/rateLimit";
+import { generateReferralCode, REFERRAL_CREDIT_CENTS } from "@/lib/referral";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Please enter your name.").max(100, "Name is too long."),
@@ -12,6 +14,7 @@ const signupSchema = z.object({
     .min(8, "Password must be at least 8 characters.")
     .max(72, "Password is too long."),
   role: z.enum(["GUEST", "HOST"]).default("GUEST"),
+  referralCode: z.string().trim().max(20).optional(),
 });
 
 export async function POST(request: Request) {
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, email, password, role } = parsed.data;
+  const { name, email, password, role, referralCode } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   const existing = await prisma.user.findUnique({
@@ -48,12 +51,44 @@ export async function POST(request: Request) {
     );
   }
 
+  // A referral code from the URL is a courtesy, not something worth
+  // blocking signup over - an unrecognized or already-invalid code (typo,
+  // stale link) just means no welcome credit, never a signup error.
+  const referrer = referralCode
+    ? await prisma.user.findUnique({
+        where: { referralCode: referralCode.toUpperCase() },
+        select: { id: true },
+      })
+    : null;
+
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: { name, email: normalizedEmail, passwordHash, role },
-    select: { id: true, name: true, email: true, role: true },
-  });
+  // Retried on the vanishingly rare referralCode collision, the same
+  // pattern as generateBookingReference's own retry loop at the point it's
+  // actually written.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email: normalizedEmail,
+          passwordHash,
+          role,
+          referralCode: generateReferralCode(),
+          referredByUserId: referrer?.id,
+          creditBalanceCents: referrer ? REFERRAL_CREDIT_CENTS : 0,
+        },
+        select: { id: true, name: true, email: true, role: true },
+      });
+      return NextResponse.json({ user }, { status: 201 });
+    } catch (error) {
+      const isCodeCollision =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002" &&
+        (error.meta?.target as string[] | undefined)?.includes("referralCode");
+      if (!isCodeCollision || attempt === 2) throw error;
+    }
+  }
 
-  return NextResponse.json({ user }, { status: 201 });
+  return NextResponse.json({ error: "Could not create account" }, { status: 500 });
 }

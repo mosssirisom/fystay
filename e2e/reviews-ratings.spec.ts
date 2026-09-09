@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { generateBookingReference } from "../src/lib/bookingReference";
+import { generateReferralCode } from "../src/lib/referral";
 
 try {
   process.loadEnvFile();
@@ -23,7 +24,7 @@ async function createSecondGuest() {
   const email = `e2e-second-guest-${generateBookingReference()}@fystay.dev`.toLowerCase();
   const passwordHash = await bcrypt.hash("secondguestpass123", 10);
   const user = await prisma.user.create({
-    data: { name: "Sam Traveller", email, passwordHash, role: "GUEST" },
+    data: { name: "Sam Traveller", email, passwordHash, role: "GUEST", referralCode: generateReferralCode() },
   });
   return { ...user, password: "secondguestpass123" };
 }

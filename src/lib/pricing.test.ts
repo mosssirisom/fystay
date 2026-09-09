@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyReferralCreditToApplicationFee,
   computeBookingPricing,
   GUEST_SERVICE_FEE_RATE,
   resolveLengthOfStayDiscount,
@@ -132,5 +133,23 @@ describe("splitByHostShare", () => {
   it("never produces a negative platform share, since host revenue never exceeds the total", () => {
     const result = splitByHostShare(4999, booking);
     expect(result.platformShareCents).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("applyReferralCreditToApplicationFee", () => {
+  it("subtracts the credit from the platform fee when the fee covers it", () => {
+    expect(applyReferralCreditToApplicationFee(3000, 1000)).toBe(2000);
+  });
+
+  it("floors at 0 rather than going negative when credit exceeds the whole fee", () => {
+    expect(applyReferralCreditToApplicationFee(500, 1000)).toBe(0);
+  });
+
+  it("is unchanged when there's no credit applied", () => {
+    expect(applyReferralCreditToApplicationFee(3000, 0)).toBe(3000);
+  });
+
+  it("is 0 when the fee itself equals the credit exactly", () => {
+    expect(applyReferralCreditToApplicationFee(1000, 1000)).toBe(0);
   });
 });

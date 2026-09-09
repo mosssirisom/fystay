@@ -105,6 +105,23 @@ model User {
   stripeConnectChargesEnabled   Boolean @default(false)
   stripeConnectPayoutsEnabled   Boolean @default(false)
 
+  // Referral program (see src/lib/referral.ts). referralCode is this
+  // user's own shareable code; referredByUserId is who they signed up
+  // under, if anyone. creditBalanceCents is a spendable wallet (applied
+  // automatically to a booking's total in /api/bookings, capped at the
+  // booking's own total - see computeCreditToApply), credited to a new
+  // signup immediately (their welcome credit) and to the referrer once
+  // - guarded by referralBonusAwarded on the REFEREE's own row - when the
+  // person they referred completes their first paid booking. Awarding on
+  // a real payment, not just a signup, is what keeps this resistant to
+  // someone farming throwaway accounts for referrer credit.
+  referralCode         String  @unique
+  referredByUserId     String?
+  referredBy           User?   @relation("Referrals", fields: [referredByUserId], references: [id], onDelete: SetNull)
+  referrals            User[]  @relation("Referrals")
+  creditBalanceCents   Int     @default(0)
+  referralBonusAwarded Boolean @default(false)
+
   listings            Listing[]
   bookings            Booking[]
   reviews             Review[]
@@ -282,7 +299,8 @@ model Booking {
   // Price breakdown, snapshotted at booking time so a later change to the
   // listing's price or fees never rewrites the price a guest already agreed
   // to. totalPriceCents is always (nightlyPriceCents * nights) -
-  // lengthOfStayDiscountCents + cleaningFeeCents + serviceFeeCents + taxCents.
+  // lengthOfStayDiscountCents + cleaningFeeCents + serviceFeeCents + taxCents
+  // - creditAppliedCents.
   nightlyPriceCents         Int
   // Amount and which threshold (weekly/monthly) applied, snapshotted the
   // same way as the other price fields - a later edit to the listing's
@@ -293,6 +311,11 @@ model Booking {
   cleaningFeeCents          Int     @default(0)
   serviceFeeCents           Int     @default(0)
   taxCents                  Int     @default(0)
+  // Referral-program credit spent on this booking (see User.creditBalanceCents
+  // in referral.ts) - deducted from the guest's balance at booking creation
+  // and absorbed out of the platform's own applicationFeeCents at checkout,
+  // never the host's share. 0 when the guest had no balance to spend.
+  creditAppliedCents        Int     @default(0)
   totalPriceCents           Int
 
   // Contact details for this specific stay, captured at checkout. Kept on

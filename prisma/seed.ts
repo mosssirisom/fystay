@@ -4,6 +4,7 @@ import { nightsBetween } from "../src/lib/availability";
 import { computeBookingPricing } from "../src/lib/pricing";
 import { generateBookingReference } from "../src/lib/bookingReference";
 import { geocodeListing } from "../src/lib/geocoding";
+import { generateReferralCode } from "../src/lib/referral";
 
 const prisma = new PrismaClient();
 
@@ -141,6 +142,7 @@ async function main() {
       email: "host@fystay.dev",
       passwordHash: hostPassword,
       role: "HOST",
+      referralCode: generateReferralCode(),
     },
   });
 
@@ -152,6 +154,7 @@ async function main() {
       email: "guest@fystay.dev",
       passwordHash: guestPassword,
       role: "GUEST",
+      referralCode: generateReferralCode(),
     },
   });
 

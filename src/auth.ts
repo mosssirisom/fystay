@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { googleSignInEnabled } from "@/lib/authProviders";
 import { peekRateLimit, recordFailedAttempt, resetRateLimit } from "@/lib/rateLimit";
+import { generateReferralCode } from "@/lib/referral";
 
 // Keyed by the attempted email, not the caller's IP - authorize() here has
 // no access to the request, and a per-account cap on guesses is the actual
@@ -113,7 +114,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       await prisma.user.upsert({
         where: { email },
         update: {},
-        create: { email, name: user.name ?? email, image: user.image },
+        // Google sign-in has no form step to carry a ?ref= code through,
+        // so this account never gets a welcome credit that way - it still
+        // needs its own shareable referralCode, though, to refer others.
+        create: { email, name: user.name ?? email, image: user.image, referralCode: generateReferralCode() },
       });
       return true;
     },

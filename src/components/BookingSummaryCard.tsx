@@ -38,6 +38,7 @@ export function BookingSummaryCard({
   cleaningFeeCents,
   serviceFeeCents,
   taxCents,
+  creditAppliedCents = 0,
   totalPriceCents,
   reference,
   guestName,
@@ -58,6 +59,8 @@ export function BookingSummaryCard({
   cleaningFeeCents: number;
   serviceFeeCents: number;
   taxCents: number;
+  /** Referral credit (see referral.ts) already subtracted into totalPriceCents - shown as its own line so the guest can see where it went, not folded silently into the total. */
+  creditAppliedCents?: number;
   totalPriceCents: number;
   reference?: string;
   /** Only shown once there's a real reservation to review, i.e. on the confirmation page, not mid-checkout where the guest is still typing these into the form right next to this card. */
@@ -194,6 +197,12 @@ export function BookingSummaryCard({
             <div className="flex justify-between">
               <span>Taxes</span>
               <span>{formatPrice(taxCents)}</span>
+            </div>
+          )}
+          {creditAppliedCents > 0 && (
+            <div className="flex justify-between text-brand-700">
+              <span>Referral credit</span>
+              <span>&minus;{formatPrice(creditAppliedCents)}</span>
             </div>
           )}
           <div className="flex justify-between border-t border-border-subtle pt-3 text-base font-semibold text-foreground">

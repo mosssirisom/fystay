@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { generateReferralCode } from "../src/lib/referral";
 
 try {
   process.loadEnvFile();
@@ -15,7 +16,13 @@ test("guest can reset a forgotten password and log in with the new one", async (
   const originalPasswordHash = await bcrypt.hash("originalpass123", 10);
 
   const user = await prisma.user.create({
-    data: { name: "E2E Password Reset", email, passwordHash: originalPasswordHash, role: "GUEST" },
+    data: {
+      name: "E2E Password Reset",
+      email,
+      passwordHash: originalPasswordHash,
+      role: "GUEST",
+      referralCode: generateReferralCode(),
+    },
   });
 
   try {

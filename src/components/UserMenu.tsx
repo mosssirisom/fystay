@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Heart, Home, LayoutDashboard, LogOut, Luggage, MessageCircle } from "lucide-react";
+import { Gift, Heart, Home, LayoutDashboard, LogOut, Luggage, MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { signOutAction } from "@/actions/auth";
@@ -120,6 +120,13 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
           >
             <Heart className="h-4 w-4" /> Wishlist
+          </Link>
+          <Link
+            href="/refer"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+          >
+            <Gift className="h-4 w-4" /> Refer a friend
           </Link>
           {role !== "HOST" && (
             <Link

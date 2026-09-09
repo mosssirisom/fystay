@@ -44,6 +44,26 @@ export function nightsBetween(checkIn: Date, checkOut: Date): number {
 }
 
 /**
+ * A listing's minimum/maximum stay rule, kept independent of
+ * `isRangeAvailable` per the extension-point note on `blockingRanges` below -
+ * this is "is this stay length allowed at all", not "is this date free".
+ * `maxNights` of null means no cap. Returns the guest-facing rejection
+ * reason, or null when the stay length is fine.
+ */
+export function stayLengthError(
+  nights: number,
+  listing: { minNights: number; maxNights: number | null },
+): string | null {
+  if (nights < listing.minNights) {
+    return `This listing requires a minimum stay of ${listing.minNights} night${listing.minNights === 1 ? "" : "s"}`;
+  }
+  if (listing.maxNights !== null && nights > listing.maxNights) {
+    return `This listing allows a maximum stay of ${listing.maxNights} night${listing.maxNights === 1 ? "" : "s"}`;
+  }
+  return null;
+}
+
+/**
  * Merges a listing's blocking Bookings and its host-set AvailabilityBlocks
  * into the single list of ranges `isRangeAvailable` checks against. To a
  * guest, a manually blocked date and a reserved one are indistinguishable:

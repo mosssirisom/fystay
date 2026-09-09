@@ -68,6 +68,8 @@ export function BookingCard({
       cleaningFeeCents: number;
       weeklyDiscountPercent: number | null;
       monthlyDiscountPercent: number | null;
+      minNights: number;
+      maxNights: number | null;
       maxGuests: number;
       cancellationPolicy: CancellationPolicyKind;
       customCancellationCutoffDays: number | null;
@@ -193,6 +195,8 @@ export function BookingCard({
                 cleaningFeeCents={booking.listing.cleaningFeeCents}
                 weeklyDiscountPercent={booking.listing.weeklyDiscountPercent}
                 monthlyDiscountPercent={booking.listing.monthlyDiscountPercent}
+                minNights={booking.listing.minNights}
+                maxNights={booking.listing.maxNights}
                 maxGuests={booking.listing.maxGuests}
                 otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
               />

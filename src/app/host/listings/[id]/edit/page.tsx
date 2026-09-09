@@ -60,6 +60,19 @@ export default async function EditListingPage({
           customCancellationRefundPercent: (
             listing.customCancellationRefundPercent ?? 50
           ).toString(),
+          minNights: listing.minNights.toString(),
+          maxNights: listing.maxNights?.toString() ?? "",
+          checkInTime: listing.checkInTime ?? "",
+          checkOutTime: listing.checkOutTime ?? "",
+          selfCheckIn: listing.selfCheckIn,
+          checkInInstructions: listing.checkInInstructions ?? "",
+          wifiNetwork: listing.wifiNetwork ?? "",
+          wifiPassword: listing.wifiPassword ?? "",
+          smokingAllowed: listing.smokingAllowed,
+          partiesAllowed: listing.partiesAllowed,
+          quietHoursStart: listing.quietHoursStart ?? "",
+          quietHoursEnd: listing.quietHoursEnd ?? "",
+          additionalRules: listing.additionalRules ?? "",
         }}
       />
     </div>

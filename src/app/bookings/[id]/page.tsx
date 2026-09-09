@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, DoorOpen, Wifi } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { blockingBookingWhere } from "@/lib/availability";
@@ -133,6 +133,47 @@ export default async function BookingDetailPage({
             </CardContent>
           </Card>
 
+          {canSeeStayDetails &&
+            (booking.listing.checkInTime ||
+              booking.listing.checkOutTime ||
+              booking.listing.checkInInstructions ||
+              (booking.listing.wifiNetwork && booking.listing.wifiPassword)) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Check-in details</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3 text-sm text-zinc-600">
+                  {(booking.listing.checkInTime || booking.listing.checkOutTime) && (
+                    <div className="flex flex-wrap gap-x-6 gap-y-1">
+                      {booking.listing.checkInTime && (
+                        <span className="flex items-center gap-1.5">
+                          <DoorOpen className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+                          Check-in: {booking.listing.checkInTime}
+                        </span>
+                      )}
+                      {booking.listing.checkOutTime && (
+                        <span className="flex items-center gap-1.5">
+                          <DoorOpen className="h-4 w-4 shrink-0 rotate-180 text-brand-600" aria-hidden />
+                          Checkout: {booking.listing.checkOutTime}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {booking.listing.checkInInstructions && (
+                    <p className="whitespace-pre-line rounded-xl bg-surface-muted px-3.5 py-3">
+                      {booking.listing.checkInInstructions}
+                    </p>
+                  )}
+                  {booking.listing.wifiNetwork && booking.listing.wifiPassword && (
+                    <p className="flex items-center gap-1.5">
+                      <Wifi className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+                      Wifi: <span className="font-medium text-foreground">{booking.listing.wifiNetwork}</span> · {booking.listing.wifiPassword}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
           <Card>
             <CardHeader>
               <CardTitle>Your host</CardTitle>
@@ -183,6 +224,8 @@ export default async function BookingDetailPage({
                     cleaningFeeCents={booking.listing.cleaningFeeCents}
                     weeklyDiscountPercent={booking.listing.weeklyDiscountPercent}
                     monthlyDiscountPercent={booking.listing.monthlyDiscountPercent}
+                    minNights={booking.listing.minNights}
+                    maxNights={booking.listing.maxNights}
                     maxGuests={booking.listing.maxGuests}
                     otherBookedRanges={booking.listing.bookings.filter((b) => b.id !== booking.id)}
                   />

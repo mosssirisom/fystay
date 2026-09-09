@@ -29,6 +29,19 @@ const createListingSchema = z
     cancellationPolicy: z.enum(["FLEXIBLE", "MODERATE", "STRICT", "CUSTOM"]).optional(),
     customCancellationCutoffDays: z.number().int().min(0).max(90).optional(),
     customCancellationRefundPercent: z.number().int().min(0).max(100).optional(),
+    minNights: z.number().int().min(1).max(365).optional(),
+    maxNights: z.number().int().min(1).max(365).nullable().optional(),
+    checkInTime: z.string().max(50).nullable().optional(),
+    checkOutTime: z.string().max(50).nullable().optional(),
+    selfCheckIn: z.boolean().optional(),
+    checkInInstructions: z.string().max(2000).nullable().optional(),
+    wifiNetwork: z.string().max(100).nullable().optional(),
+    wifiPassword: z.string().max(100).nullable().optional(),
+    smokingAllowed: z.boolean().optional(),
+    partiesAllowed: z.boolean().optional(),
+    quietHoursStart: z.string().max(50).nullable().optional(),
+    quietHoursEnd: z.string().max(50).nullable().optional(),
+    additionalRules: z.string().max(2000).nullable().optional(),
   })
   .refine(
     (data) =>
@@ -36,6 +49,12 @@ const createListingSchema = z
       (data.customCancellationCutoffDays !== undefined &&
         data.customCancellationRefundPercent !== undefined),
     { message: "A custom cancellation policy needs a cutoff and a refund percentage" },
+  )
+  .refine(
+    (data) =>
+      data.maxNights === undefined || data.maxNights === null || !data.minNights ||
+      data.maxNights >= data.minNights,
+    { message: "Maximum stay can't be shorter than the minimum stay" },
   );
 
 export async function GET(request: Request) {

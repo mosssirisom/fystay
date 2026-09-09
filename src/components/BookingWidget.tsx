@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
 import { formatPrice } from "@/lib/format";
-import { nightsBetween, rangesOverlap } from "@/lib/availability";
+import { nightsBetween, rangesOverlap, stayLengthError } from "@/lib/availability";
 import type { CancellationPolicy } from "@/lib/cancellationPolicy";
 import {
   computeBookingPricing,
@@ -26,6 +26,8 @@ type Props = {
   cleaningFeeCents: number;
   weeklyDiscountPercent?: number | null;
   monthlyDiscountPercent?: number | null;
+  minNights: number;
+  maxNights: number | null;
   maxGuests: number;
   amenities: string[];
   bookedRanges: { checkIn: string; checkOut: string }[];
@@ -41,6 +43,8 @@ export function BookingWidget({
   cleaningFeeCents,
   weeklyDiscountPercent,
   monthlyDiscountPercent,
+  minNights,
+  maxNights,
   maxGuests,
   amenities,
   bookedRanges,
@@ -116,6 +120,7 @@ export function BookingWidget({
 
   function isSelectionValid(): boolean {
     if (!range?.from || !range?.to) return false;
+    if (stayLengthError(nightsBetween(range.from, range.to), { minNights, maxNights })) return false;
     return !parsedBookedRanges.some((r) =>
       rangesOverlap(range.from as Date, range.to as Date, r.checkIn, r.checkOut),
     );
@@ -126,6 +131,11 @@ export function BookingWidget({
 
     if (!range?.from || !range?.to) {
       setError("Select your check-in and check-out dates.");
+      return;
+    }
+    const lengthError = stayLengthError(nightsBetween(range.from, range.to), { minNights, maxNights });
+    if (lengthError) {
+      setError(lengthError);
       return;
     }
     if (!isSelectionValid()) {
@@ -238,7 +248,22 @@ export function BookingWidget({
         )}
 
         <div className="mt-4 flex flex-col gap-2">
-          <DateRangeField range={range} onChange={setRange} disabledRanges={disabledDays} />
+          <DateRangeField
+            range={range}
+            onChange={setRange}
+            disabledRanges={disabledDays}
+            minNights={minNights}
+            maxNights={maxNights}
+          />
+          {nights === 0 && (minNights > 1 || maxNights !== null) && (
+            <p className="text-xs text-zinc-500">
+              {minNights > 1 && maxNights !== null
+                ? `${minNights}–${maxNights} night stay`
+                : minNights > 1
+                  ? `${minNights} night minimum stay`
+                  : `${maxNights} night maximum stay`}
+            </p>
+          )}
           <GuestCategoryPicker
             value={guestCounts}
             onChange={setGuestCounts}

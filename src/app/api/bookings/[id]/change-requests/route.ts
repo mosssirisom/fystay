@@ -7,6 +7,7 @@ import {
   blockingRanges,
   isRangeAvailable,
   nightsBetween,
+  stayLengthError,
 } from "@/lib/availability";
 import { canRequestBookingChange, computePriceDeltaCents } from "@/lib/changeRequests";
 
@@ -73,13 +74,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
+  const nights = nightsBetween(checkIn, checkOut);
+  const lengthError = stayLengthError(nights, booking.listing);
+  if (lengthError) {
+    return NextResponse.json({ error: lengthError }, { status: 400 });
+  }
+
   const otherBookedRanges = booking.listing.bookings.filter((b) => b.id !== booking.id);
   const merged = blockingRanges(otherBookedRanges, booking.listing.availabilityBlocks);
   if (!isRangeAvailable(checkIn, checkOut, merged)) {
     return NextResponse.json({ error: "Those dates are not available" }, { status: 409 });
   }
-
-  const nights = nightsBetween(checkIn, checkOut);
   const priceDeltaCents = computePriceDeltaCents({
     requestedNights: nights,
     pricePerNightCents: booking.listing.pricePerNightCents,

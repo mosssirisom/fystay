@@ -6,6 +6,7 @@ import {
   nightsBetween,
   PENDING_BOOKING_HOLD_MINUTES,
   rangesOverlap,
+  stayLengthError,
 } from "./availability";
 
 const d = (s: string) => new Date(s);
@@ -112,5 +113,40 @@ describe("nightsBetween", () => {
 
   it("returns 0 for a same-day range", () => {
     expect(nightsBetween(d("2026-06-01"), d("2026-06-01"))).toBe(0);
+  });
+});
+
+describe("stayLengthError", () => {
+  it("returns null when there's no minimum or maximum", () => {
+    expect(stayLengthError(1, { minNights: 1, maxNights: null })).toBeNull();
+  });
+
+  it("rejects a stay shorter than the minimum", () => {
+    expect(stayLengthError(2, { minNights: 3, maxNights: null })).toBe(
+      "This listing requires a minimum stay of 3 nights",
+    );
+  });
+
+  it("singularizes the minimum-nights message", () => {
+    expect(stayLengthError(0, { minNights: 1, maxNights: null })).toBe(
+      "This listing requires a minimum stay of 1 night",
+    );
+  });
+
+  it("rejects a stay longer than the maximum", () => {
+    expect(stayLengthError(10, { minNights: 1, maxNights: 7 })).toBe(
+      "This listing allows a maximum stay of 7 nights",
+    );
+  });
+
+  it("allows a stay exactly at the minimum or maximum boundary", () => {
+    expect(stayLengthError(3, { minNights: 3, maxNights: 7 })).toBeNull();
+    expect(stayLengthError(7, { minNights: 3, maxNights: 7 })).toBeNull();
+  });
+
+  it("checks the minimum before the maximum when both are violated (impossible in practice, but minimum wins)", () => {
+    expect(stayLengthError(1, { minNights: 3, maxNights: 2 })).toBe(
+      "This listing requires a minimum stay of 3 nights",
+    );
   });
 });

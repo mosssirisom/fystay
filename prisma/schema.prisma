@@ -179,6 +179,37 @@ model Listing {
   customCancellationCutoffDays    Int?
   customCancellationRefundPercent Int?
 
+  // Stay length limits, enforced alongside (never folded into) the
+  // date-availability check - see the design-intent comment on
+  // blockingRanges in src/lib/availability.ts. maxNights null means no cap.
+  minNights Int  @default(1)
+  maxNights Int?
+
+  // Free-text rather than a structured time type: hosts describe these in
+  // their own words ("After 3pm", "Flexible", "By arrangement"), and the
+  // site only ever displays them, never computes with them.
+  checkInTime  String?
+  checkOutTime String?
+
+  // Public house-rule flags, shown on the listing page before booking -
+  // distinct from checkInInstructions/wifi below, which are guest-only and
+  // only revealed once a booking is actually paid for (see canSeeStayDetails
+  // on the booking detail page).
+  selfCheckIn      Boolean @default(false)
+  smokingAllowed   Boolean @default(false)
+  partiesAllowed   Boolean @default(false)
+  quietHoursStart  String?
+  quietHoursEnd    String?
+  additionalRules  String?
+
+  // Guest-only, revealed after payment - never shown on the public listing
+  // page. checkInInstructions covers lockbox codes, key location, or a
+  // meet-and-greet note; wifiPassword is meaningless without wifiNetwork so
+  // the UI only shows either once both are set.
+  checkInInstructions String?
+  wifiNetwork         String?
+  wifiPassword        String?
+
   hostId             String
   host               User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings           Booking[]

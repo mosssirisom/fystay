@@ -9,7 +9,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { DateRangeField } from "@/components/DateRangeField";
 import { formatPrice } from "@/lib/format";
-import { nightsBetween, rangesOverlap } from "@/lib/availability";
+import { nightsBetween, rangesOverlap, stayLengthError } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 import { cn } from "@/lib/cn";
 
@@ -23,6 +23,8 @@ export function RequestChangeDialog({
   cleaningFeeCents = 0,
   weeklyDiscountPercent,
   monthlyDiscountPercent,
+  minNights,
+  maxNights,
   maxGuests,
   otherBookedRanges,
 }: {
@@ -35,6 +37,8 @@ export function RequestChangeDialog({
   cleaningFeeCents?: number;
   weeklyDiscountPercent?: number | null;
   monthlyDiscountPercent?: number | null;
+  minNights: number;
+  maxNights: number | null;
   maxGuests: number;
   otherBookedRanges: { checkIn: Date; checkOut: Date }[];
 }) {
@@ -65,6 +69,7 @@ export function RequestChangeDialog({
 
   function isSelectionValid(): boolean {
     if (!range?.from || !range?.to) return false;
+    if (stayLengthError(nightsBetween(range.from, range.to), { minNights, maxNights })) return false;
     return !otherBookedRanges.some((r) =>
       rangesOverlap(range.from as Date, range.to as Date, r.checkIn, r.checkOut),
     );
@@ -74,6 +79,11 @@ export function RequestChangeDialog({
     setError(null);
     if (!range?.from || !range?.to) {
       setError("Select your new check-in and check-out dates.");
+      return;
+    }
+    const lengthError = stayLengthError(nightsBetween(range.from, range.to), { minNights, maxNights });
+    if (lengthError) {
+      setError(lengthError);
       return;
     }
     if (!isSelectionValid()) {
@@ -118,7 +128,13 @@ export function RequestChangeDialog({
         <div className="flex flex-col gap-4">
           <div>
             <p className="mb-1.5 text-xs font-semibold text-foreground">Dates</p>
-            <DateRangeField range={range} onChange={setRange} disabledRanges={disabledDays} />
+            <DateRangeField
+              range={range}
+              onChange={setRange}
+              disabledRanges={disabledDays}
+              minNights={minNights}
+              maxNights={maxNights}
+            />
           </div>
 
           <div>

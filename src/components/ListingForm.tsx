@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertTriangle, Camera, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
+import { AlertTriangle, Camera, ClipboardList, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Field, FieldHint, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -63,6 +63,19 @@ export type ListingFormValues = {
   cancellationPolicy: CancellationPolicyKind;
   customCancellationCutoffDays: string;
   customCancellationRefundPercent: string;
+  minNights: string;
+  maxNights: string;
+  checkInTime: string;
+  checkOutTime: string;
+  selfCheckIn: boolean;
+  checkInInstructions: string;
+  wifiNetwork: string;
+  wifiPassword: string;
+  smokingAllowed: boolean;
+  partiesAllowed: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  additionalRules: string;
 };
 
 const emptyValues: ListingFormValues = {
@@ -85,6 +98,19 @@ const emptyValues: ListingFormValues = {
   cancellationPolicy: "MODERATE",
   customCancellationCutoffDays: "7",
   customCancellationRefundPercent: "50",
+  minNights: "1",
+  maxNights: "",
+  checkInTime: "",
+  checkOutTime: "",
+  selfCheckIn: false,
+  checkInInstructions: "",
+  wifiNetwork: "",
+  wifiPassword: "",
+  smokingAllowed: false,
+  partiesAllowed: false,
+  quietHoursStart: "",
+  quietHoursEnd: "",
+  additionalRules: "",
 };
 
 // A curated checklist covering the amenities guests actually filter by
@@ -227,6 +253,19 @@ export function ListingForm({ listingId, initialValues }: Props) {
             customCancellationRefundPercent: Number(values.customCancellationRefundPercent),
           }
         : {}),
+      minNights: values.minNights ? Number(values.minNights) : 1,
+      maxNights: values.maxNights ? Number(values.maxNights) : null,
+      checkInTime: values.checkInTime.trim() || null,
+      checkOutTime: values.checkOutTime.trim() || null,
+      selfCheckIn: values.selfCheckIn,
+      checkInInstructions: values.checkInInstructions.trim() || null,
+      wifiNetwork: values.wifiNetwork.trim() || null,
+      wifiPassword: values.wifiPassword.trim() || null,
+      smokingAllowed: values.smokingAllowed,
+      partiesAllowed: values.partiesAllowed,
+      quietHoursStart: values.quietHoursStart.trim() || null,
+      quietHoursEnd: values.quietHoursEnd.trim() || null,
+      additionalRules: values.additionalRules.trim() || null,
     };
 
     const res = await fetch(listingId ? `/api/listings/${listingId}` : "/api/listings", {
@@ -436,6 +475,28 @@ export function ListingForm({ listingId, initialValues }: Props) {
                 onChange={(e) => update("bathrooms", e.target.value)}
               />
             </Field>
+            <Field>
+              <Label htmlFor="minNights">Minimum nights</Label>
+              <Input
+                id="minNights"
+                required
+                type="number"
+                min={1}
+                value={values.minNights}
+                onChange={(e) => update("minNights", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="maxNights">Maximum nights (optional)</Label>
+              <Input
+                id="maxNights"
+                type="number"
+                min={1}
+                value={values.maxNights}
+                onChange={(e) => update("maxNights", e.target.value)}
+                placeholder="No limit"
+              />
+            </Field>
           </div>
         </CardContent>
       </Card>
@@ -498,6 +559,128 @@ export function ListingForm({ listingId, initialValues }: Props) {
               />
               <FieldHint>Comma separated - for anything not listed above.</FieldHint>
             </div>
+          </Field>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <SectionHeading icon={ClipboardList}>House rules & check-in</SectionHeading>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <Label htmlFor="checkInTime">Check-in time</Label>
+              <Input
+                id="checkInTime"
+                value={values.checkInTime}
+                onChange={(e) => update("checkInTime", e.target.value)}
+                placeholder="After 3:00 PM"
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="checkOutTime">Checkout time</Label>
+              <Input
+                id="checkOutTime"
+                value={values.checkOutTime}
+                onChange={(e) => update("checkOutTime", e.target.value)}
+                placeholder="Before 11:00 AM"
+              />
+            </Field>
+          </div>
+
+          <Field>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="selfCheckIn" className="mb-0">
+                Self check-in
+              </Label>
+              <AmenityCheckbox active={values.selfCheckIn} onClick={() => update("selfCheckIn", !values.selfCheckIn)}>
+                {values.selfCheckIn ? "Guests let themselves in" : "You greet guests"}
+              </AmenityCheckbox>
+            </div>
+          </Field>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <Label htmlFor="wifiNetwork">Wifi network name (optional)</Label>
+              <Input
+                id="wifiNetwork"
+                value={values.wifiNetwork}
+                onChange={(e) => update("wifiNetwork", e.target.value)}
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="wifiPassword">Wifi password (optional)</Label>
+              <Input
+                id="wifiPassword"
+                value={values.wifiPassword}
+                onChange={(e) => update("wifiPassword", e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <Field>
+            <Label htmlFor="checkInInstructions">
+              Check-in instructions (optional)
+            </Label>
+            <Textarea
+              id="checkInInstructions"
+              rows={3}
+              value={values.checkInInstructions}
+              onChange={(e) => update("checkInInstructions", e.target.value)}
+              placeholder="e.g. Key is in lockbox by the front door, code 4821"
+            />
+            <FieldHint>
+              Only shown to a guest once their booking is paid for - never on the public listing
+              page.
+            </FieldHint>
+          </Field>
+
+          <div className="flex flex-wrap gap-2">
+            <AmenityCheckbox
+              active={values.smokingAllowed}
+              onClick={() => update("smokingAllowed", !values.smokingAllowed)}
+            >
+              {values.smokingAllowed ? "Smoking allowed" : "No smoking"}
+            </AmenityCheckbox>
+            <AmenityCheckbox
+              active={values.partiesAllowed}
+              onClick={() => update("partiesAllowed", !values.partiesAllowed)}
+            >
+              {values.partiesAllowed ? "Parties allowed" : "No parties or events"}
+            </AmenityCheckbox>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <Label htmlFor="quietHoursStart">Quiet hours start (optional)</Label>
+              <Input
+                id="quietHoursStart"
+                value={values.quietHoursStart}
+                onChange={(e) => update("quietHoursStart", e.target.value)}
+                placeholder="10:00 PM"
+              />
+            </Field>
+            <Field>
+              <Label htmlFor="quietHoursEnd">Quiet hours end (optional)</Label>
+              <Input
+                id="quietHoursEnd"
+                value={values.quietHoursEnd}
+                onChange={(e) => update("quietHoursEnd", e.target.value)}
+                placeholder="8:00 AM"
+              />
+            </Field>
+          </div>
+
+          <Field>
+            <Label htmlFor="additionalRules">Additional house rules (optional)</Label>
+            <Textarea
+              id="additionalRules"
+              rows={2}
+              value={values.additionalRules}
+              onChange={(e) => update("additionalRules", e.target.value)}
+              placeholder="e.g. No shoes indoors, recycling goes in the blue bin"
+            />
           </Field>
         </CardContent>
       </Card>

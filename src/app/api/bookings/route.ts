@@ -8,6 +8,7 @@ import {
   blockingRanges,
   isRangeAvailable,
   nightsBetween,
+  stayLengthError,
 } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 import { generateBookingReference } from "@/lib/bookingReference";
@@ -109,6 +110,11 @@ export async function POST(request: Request) {
               `This listing sleeps up to ${listing.maxGuests} guests`,
             );
           }
+          const nights = nightsBetween(checkIn, checkOut);
+          const lengthError = stayLengthError(nights, listing);
+          if (lengthError) {
+            throw new BookingRequestError(400, lengthError);
+          }
           if (
             !isRangeAvailable(
               checkIn,
@@ -119,7 +125,6 @@ export async function POST(request: Request) {
             throw new BookingRequestError(409, "Those dates are not available");
           }
 
-          const nights = nightsBetween(checkIn, checkOut);
           const pricing = computeBookingPricing({
             nights,
             pricePerNightCents: listing.pricePerNightCents,

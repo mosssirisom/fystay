@@ -10,6 +10,7 @@ import {
   ClipboardList,
   DoorOpen,
   Home,
+  ListChecks,
   MapPin,
   ParkingSquare,
   PawPrint,
@@ -32,6 +33,7 @@ import { HostCard } from "@/components/HostCard";
 import { ReadMoreText } from "@/components/ReadMoreText";
 import { WhatGuestsLove } from "@/components/WhatGuestsLove";
 import { GoodToKnow, type GoodToKnowRow } from "@/components/GoodToKnow";
+import { HouseRules } from "@/components/HouseRules";
 import { WhyBookWithFYStay } from "@/components/WhyBookWithFYStay";
 import { TrustLine } from "@/components/TrustLine";
 import { ListingsMap } from "@/components/ListingsMap";
@@ -345,6 +347,11 @@ export default async function ListingDetailPage({
           </div>
 
           <div className="mt-10 border-t border-border-subtle pt-8">
+            <SectionHeading icon={ListChecks}>House rules</SectionHeading>
+            <HouseRules listing={listing} />
+          </div>
+
+          <div className="mt-10 border-t border-border-subtle pt-8">
             <SectionHeading icon={ShieldCheck} id="cancellation-policy">
               Cancellation policy
             </SectionHeading>
@@ -391,6 +398,8 @@ export default async function ListingDetailPage({
             cleaningFeeCents={listing.cleaningFeeCents}
             weeklyDiscountPercent={listing.weeklyDiscountPercent}
             monthlyDiscountPercent={listing.monthlyDiscountPercent}
+            minNights={listing.minNights}
+            maxNights={listing.maxNights}
             maxGuests={listing.maxGuests}
             amenities={listing.amenities}
             bookedRanges={blockingRanges(listing.bookings, listing.availabilityBlocks).map(

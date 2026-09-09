@@ -12,10 +12,15 @@ export function DateRangeField({
   range,
   onChange,
   disabledRanges,
+  minNights = 1,
+  maxNights,
 }: {
   range: DateRange | undefined;
   onChange: (range: DateRange | undefined) => void;
   disabledRanges: Matcher[];
+  /** In nights, not calendar days - passed straight through as react-day-picker's day-count min/max. */
+  minNights?: number;
+  maxNights?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +77,8 @@ export function DateRangeField({
         >
           <DayPicker
             mode="range"
-            min={1}
+            min={minNights}
+            max={maxNights ?? undefined}
             selected={range}
             onSelect={(next) => {
               onChange(next);

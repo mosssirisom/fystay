@@ -13,6 +13,10 @@
     {
       "path": "/api/cron/expire-booking-requests",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/security-deposits",
+      "schedule": "0 8 * * *"
     }
   ]
 }

@@ -11,6 +11,7 @@ import { isConnectReady } from "@/lib/stripeConnect";
 import { formatPrice } from "@/lib/format";
 import { HostListingRow } from "@/components/HostListingRow";
 import { NeedsAttention, type AttentionItem } from "@/components/host/NeedsAttention";
+import { SecurityDeposits, type AuthorizedDeposit } from "@/components/host/SecurityDeposits";
 import { StatCard } from "@/components/host/StatCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Card } from "@/components/ui/Card";
@@ -97,6 +98,28 @@ export default async function HostDashboardPage() {
   );
   const pendingRequests: AttentionItem[] = [...pendingBookingRequests, ...pendingChangeRequests];
 
+  // A separate query, not derived from the status-filtered `bookings`
+  // relation above: an AUTHORIZED deposit hold is just as real on a
+  // COMPLETED booking (the common case - the stay already happened by the
+  // time a host would file a claim) as on a CONFIRMED one, and status
+  // filtering there would silently drop it from this list the moment
+  // completePastBookings flips it over.
+  const authorizedDeposits = await prisma.booking.findMany({
+    where: { listing: { hostId: session.user.id }, depositStatus: "AUTHORIZED" },
+    include: { listing: { select: { id: true, title: true } } },
+    orderBy: { depositClaimDeadline: "asc" },
+  });
+  const deposits: AuthorizedDeposit[] = authorizedDeposits.map((booking) => ({
+    bookingId: booking.id,
+    listingId: booking.listing.id,
+    listingTitle: booking.listing.title,
+    guestName: booking.guestName,
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    securityDepositCents: booking.securityDepositCents,
+    depositClaimDeadline: booking.depositClaimDeadline ?? booking.checkOut,
+  }));
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -175,6 +198,7 @@ export default async function HostDashboardPage() {
           </div>
 
           <NeedsAttention requests={pendingRequests} />
+          <SecurityDeposits deposits={deposits} />
 
           <div className="mt-8">
             <SectionHeading icon={Home}>Your listings</SectionHeading>

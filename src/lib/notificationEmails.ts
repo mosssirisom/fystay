@@ -214,3 +214,71 @@ export async function sendBookingRequestRespondedEmail(
     `,
   });
 }
+
+/**
+ * Sent to the guest once their booking enters the security-deposit
+ * authorization window (see needsDepositAuthorization in
+ * securityDeposit.ts) - a real card hold, not a charge, so the wording is
+ * explicit that nothing is being taken from them yet.
+ */
+export async function sendDepositAuthorizationRequestEmail(
+  ctx: BookingEmailContext,
+  depositCents: number,
+  authorizeUrl: string,
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject: `Action needed: authorize your security deposit for ${ctx.listingTitle}`,
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>Your stay at <strong>${ctx.listingTitle}</strong> is coming up. This listing requires a
+      refundable security deposit hold of ${formatPrice(depositCents)} - this places a hold on your
+      card, it does not charge you. It's released automatically after your stay unless the host
+      files a damage claim.</p>
+      <p>${stayLine(ctx)}</p>
+      <p><a href="${authorizeUrl}">Authorize your security deposit</a></p>
+    `,
+  });
+}
+
+/**
+ * Sent to the guest once a host has resolved an AUTHORIZED deposit hold -
+ * either released (nothing claimed) or captured (a real charge for
+ * something the host says went wrong, so the guest gets the reason, not
+ * just the amount).
+ */
+export async function sendDepositResolvedEmail(
+  ctx: BookingEmailContext,
+  outcome:
+    | { outcome: "released"; depositCents: number }
+    | { outcome: "captured"; depositCents: number; capturedCents: number; reason: string },
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  const subject =
+    outcome.outcome === "released"
+      ? `Your security deposit has been released: ${ctx.listingTitle}`
+      : `Your security deposit was claimed: ${ctx.listingTitle}`;
+  const bodyLine =
+    outcome.outcome === "released"
+      ? `Your ${formatPrice(outcome.depositCents)} security deposit hold has been released in full - nothing was claimed.`
+      : `${ctx.hostName} claimed ${formatPrice(outcome.capturedCents)} of your ${formatPrice(outcome.depositCents)} security deposit. Reason given: "${outcome.reason}"`;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject,
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>${bodyLine}</p>
+      <p><strong>${ctx.listingTitle}</strong><br>
+      ${stayLine(ctx)}</p>
+      <p><a href="${ctx.bookingUrl}">View your booking</a></p>
+    `,
+  });
+}

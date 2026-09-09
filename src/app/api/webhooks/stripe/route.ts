@@ -5,6 +5,7 @@ import { applyApprovedChange } from "@/app/api/bookings/[id]/change-requests/[re
 import { connectFlagsFromAccount } from "@/lib/stripeConnect";
 import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
 import { awardReferralBonusIfEligible } from "@/lib/referral";
+import { depositClaimDeadline } from "@/lib/securityDeposit";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -35,7 +36,31 @@ export async function POST(request: Request) {
     const checkoutSession = event.data.object;
     const bookingId = checkoutSession.metadata?.bookingId;
     const changeRequestId = checkoutSession.metadata?.changeRequestId;
-    if (bookingId) {
+    if (checkoutSession.metadata?.purpose === "deposit" && bookingId) {
+      // A security-deposit hold session (see createDepositCheckoutSession)
+      // completing - this is the moment the card actually gets the
+      // authorization hold placed on it. Scoped to AWAITING_AUTHORIZATION
+      // so a redelivered event is a no-op rather than re-deriving a new
+      // claim deadline from "now" a second time.
+      const depositBooking = await prisma.booking.findFirst({
+        where: { id: bookingId, depositStatus: "AWAITING_AUTHORIZATION" },
+        select: { checkOut: true },
+      });
+      if (depositBooking) {
+        await prisma.booking.updateMany({
+          where: { id: bookingId, depositStatus: "AWAITING_AUTHORIZATION" },
+          data: {
+            depositStatus: "AUTHORIZED",
+            depositAuthorizedAt: new Date(),
+            depositClaimDeadline: depositClaimDeadline(depositBooking.checkOut),
+            stripeDepositPaymentIntentId:
+              typeof checkoutSession.payment_intent === "string"
+                ? checkoutSession.payment_intent
+                : undefined,
+          },
+        });
+      }
+    } else if (bookingId) {
       // Stripe's own docs are explicit that a webhook endpoint must tolerate
       // the same event arriving more than once (a retry after a slow 200, or
       // just an occasional genuine duplicate). Scoping the update to bookings
@@ -104,7 +129,11 @@ export async function POST(request: Request) {
     // out (e.g. they abandoned the card form). Only ever touches a booking
     // still PENDING: if it's already CONFIRMED, some other session for the
     // same booking succeeded first, and this stale expiry must not cancel
-    // a paid stay.
+    // a paid stay. A deposit hold session (metadata.purpose === "deposit")
+    // is naturally excluded the same way, since a deposit is only ever
+    // offered on a booking that's already CONFIRMED - depositStatus simply
+    // stays AWAITING_AUTHORIZATION so the guest or the daily cron can
+    // start a fresh session.
     const bookingId = event.data.object.metadata?.bookingId;
     if (bookingId) {
       await prisma.booking.updateMany({

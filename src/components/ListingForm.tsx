@@ -52,6 +52,7 @@ export type ListingFormValues = {
   address: string;
   pricePerNight: string;
   cleaningFee: string;
+  securityDeposit: string;
   weeklyDiscountPercent: string;
   monthlyDiscountPercent: string;
   maxGuests: string;
@@ -88,6 +89,7 @@ const emptyValues: ListingFormValues = {
   address: "",
   pricePerNight: "",
   cleaningFee: "",
+  securityDeposit: "",
   weeklyDiscountPercent: "",
   monthlyDiscountPercent: "",
   maxGuests: "2",
@@ -232,6 +234,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
       address: values.address || undefined,
       pricePerNightCents: Math.round(Number(values.pricePerNight) * 100),
       cleaningFeeCents: values.cleaningFee ? Math.round(Number(values.cleaningFee) * 100) : 0,
+      securityDepositCents: values.securityDeposit ? Math.round(Number(values.securityDeposit) * 100) : 0,
       weeklyDiscountPercent: values.weeklyDiscountPercent
         ? Number(values.weeklyDiscountPercent)
         : null,
@@ -696,7 +699,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
         <CardHeader>
           <SectionHeading icon={Zap}>Booking settings</SectionHeading>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <Field>
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="instantBook" className="mb-0">
@@ -712,6 +715,25 @@ export function ListingForm({ listingId, initialValues }: Props) {
             <FieldHint>
               With Instant Book off, a guest submits a request instead of paying right away - you
               have 24 hours to accept or decline before it expires automatically.
+            </FieldHint>
+          </Field>
+
+          <Field>
+            <Label htmlFor="securityDeposit">Security deposit (£, optional)</Label>
+            <Input
+              id="securityDeposit"
+              type="number"
+              min="0"
+              step="1"
+              value={values.securityDeposit}
+              onChange={(e) => update("securityDeposit", e.target.value)}
+              placeholder="0"
+            />
+            <FieldHint>
+              A refundable hold on the guest&apos;s card, placed a few days before check-in - never
+              charged unless you file a damage claim afterwards. Best suited to shorter stays: card
+              authorization holds only last about a week, so a very long stay may see the hold
+              expire before the claim window closes.
             </FieldHint>
           </Field>
         </CardContent>

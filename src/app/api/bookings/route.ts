@@ -190,6 +190,13 @@ export async function POST(request: Request) {
               requestExpiresAt: requiresApproval
                 ? new Date(Date.now() + REQUEST_HOLD_HOURS * 60 * 60 * 1000)
                 : null,
+              // Snapshotted now like every other price field, but the
+              // actual card hold isn't placed until shortly before
+              // check-in - see needsDepositAuthorization's own comment for
+              // why. A PENDING/cancelled booking just never reaches that
+              // step; only a CONFIRMED one does.
+              securityDepositCents: listing.securityDepositCents,
+              depositStatus: listing.securityDepositCents > 0 ? "AWAITING_AUTHORIZATION" : "NOT_REQUIRED",
             },
           });
 

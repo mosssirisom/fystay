@@ -115,6 +115,7 @@ export default async function CheckoutPage({
               serviceFeeCents={booking.serviceFeeCents}
               taxCents={booking.taxCents}
               creditAppliedCents={booking.creditAppliedCents}
+              securityDepositCents={booking.securityDepositCents}
               totalPriceCents={booking.totalPriceCents}
               cancellationPolicyLabel={cancellationPolicy.label}
               cancellationPolicyDescription={cancellationPolicy.description}

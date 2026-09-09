@@ -40,6 +40,7 @@ export function BookingSummaryCard({
   taxCents,
   creditAppliedCents = 0,
   totalPriceCents,
+  securityDepositCents = 0,
   reference,
   guestName,
   guestEmail,
@@ -62,6 +63,8 @@ export function BookingSummaryCard({
   /** Referral credit (see referral.ts) already subtracted into totalPriceCents - shown as its own line so the guest can see where it went, not folded silently into the total. */
   creditAppliedCents?: number;
   totalPriceCents: number;
+  /** A refundable card hold, never part of totalPriceCents - authorized separately closer to check-in (see securityDeposit.ts) and never charged unless the host later files a damage claim. */
+  securityDepositCents?: number;
   reference?: string;
   /** Only shown once there's a real reservation to review, i.e. on the confirmation page, not mid-checkout where the guest is still typing these into the form right next to this card. */
   guestName?: string | null;
@@ -209,6 +212,13 @@ export function BookingSummaryCard({
             <span>Total (GBP)</span>
             <span>{formatPrice(totalPriceCents)}</span>
           </div>
+          {securityDepositCents > 0 && (
+            <p className="text-xs text-zinc-500">
+              Plus a refundable {formatPrice(securityDepositCents)} security deposit hold,
+              authorized separately on your card a few days before check-in - not charged now, and
+              not included in the total above.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

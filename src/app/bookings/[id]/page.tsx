@@ -18,6 +18,8 @@ import { RequestChangeDialog } from "@/components/RequestChangeDialog";
 import { CancelBookingButton } from "@/components/CancelBookingButton";
 import { ChangeRequestStatus } from "@/components/ChangeRequestStatus";
 import { previewCancellation } from "@/lib/cancellationPolicy";
+import { needsDepositAuthorization } from "@/lib/securityDeposit";
+import { DepositStatusCard } from "@/components/DepositStatusCard";
 import type { BadgeProps } from "@/components/ui/Badge";
 
 export const metadata: Metadata = { title: "Booking details", robots: { index: false } };
@@ -184,6 +186,16 @@ export default async function BookingDetailPage({
             )}
           </div>
         </Card>
+      )}
+
+      {booking.depositStatus !== "NOT_REQUIRED" && (
+        <DepositStatusCard
+          bookingId={booking.id}
+          depositStatus={booking.depositStatus}
+          securityDepositCents={booking.securityDepositCents}
+          depositCapturedCents={booking.depositCapturedCents}
+          canAuthorizeNow={needsDepositAuthorization(booking)}
+        />
       )}
 
       <PhotoGallery photos={booking.listing.photos} title={booking.listing.title} />
@@ -359,6 +371,7 @@ export default async function BookingDetailPage({
             serviceFeeCents={booking.serviceFeeCents}
             taxCents={booking.taxCents}
             creditAppliedCents={booking.creditAppliedCents}
+            securityDepositCents={booking.securityDepositCents}
             totalPriceCents={booking.totalPriceCents}
             reference={booking.reference}
             guestName={booking.guestName}

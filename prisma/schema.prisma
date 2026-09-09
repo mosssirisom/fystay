@@ -68,6 +68,26 @@ enum BookingApprovalStatus {
   EXPIRED
 }
 
+// Lifecycle of a security-deposit hold (see Listing.securityDepositCents
+// and src/lib/securityDeposit.ts). NOT_REQUIRED: the listing had no
+// deposit set. AWAITING_AUTHORIZATION: a deposit applies but the actual
+// card hold hasn't been placed yet - deliberately deferred to shortly
+// before check-in (see DEPOSIT_AUTHORIZATION_WINDOW_DAYS), never at the
+// time of the original booking payment, since a card authorization hold
+// only lasts about a week and a stay booked months ahead would otherwise
+// have its hold expire long before check-in. AUTHORIZED: the hold is live.
+// CAPTURED: the host filed a claim and some or all of it was charged.
+// RELEASED: the hold was cancelled without a charge, either because the
+// claim window closed with no claim filed, or the host explicitly chose
+// to release it early.
+enum DepositStatus {
+  NOT_REQUIRED
+  AWAITING_AUTHORIZATION
+  AUTHORIZED
+  CAPTURED
+  RELEASED
+}
+
 enum PropertyType {
   APARTMENT
   HOUSE
@@ -238,6 +258,12 @@ model Listing {
   // host must accept within REQUEST_HOLD_HOURS before payment is even
   // offered - no card is touched until the host says yes.
   instantBook            Boolean      @default(true)
+  // A refundable damage-deposit hold, in addition to the nightly price -
+  // never added to a booking's own totalPriceCents, and never actually
+  // charged unless the host files a claim (see DepositStatus). 0 (the
+  // default) means the host hasn't set one - the same "0 means not
+  // configured" convention as cleaningFeeCents.
+  securityDepositCents   Int          @default(0)
   createdAt              DateTime     @default(now())
   updatedAt              DateTime     @updatedAt
 
@@ -381,6 +407,25 @@ model Booking {
   approvalStatus   BookingApprovalStatus @default(NONE)
   requestExpiresAt DateTime?
   hostRespondedAt  DateTime?
+
+  // Security deposit hold (see Listing.securityDepositCents,
+  // src/lib/securityDeposit.ts, and DepositStatus's own comment).
+  // securityDepositCents is a snapshot from the listing at booking time,
+  // like every other price field on this model - never part of
+  // totalPriceCents. stripeDepositPaymentIntentId is only set once
+  // AUTHORIZED; depositCapturedCents is only set once CAPTURED, and may be
+  // less than securityDepositCents (a partial claim). depositClaimDeadline
+  // is when an AUTHORIZED hold auto-releases if the host files no claim -
+  // set once, at authorization time, to checkOut + DEPOSIT_CLAIM_WINDOW_DAYS.
+  securityDepositCents      Int            @default(0)
+  depositStatus             DepositStatus  @default(NOT_REQUIRED)
+  stripeDepositSessionId    String?        @unique
+  stripeDepositPaymentIntentId String?
+  depositAuthorizedAt       DateTime?
+  depositCapturedCents      Int?
+  depositCapturedAt         DateTime?
+  depositReleasedAt         DateTime?
+  depositClaimDeadline      DateTime?
 
   // Contact details for this specific stay, captured at checkout. Kept on
   // the booking (rather than read live off the account) so the record

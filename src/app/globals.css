@@ -211,6 +211,84 @@ body {
   animation: reveal-in 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Booking-confirmation "confirming payment" screen: an indeterminate sweep
+   bar under the radar pulse. It reads as active progress without claiming
+   to know how long Stripe's own confirmation will take (a determinate bar
+   that stalls at 90% reads worse than one that was never precise), and
+   uses the same brand gradient as the checkout signature strip so the
+   whole payment flow feels like one considered thing. */
+@keyframes confirm-bar-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+.confirm-bar-sweep {
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-brand-600), var(--color-brand-400), var(--color-accent-400));
+  animation: confirm-bar-sweep 1.3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirm-bar-sweep {
+    animation: none;
+    width: 100%;
+    transform: none;
+  }
+}
+
+/* Booking-confirmation success state (SuccessCheckmark): the circle and
+   check draw themselves in on top of a small scale "pop", rather than the
+   badge just fading in - the one moment in the app where money has
+   definitely, actually changed hands deserves to read as a real event, not
+   another page render. All three are skipped under reduced-motion (see
+   SuccessCheckmark), which renders the finished mark directly instead. */
+@keyframes success-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-success-pop {
+  animation: success-pop 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes success-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.animate-success-circle {
+  stroke-dasharray: 208; /* 2 * π * the circle's r=33, rounded */
+  stroke-dashoffset: 208;
+  animation: success-draw 500ms ease-out 80ms both;
+}
+.animate-success-check {
+  stroke-dasharray: 42; /* sum of the check mark's two segment lengths, rounded up */
+  stroke-dashoffset: 42;
+  animation: success-draw 280ms ease-out 480ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-success-pop {
+    animation: none;
+  }
+  .animate-success-circle,
+  .animate-success-check {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
 /* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);

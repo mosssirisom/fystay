@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { BookingSummaryCard } from "@/components/BookingSummaryCard";
+import { ConfettiBurst } from "@/components/ConfettiBurst";
+import { SuccessCheckmark } from "@/components/SuccessCheckmark";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
@@ -141,7 +143,14 @@ export function BookingConfirmation({
             >
               {CONFIRMING_MESSAGES[messageIndex]}
             </p>
-            <p className="max-w-sm text-sm text-zinc-500">This only takes a moment.</p>
+            <p className="text-sm text-zinc-500">This only takes a moment.</p>
+            <div
+              className="relative h-1.5 w-48 overflow-hidden rounded-full bg-brand-50"
+              role="progressbar"
+              aria-label="Confirming your payment"
+            >
+              <span className="confirm-bar-sweep" />
+            </div>
           </>
         )}
       </div>
@@ -154,9 +163,16 @@ export function BookingConfirmation({
     <div className="flex flex-col items-center gap-2 py-8 text-center">
       {isConfirmed ? (
         <>
-          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-          <h1 className="text-2xl font-bold text-foreground">Booking confirmed!</h1>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <div className="relative flex h-20 w-20 items-center justify-center">
+            <ConfettiBurst />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-50">
+              <SuccessCheckmark size={44} />
+            </div>
+          </div>
+          <h1 className="animate-confirm-message-in text-2xl font-bold text-foreground">
+            Booking confirmed!
+          </h1>
+          <p className="animate-confirm-message-in max-w-sm text-sm text-zinc-500">
             You&apos;re all set. A confirmation has been saved to your account under &quot;My
             trips&quot;.
           </p>

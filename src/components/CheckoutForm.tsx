@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, FieldError, Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
@@ -30,6 +30,7 @@ export function CheckoutForm({
   const [phone, setPhone] = useState(defaultPhone);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const mobileBarRef = useRef<HTMLDivElement>(null);
   useReserveBottomSpace(mobileBarRef);
 
@@ -63,6 +64,11 @@ export function CheckoutForm({
         return;
       }
 
+      // The overlay below covers the gap between this and the browser
+      // actually leaving for Stripe - without it, the last thing a guest
+      // sees is a spinner frozen on a button, which reads as stuck rather
+      // than as "taking you somewhere on purpose".
+      setRedirecting(true);
       window.location.href = data.url;
     } catch {
       setError("Something went wrong. Please try again.");
@@ -149,6 +155,13 @@ export function CheckoutForm({
           Pay securely
         </Button>
       </div>
+
+      {redirecting && (
+        <div className="animate-confirm-message-in fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white/95 backdrop-blur-sm">
+          <Loader2 className="h-8 w-8 animate-spin text-brand-700" aria-hidden />
+          <p className="text-sm font-medium text-foreground">Taking you to secure payment…</p>
+        </div>
+      )}
     </form>
   );
 }

@@ -1,5 +1,6 @@
-import { MessageCircle, Zap } from "lucide-react";
+import { Award, MessageCircle, Zap } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
 import { ContactHostButton } from "@/components/ContactHostButton";
 import { formatResponseTime } from "@/lib/hostStats";
 
@@ -8,12 +9,13 @@ import { formatResponseTime } from "@/lib/hostStats";
  * year their account was created, how many published reviews exist across
  * every listing they run (not just this one - a host with one glowing
  * review on their tenth property and a host with their first-ever review
- * look identical from a single listing's own count), and their response
- * rate/time computed from real Message history (see hostStats.ts). Both
- * are omitted entirely rather than shown as 0%/blank when the host has no
- * guest-initiated conversations yet - an unearned or fabricated trust
- * signal erodes trust the moment a guest notices it doesn't add up. No
- * "Identity verified" badge, because nothing in this schema tracks that.
+ * look identical from a single listing's own count), their response
+ * rate/time computed from real Message history, and a "Great Host" badge
+ * only once isGreatHost's real thresholds are actually met (see
+ * hostStats.ts) - never a badge with nothing behind it. All three trust
+ * signals are omitted entirely, not shown as 0%/false, when there isn't
+ * enough data yet to honestly compute them. No "Identity verified" badge,
+ * because nothing in this schema tracks that.
  */
 export function HostCard({
   hostName,
@@ -22,6 +24,7 @@ export function HostCard({
   reviewCount,
   responseRate,
   medianResponseMinutes,
+  isGreatHost,
   listingId,
   isLoggedIn,
   isOwnListing,
@@ -32,6 +35,7 @@ export function HostCard({
   reviewCount: number;
   responseRate: number | null;
   medianResponseMinutes: number | null;
+  isGreatHost: boolean;
   listingId: string;
   isLoggedIn: boolean;
   isOwnListing: boolean;
@@ -42,7 +46,15 @@ export function HostCard({
         <Avatar name={hostName} src={hostImage} size={56} className="ring-2 ring-brand-50" />
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Hosted by</p>
-          <p className="text-lg font-semibold text-foreground">{hostName}</p>
+          <p className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            {hostName}
+            {isGreatHost && (
+              <Badge variant="brand" className="gap-1">
+                <Award className="h-3 w-3" aria-hidden />
+                Great Host
+              </Badge>
+            )}
+          </p>
           <p className="mt-0.5 text-sm text-zinc-500">
             FYStay host since {hostingSinceYear}
             {reviewCount > 0 && ` · ${reviewCount} review${reviewCount === 1 ? "" : "s"}`}

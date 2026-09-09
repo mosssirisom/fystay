@@ -182,3 +182,35 @@ export function formatResponseTime(minutes: number): string {
   if (minutes <= 24 * 60) return "within a day";
   return "within a few days";
 }
+
+// Deliberately below Airbnb's own Superhost bar (10 trips / 4.8 / 90%
+// response) - this app has nowhere near Airbnb's volume of hosts or
+// bookings, and a badge that's practically unreachable is worse than no
+// badge at all. "Great Host" (not "Superhost") on purpose: that name is
+// Airbnb's own trademark, and this isn't the same program.
+export const GREAT_HOST_MIN_COMPLETED_BOOKINGS = 5;
+export const GREAT_HOST_MIN_AVERAGE_RATING = 4.8;
+export const GREAT_HOST_MIN_RESPONSE_RATE = 90;
+
+export type GreatHostCriteria = {
+  completedBookings: number;
+  averageRating: number | null;
+  responseRate: number | null;
+};
+
+/**
+ * A host-wide, not listing-wide, distinction - the same reasoning as
+ * hostReviewCount/computeHostResponseStats elsewhere in this file. Every
+ * threshold has to be actually met, not just "on average" - a host with
+ * a great rating but who never replies to messages isn't what this badge
+ * is meant to promise a guest.
+ */
+export function isGreatHost(criteria: GreatHostCriteria): boolean {
+  return (
+    criteria.completedBookings >= GREAT_HOST_MIN_COMPLETED_BOOKINGS &&
+    criteria.averageRating !== null &&
+    criteria.averageRating >= GREAT_HOST_MIN_AVERAGE_RATING &&
+    criteria.responseRate !== null &&
+    criteria.responseRate >= GREAT_HOST_MIN_RESPONSE_RATE
+  );
+}

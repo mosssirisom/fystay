@@ -45,7 +45,7 @@ import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { computeRatingBreakdown } from "@/lib/reviews";
-import { computeHostResponseStats } from "@/lib/hostStats";
+import { computeHostResponseStats, isGreatHost } from "@/lib/hostStats";
 import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
 import { formatPrice } from "@/lib/format";
 
@@ -114,7 +114,7 @@ export default async function ListingDetailPage({
     notFound();
   }
 
-  const [isSaved, hostReviewCount, hostConversations] = await Promise.all([
+  const [isSaved, hostReviewStats, hostConversations, hostCompletedBookings] = await Promise.all([
     session?.user
       ? prisma.savedListing
           .findUnique({
@@ -125,10 +125,12 @@ export default async function ListingDetailPage({
     // Across every listing this host runs, not just this one - a host with
     // one glowing review on their tenth property and a host with their
     // first-ever review look identical from a single listing's own count.
-    prisma.review.count({
+    prisma.review.aggregate({
       where: { status: "PUBLISHED", listing: { hostId: listing.hostId } },
+      _count: true,
+      _avg: { rating: true },
     }),
-    // Same "every listing, not just this one" reasoning as hostReviewCount
+    // Same "every listing, not just this one" reasoning as hostReviewStats
     // above - response rate/time is a fact about the host, not this listing.
     prisma.conversation.findMany({
       where: { hostId: listing.hostId },
@@ -138,8 +140,20 @@ export default async function ListingDetailPage({
         messages: { select: { senderId: true, createdAt: true } },
       },
     }),
+    // Also host-wide - see isGreatHost in hostStats.ts for why this, the
+    // host's average rating, and their response rate all have to be met
+    // together before the "Great Host" badge shows at all.
+    prisma.booking.count({
+      where: { status: "COMPLETED", listing: { hostId: listing.hostId } },
+    }),
   ]);
+  const hostReviewCount = hostReviewStats._count;
   const { responseRate, medianResponseMinutes } = computeHostResponseStats(hostConversations);
+  const hostIsGreat = isGreatHost({
+    completedBookings: hostCompletedBookings,
+    averageRating: hostReviewStats._avg.rating,
+    responseRate,
+  });
 
   const reportedReviewIds = session?.user
     ? new Set(
@@ -294,6 +308,7 @@ export default async function ListingDetailPage({
             reviewCount={hostReviewCount}
             responseRate={responseRate}
             medianResponseMinutes={medianResponseMinutes}
+            isGreatHost={hostIsGreat}
             listingId={listing.id}
             isLoggedIn={Boolean(session?.user)}
             isOwnListing={isOwnListing}

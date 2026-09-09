@@ -4,6 +4,7 @@ import {
   computeOccupancyRate,
   formatResponseTime,
   hostRevenueCents,
+  isGreatHost,
   summarizeEarnings,
 } from "./hostStats";
 
@@ -338,5 +339,37 @@ describe("formatResponseTime", () => {
 
   it("buckets anything longer as within a few days", () => {
     expect(formatResponseTime(1441)).toBe("within a few days");
+  });
+});
+
+describe("isGreatHost", () => {
+  const passing = { completedBookings: 5, averageRating: 4.8, responseRate: 90 };
+
+  it("is true when every threshold is met exactly", () => {
+    expect(isGreatHost(passing)).toBe(true);
+  });
+
+  it("is false with too few completed bookings", () => {
+    expect(isGreatHost({ ...passing, completedBookings: 4 })).toBe(false);
+  });
+
+  it("is false with a rating below the bar", () => {
+    expect(isGreatHost({ ...passing, averageRating: 4.79 })).toBe(false);
+  });
+
+  it("is false with no rating at all", () => {
+    expect(isGreatHost({ ...passing, averageRating: null })).toBe(false);
+  });
+
+  it("is false with a response rate below the bar", () => {
+    expect(isGreatHost({ ...passing, responseRate: 89 })).toBe(false);
+  });
+
+  it("is false with no response rate at all", () => {
+    expect(isGreatHost({ ...passing, responseRate: null })).toBe(false);
+  });
+
+  it("is true comfortably above every threshold", () => {
+    expect(isGreatHost({ completedBookings: 50, averageRating: 5, responseRate: 100 })).toBe(true);
   });
 });

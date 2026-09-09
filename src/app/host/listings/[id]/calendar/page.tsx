@@ -5,6 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
+import { IcalSync } from "@/components/IcalSync";
+import { SITE_URL } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -69,6 +71,15 @@ export default async function ListingCalendarPage({
         bookings={listing.bookings}
         blocks={listing.availabilityBlocks}
       />
+
+      <div className="mt-6">
+        <IcalSync
+          listingId={listing.id}
+          exportUrl={`${SITE_URL}/api/listings/${listing.id}/calendar.ics?token=${listing.icalExportToken}`}
+          initialImportUrl={listing.icalImportUrl}
+          syncedAt={listing.icalSyncedAt}
+        />
+      </div>
     </div>
   );
 }

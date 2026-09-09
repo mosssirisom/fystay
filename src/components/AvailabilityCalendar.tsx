@@ -41,6 +41,7 @@ type BlockRow = {
   startDate: Date;
   endDate: Date;
   reason: string | null;
+  source: "HOST" | "ICAL_IMPORT";
 };
 
 const LEGEND = [
@@ -355,8 +356,13 @@ export function AvailabilityCalendar({
               {blocks.map((block) => (
                 <li key={block.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="flex items-center gap-2 text-sm font-medium text-foreground">
                       {dateFormatter.format(block.startDate)} – {dateFormatter.format(block.endDate)}
+                      {block.source === "ICAL_IMPORT" && (
+                        <Badge variant="neutral" className="text-[11px]">
+                          Synced
+                        </Badge>
+                      )}
                     </p>
                     {block.reason && <p className="text-xs text-zinc-500">{block.reason}</p>}
                   </div>

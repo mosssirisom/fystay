@@ -45,6 +45,7 @@ import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { LOCAL_GUIDES } from "@/lib/localGuide";
 import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { computeRatingBreakdown } from "@/lib/reviews";
+import { computeHostResponseStats } from "@/lib/hostStats";
 import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
 import { formatPrice } from "@/lib/format";
 
@@ -113,7 +114,7 @@ export default async function ListingDetailPage({
     notFound();
   }
 
-  const [isSaved, hostReviewCount] = await Promise.all([
+  const [isSaved, hostReviewCount, hostConversations] = await Promise.all([
     session?.user
       ? prisma.savedListing
           .findUnique({
@@ -127,7 +128,18 @@ export default async function ListingDetailPage({
     prisma.review.count({
       where: { status: "PUBLISHED", listing: { hostId: listing.hostId } },
     }),
+    // Same "every listing, not just this one" reasoning as hostReviewCount
+    // above - response rate/time is a fact about the host, not this listing.
+    prisma.conversation.findMany({
+      where: { hostId: listing.hostId },
+      select: {
+        hostId: true,
+        guestId: true,
+        messages: { select: { senderId: true, createdAt: true } },
+      },
+    }),
   ]);
+  const { responseRate, medianResponseMinutes } = computeHostResponseStats(hostConversations);
 
   const reportedReviewIds = session?.user
     ? new Set(
@@ -280,6 +292,8 @@ export default async function ListingDetailPage({
             hostImage={listing.host.image}
             hostingSinceYear={listing.host.createdAt.getFullYear()}
             reviewCount={hostReviewCount}
+            responseRate={responseRate}
+            medianResponseMinutes={medianResponseMinutes}
             listingId={listing.id}
             isLoggedIn={Boolean(session?.user)}
             isOwnListing={isOwnListing}

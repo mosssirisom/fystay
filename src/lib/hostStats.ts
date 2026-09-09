@@ -119,3 +119,66 @@ export function computeOccupancyRate(params: {
   const availableNights = published.length * windowDays;
   return Math.round((bookedNights / availableNights) * 100);
 }
+
+export type ConversationForStats = {
+  hostId: string;
+  guestId: string;
+  messages: { senderId: string; createdAt: Date }[];
+};
+
+export type HostResponseStats = {
+  /** Null when the host has no guest-initiated conversations yet. */
+  responseRate: number | null;
+  /** Median minutes from a guest's first message to the host's first reply, across conversations that got one. Null when none did. */
+  medianResponseMinutes: number | null;
+};
+
+function median(numbers: number[]): number {
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * Only counts conversations a guest actually started (their message comes
+ * first) - a conversation the host opened themselves isn't a test of how
+ * responsive they are to guests. Response rate is "did the host ever reply
+ * at all", not bounded to any particular window, matching what this
+ * schema can actually attest to; medianResponseMinutes is computed only
+ * over conversations that did get a reply, so one guest the host never
+ * answered doesn't silently vanish from the rate but also doesn't drag
+ * the timing figure toward infinity.
+ */
+export function computeHostResponseStats(conversations: ConversationForStats[]): HostResponseStats {
+  const guestInitiated = conversations
+    .map((c) => ({ ...c, messages: [...c.messages].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) }))
+    .filter((c) => c.messages.length > 0 && c.messages[0].senderId === c.guestId);
+
+  if (guestInitiated.length === 0) {
+    return { responseRate: null, medianResponseMinutes: null };
+  }
+
+  const responseMinutes: number[] = [];
+  for (const conversation of guestInitiated) {
+    const guestFirstMessage = conversation.messages[0];
+    const hostReply = conversation.messages.find(
+      (m) => m.senderId === conversation.hostId && m.createdAt > guestFirstMessage.createdAt,
+    );
+    if (hostReply) {
+      responseMinutes.push((hostReply.createdAt.getTime() - guestFirstMessage.createdAt.getTime()) / 60_000);
+    }
+  }
+
+  return {
+    responseRate: Math.round((responseMinutes.length / guestInitiated.length) * 100),
+    medianResponseMinutes: responseMinutes.length > 0 ? median(responseMinutes) : null,
+  };
+}
+
+/** Airbnb-style bucketed phrasing rather than a raw "47 minutes" figure, which reads as more precise than a median of a handful of replies actually supports. */
+export function formatResponseTime(minutes: number): string {
+  if (minutes <= 60) return "within an hour";
+  if (minutes <= 6 * 60) return "within a few hours";
+  if (minutes <= 24 * 60) return "within a day";
+  return "within a few days";
+}

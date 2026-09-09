@@ -42,6 +42,7 @@ const updateListingSchema = z
     quietHoursStart: z.string().max(50).nullable().optional(),
     quietHoursEnd: z.string().max(50).nullable().optional(),
     additionalRules: z.string().max(2000).nullable().optional(),
+    icalImportUrl: httpUrlSchema.nullable().optional(),
   })
   .refine(
     (data) =>

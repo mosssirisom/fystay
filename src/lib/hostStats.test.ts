@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { computeOccupancyRate, hostRevenueCents, summarizeEarnings } from "./hostStats";
+import {
+  computeHostResponseStats,
+  computeOccupancyRate,
+  formatResponseTime,
+  hostRevenueCents,
+  summarizeEarnings,
+} from "./hostStats";
 
 function booking(overrides: Partial<Parameters<typeof hostRevenueCents>[0]> = {}) {
   return {
@@ -209,5 +215,128 @@ describe("computeOccupancyRate", () => {
     });
     // Only 5 of the 9 booked nights fall inside [Jun 1, Jul 1).
     expect(rate).toBe(Math.round((5 / 30) * 100));
+  });
+});
+
+const d = (s: string) => new Date(s);
+const HOST = "host-1";
+const GUEST = "guest-1";
+
+describe("computeHostResponseStats", () => {
+  it("returns nulls when there are no conversations", () => {
+    expect(computeHostResponseStats([])).toEqual({ responseRate: null, medianResponseMinutes: null });
+  });
+
+  it("ignores a conversation the host started themselves", () => {
+    const stats = computeHostResponseStats([
+      {
+        hostId: HOST,
+        guestId: GUEST,
+        messages: [{ senderId: HOST, createdAt: d("2026-01-01T10:00:00Z") }],
+      },
+    ]);
+    expect(stats).toEqual({ responseRate: null, medianResponseMinutes: null });
+  });
+
+  it("counts a guest-initiated conversation the host never replied to against the rate, but not the timing", () => {
+    const stats = computeHostResponseStats([
+      {
+        hostId: HOST,
+        guestId: GUEST,
+        messages: [{ senderId: GUEST, createdAt: d("2026-01-01T10:00:00Z") }],
+      },
+    ]);
+    expect(stats.responseRate).toBe(0);
+    expect(stats.medianResponseMinutes).toBeNull();
+  });
+
+  it("computes a 100% rate and the exact response time for a single replied conversation", () => {
+    const stats = computeHostResponseStats([
+      {
+        hostId: HOST,
+        guestId: GUEST,
+        messages: [
+          { senderId: GUEST, createdAt: d("2026-01-01T10:00:00Z") },
+          { senderId: HOST, createdAt: d("2026-01-01T10:30:00Z") },
+        ],
+      },
+    ]);
+    expect(stats.responseRate).toBe(100);
+    expect(stats.medianResponseMinutes).toBe(30);
+  });
+
+  it("sorts unordered messages before finding the guest's first message and the host's first reply", () => {
+    const stats = computeHostResponseStats([
+      {
+        hostId: HOST,
+        guestId: GUEST,
+        messages: [
+          { senderId: HOST, createdAt: d("2026-01-01T11:00:00Z") },
+          { senderId: GUEST, createdAt: d("2026-01-01T10:00:00Z") },
+        ],
+      },
+    ]);
+    expect(stats.responseRate).toBe(100);
+    expect(stats.medianResponseMinutes).toBe(60);
+  });
+
+  it("mixes replied and unreplied conversations into one rate, timing only from the replied ones", () => {
+    const stats = computeHostResponseStats([
+      {
+        hostId: HOST,
+        guestId: GUEST,
+        messages: [
+          { senderId: GUEST, createdAt: d("2026-01-01T10:00:00Z") },
+          { senderId: HOST, createdAt: d("2026-01-01T10:10:00Z") },
+        ],
+      },
+      {
+        hostId: HOST,
+        guestId: "guest-2",
+        messages: [{ senderId: "guest-2", createdAt: d("2026-01-02T10:00:00Z") }],
+      },
+    ]);
+    expect(stats.responseRate).toBe(50);
+    expect(stats.medianResponseMinutes).toBe(10);
+  });
+
+  it("computes the median across an odd number of response times", () => {
+    const stats = computeHostResponseStats([
+      { hostId: HOST, guestId: "g1", messages: [
+        { senderId: "g1", createdAt: d("2026-01-01T10:00:00Z") },
+        { senderId: HOST, createdAt: d("2026-01-01T10:10:00Z") },
+      ] },
+      { hostId: HOST, guestId: "g2", messages: [
+        { senderId: "g2", createdAt: d("2026-01-01T10:00:00Z") },
+        { senderId: HOST, createdAt: d("2026-01-01T11:00:00Z") },
+      ] },
+      { hostId: HOST, guestId: "g3", messages: [
+        { senderId: "g3", createdAt: d("2026-01-01T10:00:00Z") },
+        { senderId: HOST, createdAt: d("2026-01-01T10:20:00Z") },
+      ] },
+    ]);
+    // Response times: 10, 60, 20 -> sorted 10, 20, 60 -> median 20
+    expect(stats.medianResponseMinutes).toBe(20);
+  });
+});
+
+describe("formatResponseTime", () => {
+  it("buckets an hour or less as within an hour", () => {
+    expect(formatResponseTime(45)).toBe("within an hour");
+    expect(formatResponseTime(60)).toBe("within an hour");
+  });
+
+  it("buckets up to six hours as within a few hours", () => {
+    expect(formatResponseTime(61)).toBe("within a few hours");
+    expect(formatResponseTime(360)).toBe("within a few hours");
+  });
+
+  it("buckets up to a day as within a day", () => {
+    expect(formatResponseTime(361)).toBe("within a day");
+    expect(formatResponseTime(1440)).toBe("within a day");
+  });
+
+  it("buckets anything longer as within a few days", () => {
+    expect(formatResponseTime(1441)).toBe("within a few days");
   });
 });

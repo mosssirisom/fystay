@@ -210,6 +210,19 @@ model Listing {
   wifiNetwork         String?
   wifiPassword        String?
 
+  // Calendar sync with other platforms (Airbnb, Vrbo, Google Calendar), so
+  // a host who cross-lists elsewhere doesn't get double-booked. Export is a
+  // secret-token feed URL (icalExportToken authorizes it without a login,
+  // since calendar apps can't send session cookies) listing this listing's
+  // CONFIRMED bookings and host-set blocks; import is one external .ics URL
+  // the host pastes in, synced into AvailabilityBlock rows tagged
+  // ICAL_IMPORT (see src/lib/icalSync.ts). One import URL, not many - most
+  // hosts cross-list on a single other platform, and this keeps the sync
+  // and its UI simple; multiple imports is a reasonable future extension.
+  icalExportToken String    @unique @default(cuid())
+  icalImportUrl   String?
+  icalSyncedAt    DateTime?
+
   hostId             String
   host               User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings           Booking[]
@@ -222,22 +235,35 @@ model Listing {
   @@index([hostId])
 }
 
-// A host-initiated closure of a date range (maintenance, personal use, an
-// off-platform booking, etc.), independent of any guest Booking. Treated
-// identically to a Booking wherever availability is checked (see
-// src/lib/availability.ts's blockingRanges) so a blocked date is just as
-// unbookable to a guest as a reserved one, while staying visually and
-// structurally distinct on the host's own calendar.
+enum AvailabilityBlockSource {
+  HOST
+  ICAL_IMPORT
+}
+
+// A closure of a date range, independent of any guest Booking: either the
+// host manually blocked it (maintenance, personal use, an off-platform
+// booking) or it was synced in from an external calendar (see
+// src/lib/icalSync.ts). Treated identically to a Booking wherever
+// availability is checked (see src/lib/availability.ts's blockingRanges)
+// so a blocked date is just as unbookable to a guest as a reserved one,
+// while staying visually and structurally distinct on the host's own
+// calendar. externalUid is the source .ics feed's own VEVENT UID, present
+// only on ICAL_IMPORT rows - it's what lets a later sync tell "this event
+// still exists, maybe with new dates" apart from "this event is gone,
+// delete the block" without ever touching a HOST block by mistake.
 model AvailabilityBlock {
-  id        String   @id @default(cuid())
-  startDate DateTime
-  endDate   DateTime
-  reason    String?
-  createdAt DateTime @default(now())
+  id          String                  @id @default(cuid())
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?
+  source      AvailabilityBlockSource @default(HOST)
+  externalUid String?
+  createdAt   DateTime                @default(now())
 
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
+  @@unique([listingId, externalUid])
   @@index([listingId])
 }
 

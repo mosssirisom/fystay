@@ -94,6 +94,17 @@ enum ReviewReportStatus {
   ACTIONED
 }
 
+// NONE: never started. PENDING: a Stripe Identity VerificationSession is
+// open, awaiting the user's document + selfie. VERIFIED/FAILED: Stripe's
+// own decision, applied by the identity.verification_session.* webhook
+// events - this app never marks a user verified itself, only Stripe does.
+enum IdentityVerificationStatus {
+  NONE
+  PENDING
+  VERIFIED
+  FAILED
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -137,6 +148,25 @@ model User {
   referrals            User[]  @relation("Referrals")
   creditBalanceCents   Int     @default(0)
   referralBonusAwarded Boolean @default(false)
+
+  // Phone verification (see src/lib/phoneVerification.ts - a Twilio Verify
+  // integration, inactive without TWILIO_* env vars, the same pattern as
+  // the Ticketmaster events integration). phone is only ever set once it's
+  // actually been verified - never a claimed-but-unconfirmed number - so
+  // phoneVerifiedAt being non-null is exactly equivalent to phone being
+  // non-null; both are kept for a readable "verified when" timestamp.
+  phone           String?
+  phoneVerifiedAt DateTime?
+
+  // ID verification via Stripe Identity (src/lib/identity.ts) - reuses the
+  // Stripe account this app already has for payments rather than a second
+  // vendor. NONE/PENDING/FAILED never show a "verified" badge anywhere;
+  // only a real VERIFIED from Stripe's own webhook does (see
+  // identity.verification_session.* handling in the Stripe webhook route) -
+  // this app never marks itself verified.
+  identityVerificationStatus IdentityVerificationStatus @default(NONE)
+  stripeIdentitySessionId    String?                     @unique
+  identityVerifiedAt         DateTime?
 
   listings            Listing[]
   bookings            Booking[]

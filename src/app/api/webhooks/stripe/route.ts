@@ -112,6 +112,34 @@ export async function POST(request: Request) {
         data: { status: "CANCELLED" },
       });
     }
+  } else if (
+    event.type === "identity.verification_session.verified" ||
+    event.type === "identity.verification_session.requires_input"
+  ) {
+    // The only place a user's identityVerificationStatus is ever set to
+    // VERIFIED or FAILED - see createIdentityVerificationSession's own
+    // comment for why this app never marks itself verified. Scoped to the
+    // session id, not just the userId in metadata, so a stale/superseded
+    // session's event can never overwrite the outcome of a newer one.
+    const verificationSession = event.data.object;
+    const userId = verificationSession.metadata?.userId;
+    if (userId) {
+      await prisma.user
+        .updateMany({
+          where: { id: userId, stripeIdentitySessionId: verificationSession.id },
+          data: {
+            identityVerificationStatus:
+              event.type === "identity.verification_session.verified" ? "VERIFIED" : "FAILED",
+            ...(event.type === "identity.verification_session.verified" && {
+              identityVerifiedAt: new Date(),
+            }),
+          },
+        })
+        .catch(() => {
+          // No user matches that id + session pair (e.g. a stale/test
+          // event) - nothing to update, and not worth failing the webhook.
+        });
+    }
   }
 
   return NextResponse.json({ received: true });

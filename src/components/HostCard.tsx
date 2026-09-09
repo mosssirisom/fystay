@@ -1,4 +1,4 @@
-import { Award, MessageCircle, Zap } from "lucide-react";
+import { Award, BadgeCheck, MessageCircle, Zap } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { ContactHostButton } from "@/components/ContactHostButton";
@@ -10,12 +10,13 @@ import { formatResponseTime } from "@/lib/hostStats";
  * every listing they run (not just this one - a host with one glowing
  * review on their tenth property and a host with their first-ever review
  * look identical from a single listing's own count), their response
- * rate/time computed from real Message history, and a "Great Host" badge
- * only once isGreatHost's real thresholds are actually met (see
- * hostStats.ts) - never a badge with nothing behind it. All three trust
- * signals are omitted entirely, not shown as 0%/false, when there isn't
- * enough data yet to honestly compute them. No "Identity verified" badge,
- * because nothing in this schema tracks that.
+ * rate/time computed from real Message history, a "Great Host" badge only
+ * once isGreatHost's real thresholds are actually met (see hostStats.ts),
+ * and an "Identity verified" badge only once Stripe Identity itself - not
+ * this app - has said so (User.identityVerificationStatus === "VERIFIED",
+ * see identity.ts). Every trust signal here is omitted entirely, never
+ * shown as 0%/false/unverified, when there isn't enough data yet to
+ * honestly compute or confirm it.
  */
 export function HostCard({
   hostName,
@@ -25,6 +26,7 @@ export function HostCard({
   responseRate,
   medianResponseMinutes,
   isGreatHost,
+  isIdentityVerified,
   listingId,
   isLoggedIn,
   isOwnListing,
@@ -36,6 +38,7 @@ export function HostCard({
   responseRate: number | null;
   medianResponseMinutes: number | null;
   isGreatHost: boolean;
+  isIdentityVerified: boolean;
   listingId: string;
   isLoggedIn: boolean;
   isOwnListing: boolean;
@@ -52,6 +55,12 @@ export function HostCard({
               <Badge variant="brand" className="gap-1">
                 <Award className="h-3 w-3" aria-hidden />
                 Great Host
+              </Badge>
+            )}
+            {isIdentityVerified && (
+              <Badge variant="success" className="gap-1">
+                <BadgeCheck className="h-3 w-3" aria-hidden />
+                Identity verified
               </Badge>
             )}
           </p>

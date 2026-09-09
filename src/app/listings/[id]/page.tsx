@@ -53,7 +53,9 @@ const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
     where: { id },
     include: {
-      host: { select: { name: true, image: true, createdAt: true } },
+      host: {
+        select: { name: true, image: true, createdAt: true, identityVerificationStatus: true },
+      },
       bookings: {
         where: blockingBookingWhere(),
         select: { checkIn: true, checkOut: true },
@@ -309,6 +311,7 @@ export default async function ListingDetailPage({
             responseRate={responseRate}
             medianResponseMinutes={medianResponseMinutes}
             isGreatHost={hostIsGreat}
+            isIdentityVerified={listing.host.identityVerificationStatus === "VERIFIED"}
             listingId={listing.id}
             isLoggedIn={Boolean(session?.user)}
             isOwnListing={isOwnListing}

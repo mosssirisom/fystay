@@ -11,10 +11,10 @@ import { isConnectReady } from "@/lib/stripeConnect";
 import { formatPrice } from "@/lib/format";
 import { HostListingRow } from "@/components/HostListingRow";
 import { NeedsAttention, type AttentionItem } from "@/components/host/NeedsAttention";
+import { OnboardingChecklist, type OnboardingStep } from "@/components/host/OnboardingChecklist";
 import { SecurityDeposits, type AuthorizedDeposit } from "@/components/host/SecurityDeposits";
 import { StatCard } from "@/components/host/StatCard";
 import { SectionHeading } from "@/components/SectionHeading";
-import { Card } from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
@@ -49,9 +49,38 @@ export default async function HostDashboardPage() {
       stripeConnectAccountId: true,
       stripeConnectChargesEnabled: true,
       stripeConnectPayoutsEnabled: true,
+      identityVerificationStatus: true,
     },
   });
   const payoutsReady = isConnectReady(host);
+
+  const onboardingSteps: OnboardingStep[] = [
+    {
+      key: "payouts",
+      label: "Connect payouts",
+      description: "Link a Stripe account so guest payments pay you out directly.",
+      href: "/host/payouts",
+      cta: host.stripeConnectAccountId ? "Finish onboarding" : "Connect with Stripe",
+      done: payoutsReady,
+    },
+    {
+      key: "listing",
+      label: "Create your first listing",
+      description: "Add your property's photos, pricing and details to start welcoming guests.",
+      href: "/host/listings/new",
+      cta: "Create a listing",
+      done: listings.length > 0,
+    },
+    {
+      key: "identity",
+      label: "Verify your identity",
+      description: "Get an Identity verified badge guests can see on your listings.",
+      href: "/account",
+      cta: "Verify now",
+      done: host.identityVerificationStatus === "VERIFIED",
+      optional: true,
+    },
+  ];
 
   const now = new Date();
   const allBookings = listings.flatMap((l) => l.bookings);
@@ -141,34 +170,9 @@ export default async function HostDashboardPage() {
         </div>
       </div>
 
-      {!payoutsReady && (
-        <Card className="mt-4 flex flex-wrap items-center justify-between gap-3 border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm text-amber-900">
-            {host.stripeConnectAccountId
-              ? "Finish connecting Stripe to start receiving payouts automatically."
-              : "Connect a Stripe account so guest payments pay you out directly."}
-          </p>
-          <Link
-            href="/host/payouts"
-            className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "shrink-0")}
-          >
-            {host.stripeConnectAccountId ? "Finish onboarding" : "Connect with Stripe"}
-          </Link>
-        </Card>
-      )}
+      <OnboardingChecklist steps={onboardingSteps} />
 
-      {listings.length === 0 ? (
-        <Card className="mt-8 flex flex-col items-center gap-3 p-12 text-center">
-          <PlusCircle className="h-8 w-8 text-zinc-300" />
-          <p className="font-medium text-foreground">No listings yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
-            Create your first listing to start welcoming guests.
-          </p>
-          <Link href="/host/listings/new" className={cn(buttonVariants(), "mt-2")}>
-            Create a listing
-          </Link>
-        </Card>
-      ) : (
+      {listings.length === 0 ? null : (
         <>
           <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard

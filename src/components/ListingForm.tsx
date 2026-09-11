@@ -15,6 +15,11 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { resolveCancellationPolicy, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
 import { hasBedroomCountMismatch } from "@/lib/listingDataQuality";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL, type PropertyType } from "@/lib/propertyType";
+import {
+  RoomTypesEditor,
+  roomTypePayload,
+  type RoomTypeFormValues,
+} from "@/components/host/RoomTypesEditor";
 import { cn } from "@/lib/cn";
 
 function AmenityCheckbox({
@@ -78,6 +83,9 @@ export type ListingFormValues = {
   quietHoursStart: string;
   quietHoursEnd: string;
   additionalRules: string;
+  // Only meaningful when propertyType is "HOTEL" - empty for every other
+  // property type, which keeps using the flat price/capacity fields above.
+  roomTypes: RoomTypeFormValues[];
 };
 
 const emptyValues: ListingFormValues = {
@@ -115,6 +123,7 @@ const emptyValues: ListingFormValues = {
   quietHoursStart: "",
   quietHoursEnd: "",
   additionalRules: "",
+  roomTypes: [],
 };
 
 // A curated checklist covering the amenities guests actually filter by
@@ -180,7 +189,6 @@ export function ListingForm({ listingId, initialValues }: Props) {
   const [customAmenities, setCustomAmenities] = useState<string>(
     () => splitAmenities(initialValues?.amenities ?? []).custom,
   );
-  const [pastedUrl, setPastedUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -204,15 +212,6 @@ export function ListingForm({ listingId, initialValues }: Props) {
     );
   }
 
-  function addPastedUrl() {
-    const url = pastedUrl.trim();
-    if (!url) return;
-    if (!values.photos.includes(url)) {
-      update("photos", [...values.photos, url]);
-    }
-    setPastedUrl("");
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -220,6 +219,12 @@ export function ListingForm({ listingId, initialValues }: Props) {
     if (values.photos.length === 0) {
       setError("Add at least one photo.");
       toast.error("Add at least one photo.");
+      return;
+    }
+    const isHotel = values.propertyType === "HOTEL";
+    if (isHotel && !listingId && values.roomTypes.length === 0) {
+      setError("Add at least one room type.");
+      toast.error("Add at least one room type.");
       return;
     }
 
@@ -232,7 +237,18 @@ export function ListingForm({ listingId, initialValues }: Props) {
       city: values.city,
       country: values.country,
       address: values.address || undefined,
-      pricePerNightCents: Math.round(Number(values.pricePerNight) * 100),
+      // A hotel's price/capacity come from its room types (submitted below,
+      // create mode only - in edit mode they're managed by RoomTypesEditor
+      // hitting their own endpoints, never this form's PATCH).
+      ...(isHotel
+        ? {}
+        : {
+            pricePerNightCents: Math.round(Number(values.pricePerNight) * 100),
+            maxGuests: Number(values.maxGuests),
+            bedrooms: Number(values.bedrooms),
+            beds: Number(values.beds),
+            bathrooms: Number(values.bathrooms),
+          }),
       cleaningFeeCents: values.cleaningFee ? Math.round(Number(values.cleaningFee) * 100) : 0,
       securityDepositCents: values.securityDeposit ? Math.round(Number(values.securityDeposit) * 100) : 0,
       weeklyDiscountPercent: values.weeklyDiscountPercent
@@ -241,11 +257,8 @@ export function ListingForm({ listingId, initialValues }: Props) {
       monthlyDiscountPercent: values.monthlyDiscountPercent
         ? Number(values.monthlyDiscountPercent)
         : null,
-      maxGuests: Number(values.maxGuests),
-      bedrooms: Number(values.bedrooms),
-      beds: Number(values.beds),
-      bathrooms: Number(values.bathrooms),
       photos: values.photos,
+      ...(isHotel && !listingId ? { roomTypes: values.roomTypes.map(roomTypePayload) } : {}),
       amenities: Array.from(
         new Set([
           ...selectedAmenities,
@@ -387,22 +400,26 @@ export function ListingForm({ listingId, initialValues }: Props) {
 
       <Card>
         <CardHeader>
-          <SectionHeading icon={Wallet}>Capacity & pricing</SectionHeading>
+          <SectionHeading icon={Wallet}>
+            {values.propertyType === "HOTEL" ? "Fees, discounts & stay length" : "Capacity & pricing"}
+          </SectionHeading>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <Field>
-              <Label htmlFor="price">Price / night (£)</Label>
-              <Input
-                id="price"
-                required
-                type="number"
-                min={1}
-                step="0.01"
-                value={values.pricePerNight}
-                onChange={(e) => update("pricePerNight", e.target.value)}
-              />
-            </Field>
+            {values.propertyType !== "HOTEL" && (
+              <Field>
+                <Label htmlFor="price">Price / night (£)</Label>
+                <Input
+                  id="price"
+                  required
+                  type="number"
+                  min={1}
+                  step="0.01"
+                  value={values.pricePerNight}
+                  onChange={(e) => update("pricePerNight", e.target.value)}
+                />
+              </Field>
+            )}
             <Field>
               <Label htmlFor="cleaningFee">Cleaning fee (£, optional)</Label>
               <Input
@@ -441,50 +458,54 @@ export function ListingForm({ listingId, initialValues }: Props) {
               />
               <FieldHint>Applied to stays of 28+ nights.</FieldHint>
             </Field>
-            <Field>
-              <Label htmlFor="maxGuests">Max guests</Label>
-              <Input
-                id="maxGuests"
-                required
-                type="number"
-                min={1}
-                value={values.maxGuests}
-                onChange={(e) => update("maxGuests", e.target.value)}
-              />
-            </Field>
-            <Field>
-              <Label htmlFor="bedrooms">Bedrooms</Label>
-              <Input
-                id="bedrooms"
-                required
-                type="number"
-                min={0}
-                value={values.bedrooms}
-                onChange={(e) => update("bedrooms", e.target.value)}
-              />
-            </Field>
-            <Field>
-              <Label htmlFor="beds">Beds</Label>
-              <Input
-                id="beds"
-                required
-                type="number"
-                min={1}
-                value={values.beds}
-                onChange={(e) => update("beds", e.target.value)}
-              />
-            </Field>
-            <Field>
-              <Label htmlFor="bathrooms">Bathrooms</Label>
-              <Input
-                id="bathrooms"
-                required
-                type="number"
-                min={0}
-                value={values.bathrooms}
-                onChange={(e) => update("bathrooms", e.target.value)}
-              />
-            </Field>
+            {values.propertyType !== "HOTEL" && (
+              <>
+                <Field>
+                  <Label htmlFor="maxGuests">Max guests</Label>
+                  <Input
+                    id="maxGuests"
+                    required
+                    type="number"
+                    min={1}
+                    value={values.maxGuests}
+                    onChange={(e) => update("maxGuests", e.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <Label htmlFor="bedrooms">Bedrooms</Label>
+                  <Input
+                    id="bedrooms"
+                    required
+                    type="number"
+                    min={0}
+                    value={values.bedrooms}
+                    onChange={(e) => update("bedrooms", e.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <Label htmlFor="beds">Beds</Label>
+                  <Input
+                    id="beds"
+                    required
+                    type="number"
+                    min={1}
+                    value={values.beds}
+                    onChange={(e) => update("beds", e.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <Label htmlFor="bathrooms">Bathrooms</Label>
+                  <Input
+                    id="bathrooms"
+                    required
+                    type="number"
+                    min={0}
+                    value={values.bathrooms}
+                    onChange={(e) => update("bathrooms", e.target.value)}
+                  />
+                </Field>
+              </>
+            )}
             <Field>
               <Label htmlFor="minNights">Minimum nights</Label>
               <Input
@@ -511,40 +532,41 @@ export function ListingForm({ listingId, initialValues }: Props) {
         </CardContent>
       </Card>
 
+      {values.propertyType === "HOTEL" && (
+        <Card>
+          <CardHeader>
+            <SectionHeading icon={Wallet}>Room types</SectionHeading>
+            <p className="mt-1 text-sm text-zinc-500">
+              Each room type has its own price, capacity, photos, and a count of how many
+              identical rooms you have.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <RoomTypesEditor
+              listingId={listingId}
+              roomTypes={values.roomTypes}
+              onChange={(roomTypes) => update("roomTypes", roomTypes)}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <SectionHeading icon={Camera}>Photos & amenities</SectionHeading>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Field>
-            <Label>Photos</Label>
+            <Label>{values.propertyType === "HOTEL" ? "Property photos" : "Photos"}</Label>
             <PhotoUploader
               photos={values.photos}
               onChange={(photos) => update("photos", photos)}
             />
-            <FieldHint>The first photo is used as the cover image.</FieldHint>
-
-            <details className="mt-3 text-sm">
-              <summary className="cursor-pointer font-medium text-zinc-600">
-                Or paste an image URL instead
-              </summary>
-              <div className="mt-2 flex gap-2">
-                <Input
-                  value={pastedUrl}
-                  onChange={(e) => setPastedUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addPastedUrl();
-                    }
-                  }}
-                  placeholder="https://example.com/photo.jpg"
-                />
-                <Button type="button" variant="outline" onClick={addPastedUrl}>
-                  Add
-                </Button>
-              </div>
-            </details>
+            <FieldHint>
+              {values.propertyType === "HOTEL"
+                ? "The first photo is used as the cover image. Lobby, exterior, and common areas - each room type has its own photos above."
+                : "The first photo is used as the cover image."}
+            </FieldHint>
           </Field>
           <Field>
             <Label>Amenities</Label>

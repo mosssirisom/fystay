@@ -1,6 +1,7 @@
-import { differenceInCalendarDays } from "date-fns";
+import { addDays, differenceInCalendarDays } from "date-fns";
 
 export type BookedRange = { checkIn: Date; checkOut: Date };
+export type RoomTypeBookedRange = BookedRange & { roomsBooked: number };
 
 // A PENDING booking is created before the guest completes Stripe Checkout.
 // Without an expiry, an abandoned checkout would block those dates for
@@ -74,6 +75,42 @@ export function isRangeAvailable(
 
 export function nightsBetween(checkIn: Date, checkOut: Date): number {
   return Math.max(0, differenceInCalendarDays(checkOut, checkIn));
+}
+
+/**
+ * The RoomType analogue of `isRangeAvailable`: instead of a single yes/no
+ * per listing, a room type has `totalRooms` identical physical rooms, and a
+ * request for `requestedRooms` of them succeeds only if every night of the
+ * stay has enough of that inventory left uncommitted. With `totalRooms = 1`
+ * and every `roomsBooked = 1` this is exactly equivalent to
+ * `isRangeAvailable` - a strict generalization, not a parallel rule.
+ *
+ * A host-set or iCal-imported block still closes the room type entirely for
+ * its range, same all-or-nothing semantics as a block does today - blocks
+ * aren't countable inventory, they're "not for sale at all" for that span.
+ */
+export function isRoomTypeRangeAvailable(
+  checkIn: Date,
+  checkOut: Date,
+  requestedRooms: number,
+  totalRooms: number,
+  bookedRanges: RoomTypeBookedRange[],
+  blocks: { startDate: Date; endDate: Date }[] = [],
+): boolean {
+  if (checkOut <= checkIn) return false;
+  if (requestedRooms < 1 || requestedRooms > totalRooms) return false;
+  if (blocks.some((b) => rangesOverlap(checkIn, checkOut, b.startDate, b.endDate))) return false;
+
+  const overlapping = bookedRanges.filter((r) =>
+    rangesOverlap(checkIn, checkOut, r.checkIn, r.checkOut),
+  );
+  for (let night = checkIn; night < checkOut; night = addDays(night, 1)) {
+    const occupied = overlapping
+      .filter((r) => r.checkIn <= night && night < r.checkOut)
+      .reduce((sum, r) => sum + r.roomsBooked, 0);
+    if (occupied + requestedRooms > totalRooms) return false;
+  }
+  return true;
 }
 
 /**

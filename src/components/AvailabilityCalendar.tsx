@@ -83,10 +83,13 @@ type DayInfo = { booking?: BookingRow; block?: BlockRow; title: string };
 
 export function AvailabilityCalendar({
   listingId,
+  roomTypeId,
   bookings,
   blocks,
 }: {
   listingId: string;
+  /** Set for a HOTEL listing's per-room-type calendar; undefined otherwise. */
+  roomTypeId?: string;
   bookings: BookingRow[];
   blocks: BlockRow[];
 }) {
@@ -207,6 +210,7 @@ export function AvailabilityCalendar({
           startDate: range.from.toISOString(),
           endDate: range.to.toISOString(),
           reason: reason.trim() || undefined,
+          roomTypeId,
         }),
       });
       const data = await res.json();

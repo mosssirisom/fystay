@@ -2,9 +2,29 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
+import {
+  blockingBookingWhere,
+  blockingRanges,
+  isRangeAvailable,
+  isRoomTypeRangeAvailable,
+} from "@/lib/availability";
 import { httpUrlSchema } from "@/lib/validation";
 import { geocodeListing } from "@/lib/geocoding";
+
+// One category of room within a HOTEL listing (see prisma/schema.prisma's
+// RoomType model). Every non-hotel property type has zero of these and
+// keeps using the flat price/capacity fields below directly.
+const roomTypeInputSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(2000).nullable().optional(),
+  pricePerNightCents: z.number().int().positive(),
+  maxGuests: z.number().int().min(1).max(50),
+  bedrooms: z.number().int().min(0).max(50),
+  beds: z.number().int().min(1).max(50),
+  bathrooms: z.number().int().min(0).max(50),
+  photos: z.array(httpUrlSchema).min(1),
+  totalRooms: z.number().int().min(1).max(500),
+});
 
 const createListingSchema = z
   .object({
@@ -16,14 +36,17 @@ const createListingSchema = z
     city: z.string().min(1).max(100),
     country: z.string().min(1).max(100),
     address: z.string().max(200).optional(),
-    pricePerNightCents: z.number().int().positive(),
+    // Required for every non-HOTEL property type (enforced below, since a
+    // HOTEL listing instead takes its price/capacity from roomTypes and
+    // these are simply ignored if a client somehow still sends them).
+    pricePerNightCents: z.number().int().positive().optional(),
     cleaningFeeCents: z.number().int().min(0).default(0),
     weeklyDiscountPercent: z.number().int().min(0).max(90).nullable().optional(),
     monthlyDiscountPercent: z.number().int().min(0).max(90).nullable().optional(),
-    maxGuests: z.number().int().min(1).max(50),
-    bedrooms: z.number().int().min(0).max(50),
-    beds: z.number().int().min(1).max(50),
-    bathrooms: z.number().int().min(0).max(50),
+    maxGuests: z.number().int().min(1).max(50).optional(),
+    bedrooms: z.number().int().min(0).max(50).optional(),
+    beds: z.number().int().min(1).max(50).optional(),
+    bathrooms: z.number().int().min(0).max(50).optional(),
     photos: z.array(httpUrlSchema).min(1),
     amenities: z.array(z.string()).default([]),
     cancellationPolicy: z.enum(["FLEXIBLE", "MODERATE", "STRICT", "CUSTOM"]).optional(),
@@ -44,6 +67,7 @@ const createListingSchema = z
     quietHoursStart: z.string().max(50).nullable().optional(),
     quietHoursEnd: z.string().max(50).nullable().optional(),
     additionalRules: z.string().max(2000).nullable().optional(),
+    roomTypes: z.array(roomTypeInputSchema).optional(),
   })
   .refine(
     (data) =>
@@ -57,7 +81,31 @@ const createListingSchema = z
       data.maxNights === undefined || data.maxNights === null || !data.minNights ||
       data.maxNights >= data.minNights,
     { message: "Maximum stay can't be shorter than the minimum stay" },
-  );
+  )
+  .superRefine((data, ctx) => {
+    if (data.propertyType === "HOTEL") {
+      if (!data.roomTypes || data.roomTypes.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A hotel listing needs at least one room type",
+          path: ["roomTypes"],
+        });
+      }
+      return;
+    }
+    // Every non-hotel property type keeps requiring its own flat
+    // price/capacity fields, exactly as before roomTypes existed.
+    const requiredFields = ["pricePerNightCents", "maxGuests", "bedrooms", "beds", "bathrooms"] as const;
+    for (const field of requiredFields) {
+      if (data[field] === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Required",
+          path: [field],
+        });
+      }
+    }
+  });
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -91,6 +139,18 @@ export async function GET(request: Request) {
       availabilityBlocks: {
         select: { startDate: true, endDate: true },
       },
+      // Only meaningful for a HOTEL listing (see `filtered` below) - empty
+      // for every other property type.
+      roomTypes: {
+        select: {
+          totalRooms: true,
+          bookings: {
+            where: blockingBookingWhere(),
+            select: { checkIn: true, checkOut: true, roomsBooked: true },
+          },
+          availabilityBlocks: { select: { startDate: true, endDate: true } },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -98,10 +158,28 @@ export async function GET(request: Request) {
   const checkIn = checkInParam ? new Date(checkInParam) : null;
   const checkOut = checkOutParam ? new Date(checkOutParam) : null;
 
+  // A hotel with one fully-booked room type and another still free is still
+  // bookable - see ListingsGrid.tsx's own copy of this same logic for the
+  // guest-facing search page (a separate query, kept in sync by hand).
   const filtered =
     checkIn && checkOut
       ? listings.filter((listing) =>
-          isRangeAvailable(checkIn, checkOut, blockingRanges(listing.bookings, listing.availabilityBlocks)),
+          listing.propertyType === "HOTEL"
+            ? listing.roomTypes.some((roomType) =>
+                isRoomTypeRangeAvailable(
+                  checkIn,
+                  checkOut,
+                  1,
+                  roomType.totalRooms,
+                  roomType.bookings,
+                  roomType.availabilityBlocks,
+                ),
+              )
+            : isRangeAvailable(
+                checkIn,
+                checkOut,
+                blockingRanges(listing.bookings, listing.availabilityBlocks),
+              ),
         )
       : listings;
 
@@ -123,8 +201,39 @@ export async function POST(request: Request) {
     );
   }
 
-  const listing = await prisma.listing.create({
-    data: { ...parsed.data, hostId: session.user.id },
+  const { roomTypes, pricePerNightCents, maxGuests, bedrooms, beds, bathrooms, ...rest } =
+    parsed.data;
+  const isHotel = rest.propertyType === "HOTEL";
+
+  // For a HOTEL listing, roomTypes (validated non-empty above) are the
+  // source of truth for price/capacity - Listing's own columns become a
+  // denormalized "from £X / up to N guests" summary derived from them (see
+  // recomputeListingAggregatesFromRoomTypes's own comment for why every
+  // other surface needs this rather than becoming room-type-aware itself).
+  // Every other property type is unchanged: its own flat fields, required
+  // by the schema's superRefine above.
+  const listing = await prisma.$transaction(async (tx) => {
+    const created = await tx.listing.create({
+      data: {
+        ...rest,
+        hostId: session.user.id,
+        pricePerNightCents: isHotel
+          ? Math.min(...roomTypes!.map((r) => r.pricePerNightCents))
+          : pricePerNightCents!,
+        maxGuests: isHotel ? Math.max(...roomTypes!.map((r) => r.maxGuests)) : maxGuests!,
+        bedrooms: isHotel ? Math.max(...roomTypes!.map((r) => r.bedrooms)) : bedrooms!,
+        beds: isHotel ? Math.max(...roomTypes!.map((r) => r.beds)) : beds!,
+        bathrooms: isHotel ? Math.max(...roomTypes!.map((r) => r.bathrooms)) : bathrooms!,
+      },
+    });
+
+    if (isHotel) {
+      await tx.roomType.createMany({
+        data: roomTypes!.map((rt) => ({ ...rt, listingId: created.id })),
+      });
+    }
+
+    return created;
   });
 
   // The jitter that keeps two listings in the same town from landing on

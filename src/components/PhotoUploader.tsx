@@ -5,6 +5,8 @@ import Image from "next/image";
 import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/Spinner";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 import { isOptimizableImage } from "@/lib/image";
 import { cn } from "@/lib/cn";
 
@@ -16,7 +18,15 @@ export function PhotoUploader({
   onChange: (photos: string[]) => void;
 }) {
   const [uploading, setUploading] = useState(false);
+  const [pastedUrl, setPastedUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  function addPastedUrl() {
+    const url = pastedUrl.trim();
+    if (!url) return;
+    if (!photos.includes(url)) onChange([...photos, url]);
+    setPastedUrl("");
+  }
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
@@ -108,6 +118,28 @@ export function PhotoUploader({
           e.target.value = "";
         }}
       />
+
+      <details className="mt-3 text-sm">
+        <summary className="cursor-pointer font-medium text-zinc-600">
+          Or paste an image URL instead
+        </summary>
+        <div className="mt-2 flex gap-2">
+          <Input
+            value={pastedUrl}
+            onChange={(e) => setPastedUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addPastedUrl();
+              }
+            }}
+            placeholder="https://example.com/photo.jpg"
+          />
+          <Button type="button" variant="outline" onClick={addPastedUrl}>
+            Add
+          </Button>
+        </div>
+      </details>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import {
   blockingBookingWhere,
   blockingRanges,
   isRangeAvailable,
+  isRoomTypeRangeAvailable,
   nightsBetween,
   PENDING_BOOKING_HOLD_MINUTES,
   rangesOverlap,
@@ -63,6 +64,56 @@ describe("isRangeAvailable", () => {
 
   it("allows a new booking ending exactly on an existing booking's checkin day", () => {
     expect(isRangeAvailable(d("2026-06-05"), d("2026-06-10"), booked)).toBe(true);
+  });
+});
+
+describe("isRoomTypeRangeAvailable", () => {
+  it("reduces to isRangeAvailable's behavior at totalRooms = 1 with roomsBooked = 1", () => {
+    const booked = [{ checkIn: d("2026-06-10"), checkOut: d("2026-06-15"), roomsBooked: 1 }];
+    expect(isRoomTypeRangeAvailable(d("2026-06-12"), d("2026-06-18"), 1, 1, booked)).toBe(false);
+    expect(isRoomTypeRangeAvailable(d("2026-06-15"), d("2026-06-20"), 1, 1, booked)).toBe(true);
+  });
+
+  it("admits a request that exactly fills remaining capacity", () => {
+    const booked = [{ checkIn: d("2026-06-10"), checkOut: d("2026-06-15"), roomsBooked: 3 }];
+    expect(isRoomTypeRangeAvailable(d("2026-06-11"), d("2026-06-13"), 2, 5, booked)).toBe(true);
+  });
+
+  it("rejects a request that would push occupancy one over capacity", () => {
+    const booked = [{ checkIn: d("2026-06-10"), checkOut: d("2026-06-15"), roomsBooked: 3 }];
+    expect(isRoomTypeRangeAvailable(d("2026-06-11"), d("2026-06-13"), 3, 5, booked)).toBe(false);
+  });
+
+  it("sums multiple overlapping bookings' roomsBooked for the same nights", () => {
+    const booked = [
+      { checkIn: d("2026-06-01"), checkOut: d("2026-06-05"), roomsBooked: 2 },
+      { checkIn: d("2026-06-03"), checkOut: d("2026-06-08"), roomsBooked: 2 },
+    ];
+    // Nights 06-03/06-04 have 2+2=4 occupied out of 5 total - only 1 left.
+    expect(isRoomTypeRangeAvailable(d("2026-06-03"), d("2026-06-05"), 1, 5, booked)).toBe(true);
+    expect(isRoomTypeRangeAvailable(d("2026-06-03"), d("2026-06-05"), 2, 5, booked)).toBe(false);
+  });
+
+  it("treats non-overlapping stays as independent of each other's occupancy", () => {
+    const booked = [{ checkIn: d("2026-06-01"), checkOut: d("2026-06-05"), roomsBooked: 5 }];
+    expect(isRoomTypeRangeAvailable(d("2026-06-05"), d("2026-06-10"), 5, 5, booked)).toBe(true);
+  });
+
+  it("rejects requestedRooms of 0 or more than totalRooms outright", () => {
+    expect(isRoomTypeRangeAvailable(d("2026-06-01"), d("2026-06-05"), 0, 5, [])).toBe(false);
+    expect(isRoomTypeRangeAvailable(d("2026-06-01"), d("2026-06-05"), 6, 5, [])).toBe(false);
+  });
+
+  it("a block closes the room type entirely for its range regardless of remaining count", () => {
+    const blocks = [{ startDate: d("2026-07-01"), endDate: d("2026-07-05") }];
+    expect(isRoomTypeRangeAvailable(d("2026-07-02"), d("2026-07-03"), 1, 10, [], blocks)).toBe(
+      false,
+    );
+  });
+
+  it("rejects a zero-night or inverted range", () => {
+    expect(isRoomTypeRangeAvailable(d("2026-06-01"), d("2026-06-01"), 1, 5, [])).toBe(false);
+    expect(isRoomTypeRangeAvailable(d("2026-06-05"), d("2026-06-01"), 1, 5, [])).toBe(false);
   });
 });
 

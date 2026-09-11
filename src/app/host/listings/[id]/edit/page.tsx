@@ -29,7 +29,10 @@ export default async function EditListingPage({
   const session = await auth();
   if (!session?.user) redirect(`/login?callbackUrl=/host/listings/${id}/edit`);
 
-  const listing = await prisma.listing.findUnique({ where: { id } });
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: { roomTypes: { orderBy: { createdAt: "asc" } } },
+  });
   if (!listing) notFound();
   if (listing.hostId !== session.user.id) redirect("/host/dashboard");
 
@@ -76,6 +79,18 @@ export default async function EditListingPage({
           quietHoursStart: listing.quietHoursStart ?? "",
           quietHoursEnd: listing.quietHoursEnd ?? "",
           additionalRules: listing.additionalRules ?? "",
+          roomTypes: listing.roomTypes.map((roomType) => ({
+            id: roomType.id,
+            name: roomType.name,
+            description: roomType.description ?? "",
+            pricePerNight: (roomType.pricePerNightCents / 100).toString(),
+            maxGuests: roomType.maxGuests.toString(),
+            bedrooms: roomType.bedrooms.toString(),
+            beds: roomType.beds.toString(),
+            bathrooms: roomType.bathrooms.toString(),
+            photos: roomType.photos,
+            totalRooms: roomType.totalRooms.toString(),
+          })),
         }}
       />
     </div>

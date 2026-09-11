@@ -5,6 +5,7 @@ import {
   blockingBookingWhere,
   blockingRanges,
   isRangeAvailable,
+  isRoomTypeRangeAvailable,
   nightsBetween,
 } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
@@ -13,6 +14,8 @@ const querySchema = z.object({
   checkIn: z.string().min(1),
   checkOut: z.string().min(1),
   guests: z.coerce.number().int().min(1),
+  roomTypeId: z.string().min(1).optional(),
+  roomsBooked: z.coerce.number().int().min(1).max(20).optional(),
 });
 
 /**
@@ -29,6 +32,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     checkIn: searchParams.get("checkIn"),
     checkOut: searchParams.get("checkOut"),
     guests: searchParams.get("guests"),
+    roomTypeId: searchParams.get("roomTypeId") ?? undefined,
+    roomsBooked: searchParams.get("roomsBooked") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -53,6 +58,68 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       { available: false, error: "Check-in date must be in the future" },
       { status: 200 },
     );
+  }
+
+  if (parsed.data.roomTypeId) {
+    const roomsBooked = parsed.data.roomsBooked ?? 1;
+    const roomType = await prisma.roomType.findUnique({
+      where: { id: parsed.data.roomTypeId },
+      include: {
+        listing: {
+          select: {
+            id: true,
+            published: true,
+            cleaningFeeCents: true,
+            weeklyDiscountPercent: true,
+            monthlyDiscountPercent: true,
+          },
+        },
+        bookings: {
+          where: { ...blockingBookingWhere(), checkIn: { lt: checkOut }, checkOut: { gt: checkIn } },
+          select: { checkIn: true, checkOut: true, roomsBooked: true },
+        },
+        availabilityBlocks: { select: { startDate: true, endDate: true } },
+      },
+    });
+
+    if (!roomType || roomType.listing.id !== id || !roomType.listing.published) {
+      return NextResponse.json({ error: "Room type not found" }, { status: 404 });
+    }
+    if (parsed.data.guests > roomType.maxGuests * roomsBooked) {
+      return NextResponse.json(
+        {
+          available: false,
+          error: `This room type sleeps up to ${roomType.maxGuests} guests per room`,
+        },
+        { status: 200 },
+      );
+    }
+    if (
+      !isRoomTypeRangeAvailable(
+        checkIn,
+        checkOut,
+        roomsBooked,
+        roomType.totalRooms,
+        roomType.bookings,
+        roomType.availabilityBlocks,
+      )
+    ) {
+      return NextResponse.json(
+        { available: false, error: "Those dates are not available for this room type" },
+        { status: 200 },
+      );
+    }
+
+    const nights = nightsBetween(checkIn, checkOut);
+    const pricing = computeBookingPricing({
+      nights,
+      pricePerNightCents: roomType.pricePerNightCents * roomsBooked,
+      cleaningFeeCents: roomType.listing.cleaningFeeCents,
+      weeklyDiscountPercent: roomType.listing.weeklyDiscountPercent,
+      monthlyDiscountPercent: roomType.listing.monthlyDiscountPercent,
+    });
+
+    return NextResponse.json({ available: true, nights, pricing });
   }
 
   const listing = await prisma.listing.findUnique({

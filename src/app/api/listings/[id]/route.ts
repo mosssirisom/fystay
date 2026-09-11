@@ -107,6 +107,56 @@ export async function PATCH(
     );
   }
 
+  const effectivePropertyType = parsed.data.propertyType ?? listing.propertyType;
+  const flatFieldsSent = (
+    ["pricePerNightCents", "maxGuests", "bedrooms", "beds", "bathrooms"] as const
+  ).some((field) => parsed.data[field] !== undefined);
+  if (effectivePropertyType === "HOTEL" && flatFieldsSent) {
+    return NextResponse.json(
+      { error: "A hotel listing's price and capacity come from its room types" },
+      { status: 400 },
+    );
+  }
+
+  if (parsed.data.propertyType !== undefined && parsed.data.propertyType !== listing.propertyType) {
+    const hasBookings = await prisma.booking.count({ where: { listingId: id } });
+    if (hasBookings > 0) {
+      return NextResponse.json(
+        { error: "This listing's property type can't change once it has bookings" },
+        { status: 400 },
+      );
+    }
+    const isSwitchingIntoHotel = parsed.data.propertyType === "HOTEL";
+    const isSwitchingOutOfHotel = listing.propertyType === "HOTEL" && !isSwitchingIntoHotel;
+    if (isSwitchingIntoHotel || isSwitchingOutOfHotel) {
+      const roomTypeCount = await prisma.roomType.count({ where: { listingId: id } });
+      if (isSwitchingIntoHotel && roomTypeCount === 0) {
+        return NextResponse.json(
+          { error: "Add at least one room type before switching this listing to Hotel" },
+          { status: 400 },
+        );
+      }
+      if (isSwitchingOutOfHotel && roomTypeCount > 0) {
+        return NextResponse.json(
+          { error: "Remove this listing's room types before switching it away from Hotel" },
+          { status: 400 },
+        );
+      }
+    }
+  }
+
+  if (parsed.data.published && effectivePropertyType === "HOTEL") {
+    const sellableRoomTypes = await prisma.roomType.count({
+      where: { listingId: id, totalRooms: { gt: 0 } },
+    });
+    if (sellableRoomTypes === 0) {
+      return NextResponse.json(
+        { error: "Add at least one room type with rooms available before publishing" },
+        { status: 400 },
+      );
+    }
+  }
+
   // The zod refine above only catches minNights/maxNights disagreeing
   // within the same request body - a request that only patches one of the
   // two still needs checking against the other's persisted value, since a

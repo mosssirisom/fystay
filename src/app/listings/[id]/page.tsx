@@ -25,6 +25,7 @@ import { resolveCancellationPolicy } from "@/lib/cancellationPolicy";
 import { hasParking, isPetFriendly } from "@/lib/search";
 import { auth } from "@/auth";
 import { BookingWidget } from "@/components/BookingWidget";
+import { HotelBookingWidget } from "@/components/HotelBookingWidget";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AmenitiesSection } from "@/components/AmenitiesSection";
@@ -68,6 +69,7 @@ const getListing = cache(async (id: string) => {
         include: { author: { select: { id: true, name: true } } },
         orderBy: { createdAt: "desc" },
       },
+      roomTypes: { orderBy: { pricePerNightCents: "asc" } },
     },
   });
 });
@@ -424,25 +426,40 @@ export default async function ListingDetailPage({
         </div>
 
         <div id="booking-widget">
-          <BookingWidget
-            listingId={listing.id}
-            pricePerNightCents={listing.pricePerNightCents}
-            cleaningFeeCents={listing.cleaningFeeCents}
-            weeklyDiscountPercent={listing.weeklyDiscountPercent}
-            monthlyDiscountPercent={listing.monthlyDiscountPercent}
-            minNights={listing.minNights}
-            maxNights={listing.maxNights}
-            maxGuests={listing.maxGuests}
-            amenities={listing.amenities}
-            bookedRanges={blockingRanges(listing.bookings, listing.availabilityBlocks).map(
-              (r) => ({ checkIn: r.checkIn.toISOString(), checkOut: r.checkOut.toISOString() }),
-            )}
-            isLoggedIn={Boolean(session?.user)}
-            rating={rating}
-            reviewCount={reviewCount}
-            cancellationPolicy={cancellationPolicy}
-            instantBook={listing.instantBook}
-          />
+          {listing.propertyType === "HOTEL" ? (
+            <HotelBookingWidget
+              listingId={listing.id}
+              roomTypes={listing.roomTypes}
+              cleaningFeeCents={listing.cleaningFeeCents}
+              weeklyDiscountPercent={listing.weeklyDiscountPercent}
+              monthlyDiscountPercent={listing.monthlyDiscountPercent}
+              minNights={listing.minNights}
+              maxNights={listing.maxNights}
+              isLoggedIn={Boolean(session?.user)}
+              cancellationPolicy={cancellationPolicy}
+              instantBook={listing.instantBook}
+            />
+          ) : (
+            <BookingWidget
+              listingId={listing.id}
+              pricePerNightCents={listing.pricePerNightCents}
+              cleaningFeeCents={listing.cleaningFeeCents}
+              weeklyDiscountPercent={listing.weeklyDiscountPercent}
+              monthlyDiscountPercent={listing.monthlyDiscountPercent}
+              minNights={listing.minNights}
+              maxNights={listing.maxNights}
+              maxGuests={listing.maxGuests}
+              amenities={listing.amenities}
+              bookedRanges={blockingRanges(listing.bookings, listing.availabilityBlocks).map(
+                (r) => ({ checkIn: r.checkIn.toISOString(), checkOut: r.checkOut.toISOString() }),
+              )}
+              isLoggedIn={Boolean(session?.user)}
+              rating={rating}
+              reviewCount={reviewCount}
+              cancellationPolicy={cancellationPolicy}
+              instantBook={listing.instantBook}
+            />
+          )}
         </div>
       </div>
 

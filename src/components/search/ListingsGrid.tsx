@@ -1,6 +1,12 @@
 import { SearchX } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { blockingBookingWhere, blockingRanges, isRangeAvailable, nightsBetween } from "@/lib/availability";
+import {
+  blockingBookingWhere,
+  blockingRanges,
+  isRangeAvailable,
+  isRoomTypeRangeAvailable,
+  nightsBetween,
+} from "@/lib/availability";
 import { isPetFriendly, parseGuestParam, totalOccupants } from "@/lib/search";
 import { findLandmarkByName } from "@/lib/landmarks";
 import { auth } from "@/auth";
@@ -75,6 +81,18 @@ export async function ListingsGrid({
           select: { startDate: true, endDate: true },
         },
         reviews: { select: { rating: true } },
+        // Only meaningful for a HOTEL listing (see the dateFiltered check
+        // below) - empty for every other property type.
+        roomTypes: {
+          select: {
+            totalRooms: true,
+            bookings: {
+              where: blockingBookingWhere(),
+              select: { checkIn: true, checkOut: true, roomsBooked: true },
+            },
+            availabilityBlocks: { select: { startDate: true, endDate: true } },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -95,10 +113,29 @@ export async function ListingsGrid({
   const checkOut = checkOutParam ? new Date(checkOutParam) : null;
   const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : undefined;
 
+  // A hotel with one fully-booked room type and another still free is still
+  // bookable - hiding it because *some* room type overlaps would be wrong,
+  // unlike a non-hotel listing where any overlap really does close the
+  // whole thing.
   const dateFiltered =
     checkIn && checkOut
       ? listings.filter((listing) =>
-          isRangeAvailable(checkIn, checkOut, blockingRanges(listing.bookings, listing.availabilityBlocks)),
+          listing.propertyType === "HOTEL"
+            ? listing.roomTypes.some((roomType) =>
+                isRoomTypeRangeAvailable(
+                  checkIn,
+                  checkOut,
+                  1,
+                  roomType.totalRooms,
+                  roomType.bookings,
+                  roomType.availabilityBlocks,
+                ),
+              )
+            : isRangeAvailable(
+                checkIn,
+                checkOut,
+                blockingRanges(listing.bookings, listing.availabilityBlocks),
+              ),
         )
       : listings;
 

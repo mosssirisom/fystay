@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
   let booking = await prisma.booking.findUnique({
     where: { id: parsed.data.bookingId },
-    include: { listing: { include: { host: true } } },
+    include: { listing: { include: { host: true } }, roomType: { select: { name: true } } },
   });
 
   if (!booking) {
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
         guestEmail: parsed.data.guestEmail ?? booking.guestEmail,
         guestPhone: parsed.data.guestPhone ?? booking.guestPhone,
       },
-      include: { listing: { include: { host: true } } },
+      include: { listing: { include: { host: true } }, roomType: { select: { name: true } } },
     });
   }
 
@@ -130,13 +130,16 @@ export async function POST(request: Request) {
     // "create_new": the old session expired unpaid; fall through below.
   }
 
+  const nightsLabel = `${booking.nights} night${booking.nights > 1 ? "s" : ""}`;
+  const lineItemName = booking.roomType
+    ? `${booking.listing.title} — ${booking.roomType.name} × ${booking.roomsBooked} room${booking.roomsBooked > 1 ? "s" : ""}: ${nightsLabel}`
+    : `${booking.listing.title}: ${nightsLabel}`;
+
   const lineItems = [
     {
       price_data: {
         currency: "gbp",
-        product_data: {
-          name: `${booking.listing.title}: ${booking.nights} night${booking.nights > 1 ? "s" : ""}`,
-        },
+        product_data: { name: lineItemName },
         unit_amount: booking.nights * booking.nightlyPriceCents,
       },
       quantity: 1,

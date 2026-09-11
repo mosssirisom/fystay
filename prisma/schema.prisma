@@ -325,9 +325,44 @@ model Listing {
   savedBy            SavedListing[]
   availabilityBlocks AvailabilityBlock[]
   conversations      Conversation[]
+  roomTypes          RoomType[]
 
   @@index([city])
   @@index([hostId])
+}
+
+// A distinct category of room within a HOTEL-type Listing (e.g. "Standard
+// Double", "Deluxe Suite"), each with its own price/capacity/photos and a
+// countable inventory (totalRooms identical physical rooms of this type).
+// Only ever created under a Listing with propertyType HOTEL - every other
+// property type keeps using Listing's own flat price/capacity fields
+// directly and has zero RoomType rows. See src/lib/availability.ts's
+// isRoomTypeRangeAvailable for how totalRooms is enforced against
+// concurrent bookings.
+model RoomType {
+  id                 String   @id @default(cuid())
+  name               String
+  description        String?
+  pricePerNightCents Int
+  maxGuests          Int      @default(2)
+  bedrooms           Int      @default(1)
+  beds               Int      @default(1)
+  bathrooms          Int      @default(1)
+  photos             String[]
+  // How many identical physical rooms of this type the hotel has. The
+  // inventory count that isRoomTypeRangeAvailable checks bookings against -
+  // not a per-booking quantity (see Booking.roomsBooked for that).
+  totalRooms         Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  bookings           Booking[]
+  availabilityBlocks AvailabilityBlock[]
+
+  @@index([listingId])
 }
 
 enum AvailabilityBlockSource {
@@ -358,8 +393,16 @@ model AvailabilityBlock {
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
+  // Set only when this block belongs to a specific RoomType on a HOTEL
+  // listing (see Booking.roomTypeId's own comment for why this mirrors
+  // that field) - null for every non-hotel listing's blocks, exactly as
+  // today.
+  roomTypeId String?
+  roomType   RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
   @@unique([listingId, externalUid])
   @@index([listingId])
+  @@index([roomTypeId])
 }
 
 model Booking {
@@ -463,6 +506,23 @@ model Booking {
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
+  // Set only for a booking against a HOTEL listing's RoomType; null (and
+  // roomsBooked left at its default of 1) for every non-hotel booking,
+  // exactly matching today's one-listing-one-unit behavior. Restrict, not
+  // Cascade, so a host can never delete a RoomType out from under a real
+  // Booking record - see the room-types DELETE route, which enforces the
+  // same rule at the app level with a friendlier error before this
+  // constraint would ever fire.
+  roomTypeId String?
+  roomType   RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  // How many rooms of roomType this single reservation covers. Always 1
+  // for a non-hotel booking. nightlyPriceCents already bakes this in (it's
+  // the whole-reservation per-night total, i.e. roomType.pricePerNightCents
+  // * roomsBooked at booking time) - this field is inventory-count
+  // metadata for the availability check and receipts, not a pricing
+  // multiplier applied elsewhere.
+  roomsBooked Int @default(1)
+
   guestId String
   guest   User   @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
@@ -471,6 +531,7 @@ model Booking {
 
   @@index([listingId])
   @@index([guestId])
+  @@index([roomTypeId, checkIn, checkOut])
 }
 
 // A guest-initiated request to change a CONFIRMED booking's dates or guest

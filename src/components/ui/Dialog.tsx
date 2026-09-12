@@ -38,7 +38,7 @@ export function Dialog({ open, onClose, title, className, children }: DialogProp
         className,
       )}
     >
-      <div className="flex items-center justify-between border-b border-border-subtle p-4">
+      <div className="flex items-center justify-between border-b border-border-subtle p-5">
         <h2 id={titleId} className="text-base font-semibold">
           {title}
         </h2>
@@ -50,7 +50,7 @@ export function Dialog({ open, onClose, title, className, children }: DialogProp
           <X className="h-4 w-4" />
         </button>
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-6">{children}</div>
     </dialog>
   );
 }

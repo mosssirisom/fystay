@@ -53,7 +53,7 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="user-menu-panel"
-        className="focus-ring flex items-center gap-2 rounded-full border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)]"
+        className="focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)]"
       >
         <span className="hidden text-sm font-medium sm:inline">{name.split(" ")[0]}</span>
         <span className="relative">

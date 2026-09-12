@@ -6,9 +6,9 @@ import { CircleUserRound, Home, Menu } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
- * A single Airbnb-style pill that opens a dropdown with Log in / Sign up,
- * replacing two separate top-right links - one trigger reads as calmer and
- * more premium than a permanently-visible pair of competing CTAs.
+ * A single trigger that opens a dropdown with Log in / Sign up, replacing
+ * two separate top-right links - one control reads as calmer and more
+ * considered than a permanently-visible pair of competing CTAs.
  */
 export function GuestMenu() {
   const [open, setOpen] = useState(false);
@@ -50,7 +50,7 @@ export function GuestMenu() {
         aria-expanded={open}
         aria-controls="guest-menu-panel"
         aria-label="Account menu"
-        className="focus-ring flex items-center gap-2 rounded-full border border-border-subtle py-2 pl-3 pr-1.5 text-stone-600 hover:shadow-[var(--shadow-card)]"
+        className="focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-2 pl-3 pr-1.5 text-stone-600 hover:shadow-[var(--shadow-card)]"
       >
         <Menu className="h-4 w-4" />
         <CircleUserRound className="h-7 w-7 text-stone-400" strokeWidth={1.5} />

@@ -14,7 +14,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             // text-base below sm: see Input.tsx - prevents iOS Safari's
             // auto-zoom-on-focus for any field with a computed font-size
             // under 16px.
-            "focus-ring h-10 w-full appearance-none rounded-lg border border-border-subtle bg-surface px-3 pr-9 text-base text-foreground sm:text-sm",
+            "focus-ring h-10 w-full appearance-none rounded-xl border border-border-subtle bg-surface px-3 pr-9 text-base text-foreground sm:text-sm",
             "transition-colors hover:border-stone-300",
             className,
           )}

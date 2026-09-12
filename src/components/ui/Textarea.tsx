@@ -15,7 +15,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           // text-base below sm: see Input.tsx - prevents iOS Safari's
           // auto-zoom-on-focus for any field with a computed font-size
           // under 16px.
-          "focus-ring w-full resize-y rounded-lg border border-border-subtle bg-surface px-3 py-2 text-base text-foreground placeholder:text-stone-500 sm:text-sm",
+          "focus-ring w-full resize-y rounded-xl border border-border-subtle bg-surface px-3 py-2 text-base text-foreground placeholder:text-stone-500 sm:text-sm",
           "transition-colors hover:border-stone-300",
           invalid && "border-red-400 focus-visible:outline-red-500",
           className,

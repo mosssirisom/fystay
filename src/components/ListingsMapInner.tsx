@@ -32,7 +32,7 @@ function priceIcon(label: string) {
   return L.divIcon({
     className: "",
     html: `<div style="
-      background: var(--color-brand-700, #0f766e);
+      background: var(--color-brand-700, #954328);
       color: white;
       font-weight: 600;
       font-size: 12.5px;

@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-// Brand teal + accent gold, plus white for contrast against both - no pink,
-// deliberately (see the brand-color comment in globals.css).
-const COLORS = ["#0d9488", "#2dd4bf", "#fbbf24", "#f59e0b", "#ffffff"];
+// Brand terracotta/clay + accent gold, plus white for contrast against both -
+// no pink, deliberately (see the brand-color comment in globals.css).
+const COLORS = ["#bc522f", "#dd9278", "#fbbf24", "#f59e0b", "#ffffff"];
 const PARTICLE_COUNT = 46;
 const DURATION_MS = 1500;
 const GRAVITY = 0.12;

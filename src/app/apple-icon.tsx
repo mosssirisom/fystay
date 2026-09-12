@@ -24,7 +24,7 @@ export default function AppleIcon() {
             display: "flex",
           }}
         >
-          <span style={{ color: "#14b8a6" }}>FY</span>
+          <span style={{ color: "#d97757" }}>FY</span>
         </span>
       </div>
     ),

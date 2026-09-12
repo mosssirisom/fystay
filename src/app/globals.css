@@ -15,20 +15,21 @@
      than needing to know which bar, if any, is on screen. */
   --fixed-bottom-bar-height: 0px;
 
-  /* Brand: deep teal. Distinct from the pink/coral clichè, reads as
-     trustworthy and premium; pairs with a warm amber accent for CTAs
-     that need to pop against it. */
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-300: #5eead4;
-  --color-brand-400: #2dd4bf;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
-  --color-brand-950: #042f2c;
+  /* Brand: warm terracotta/clay, matching Anthropic's own accent color
+     (#d97757, pinned here at 500). Distinct from the teal/pink clichès of
+     other travel sites, reads as warm and considered; pairs with the
+     existing amber accent for ratings/highlights without competing. */
+  --color-brand-50: #faf6f4;
+  --color-brand-100: #f6e9e5;
+  --color-brand-200: #edcfc5;
+  --color-brand-300: #e4b1a0;
+  --color-brand-400: #dd9278;
+  --color-brand-500: #d97757;
+  --color-brand-600: #bc522f;
+  --color-brand-700: #954328;
+  --color-brand-800: #723622;
+  --color-brand-900: #50281b;
+  --color-brand-950: #301a13;
 
   /* Accent: warm amber, used sparingly for highlights (ratings, badges) */
   --color-accent-400: #fbbf24;

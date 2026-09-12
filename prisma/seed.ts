@@ -10,13 +10,16 @@ const prisma = new PrismaClient();
 
 // Seed listings ship with generated placeholder art instead of hotlinked
 // stock photos: it renders instantly with zero external requests, so the
-// demo never depends on a third-party image host being reachable.
+// demo never depends on a third-party image host being reachable. Every
+// entry stays in the same warm terracotta/amber/rust/umber/wine family as
+// the brand palette (globals.css) - no green or blue, which read as an
+// off-brand cold contrast against the site's warm parchment background.
 const PALETTES: [string, string][] = [
-  ["#0d9488", "#134e4a"],
+  ["#d97757", "#954328"],
   ["#f59e0b", "#b45309"],
-  ["#0ea5e9", "#0369a1"],
-  ["#f43f5e", "#9f1239"],
-  ["#8b5cf6", "#5b21b6"],
+  ["#c2622a", "#7a3a17"],
+  ["#a34b4b", "#5c2323"],
+  ["#8a5a3b", "#4a3220"],
 ];
 
 function hashCode(input: string): number {

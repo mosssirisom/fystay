@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -19,14 +19,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Editorial serif for headings and the wordmark - the same literary,
-// "considered" register as Anthropic's own serif headlines (Tiempos), using
-// a freely licensed Google Fonts equivalent rather than their proprietary
-// type family.
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
+// Warm, soft-terminal serif for headings and the wordmark - closer to the
+// friendly, "charmingly quirky" warmth of Anthropic's own Tiempos headlines
+// than a stricter transitional serif, using a freely licensed Google Fonts
+// family rather than their proprietary type.
+const fraunces = Fraunces({
+  variable: "--font-heading",
   subsets: ["latin"],
   weight: ["600", "700"],
+  style: ["normal"],
 });
 
 // This default only ever renders on a page that hasn't set its own title
@@ -68,7 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <a

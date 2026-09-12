@@ -40,8 +40,12 @@
   --color-accent-500: #f59e0b;
   --color-accent-600: #d97706;
 
-  /* Ink: deep navy used in the logotype's second half ("stay") */
-  --color-ink: #142a3d;
+  /* Ink: deep espresso-brown used in the logotype's second half ("stay") -
+     the same terracotta family as "FY" (it's brand-950, the ramp's own
+     darkest shade) rather than an unrelated navy, so the two halves of the
+     wordmark read as one considered pairing instead of two colors that
+     just happen to sit next to each other. */
+  --color-ink: #301a13;
 
   /* Warm brown-black tint (not a cool blue-grey) so drop shadows read as
      part of the same warm palette as the background/surface tones above. */

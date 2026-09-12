@@ -14,12 +14,12 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#ffffff",
+          background: "#f6f3ec",
         }}
       >
         <div style={{ display: "flex", fontSize: 132, fontWeight: 700, fontFamily: "sans-serif" }}>
           <span style={{ color: "#d97757" }}>FY</span>
-          <span style={{ color: "#142a3d" }}>Stay</span>
+          <span style={{ color: "#301a13" }}>Stay</span>
         </div>
         <div
           style={{
@@ -32,7 +32,7 @@ export default function OpengraphImage() {
           }}
         >
           <span style={{ color: "#d97757" }}>Your stay,&nbsp;</span>
-          <span style={{ color: "#142a3d" }}>your way</span>
+          <span style={{ color: "#301a13" }}>your way</span>
         </div>
       </div>
     ),

@@ -84,7 +84,7 @@ export function ContactHostButton({
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-stone-600">
               Sign in or create a free account to ask {hostName} a question about this place.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">

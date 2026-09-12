@@ -83,14 +83,14 @@ export function HouseRules({ listing }: { listing: HouseRulesListing }) {
     <div className="mt-3 flex flex-col gap-4">
       <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
         {rows.map(({ icon: Icon, text }) => (
-          <li key={text} className="flex items-center gap-3 text-sm text-zinc-700">
+          <li key={text} className="flex items-center gap-3 text-sm text-stone-700">
             <Icon className="h-4.5 w-4.5 shrink-0 text-brand-600" aria-hidden />
             {text}
           </li>
         ))}
       </ul>
       {listing.additionalRules && (
-        <p className="whitespace-pre-line rounded-xl bg-surface-muted px-4 py-3 text-sm text-zinc-700">
+        <p className="whitespace-pre-line rounded-xl bg-surface-muted px-4 py-3 text-sm text-stone-700">
           {listing.additionalRules}
         </p>
       )}

@@ -74,10 +74,10 @@ function ListingMarker({ listing }: { listing: MapListing }) {
           </div>
           <div>
             <p className="truncate text-sm font-semibold text-foreground">{listing.title}</p>
-            <p className="text-xs text-zinc-500">{listing.city}</p>
+            <p className="text-xs text-stone-500">{listing.city}</p>
             <p className="mt-1 text-sm font-bold text-brand-800">
               {formattedPrice}
-              <span className="text-xs font-normal text-zinc-500"> / night</span>
+              <span className="text-xs font-normal text-stone-500"> / night</span>
             </p>
           </div>
         </Link>

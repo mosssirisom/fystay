@@ -45,7 +45,7 @@ export function Dialog({ open, onClose, title, className, children }: DialogProp
         <button
           onClick={onClose}
           aria-label="Close"
-          className="focus-ring flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-surface-muted"
+          className="focus-ring flex h-9 w-9 items-center justify-center rounded-full text-stone-500 hover:bg-surface-muted"
         >
           <X className="h-4 w-4" />
         </button>
@@ -76,7 +76,7 @@ export function ConfirmDialog({
 }) {
   return (
     <Dialog open={open} onClose={onClose} title={title}>
-      <p className="text-sm text-zinc-600">{description}</p>
+      <p className="text-sm text-stone-600">{description}</p>
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="outline" onClick={onClose} disabled={loading}>
           Cancel

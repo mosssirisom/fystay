@@ -43,9 +43,9 @@ export default async function WishlistPage() {
 
       {listings.length === 0 ? (
         <Card className="mt-8 flex flex-col items-center gap-3 p-12 text-center">
-          <Heart className="h-8 w-8 text-zinc-300" />
+          <Heart className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No saved stays yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             Tap the heart on any listing to save it here for later.
           </p>
           <Link href="/" className={cn(buttonVariants(), "mt-2")}>

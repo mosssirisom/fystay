@@ -114,7 +114,7 @@ export function BookingConfirmation({
         {pollsExhausted ? (
           <>
             <p className="font-medium text-foreground">Still confirming your payment</p>
-            <p className="max-w-sm text-sm text-zinc-500">
+            <p className="max-w-sm text-sm text-stone-500">
               This is taking longer than usual. You&apos;ll see your booking under &quot;My
               trips&quot; as soon as it&apos;s confirmed.
             </p>
@@ -147,7 +147,7 @@ export function BookingConfirmation({
             >
               {CONFIRMING_MESSAGES[messageIndex]}
             </p>
-            <p className="text-sm text-zinc-500">This only takes a moment.</p>
+            <p className="text-sm text-stone-500">This only takes a moment.</p>
             <div
               className="relative h-1.5 w-48 overflow-hidden rounded-full bg-brand-50"
               role="progressbar"
@@ -176,7 +176,7 @@ export function BookingConfirmation({
           <h1 className="animate-confirm-message-in text-2xl font-bold text-foreground">
             Booking confirmed!
           </h1>
-          <p className="animate-confirm-message-in max-w-sm text-sm text-zinc-500">
+          <p className="animate-confirm-message-in max-w-sm text-sm text-stone-500">
             You&apos;re all set. A confirmation has been saved to your account under &quot;My
             trips&quot;.
           </p>
@@ -184,7 +184,7 @@ export function BookingConfirmation({
       ) : (
         <>
           <h1 className="text-2xl font-bold text-foreground">Booking {status.toLowerCase()}</h1>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             This reservation is no longer awaiting payment.
           </p>
         </>

@@ -18,7 +18,7 @@ export function HiddenGems({ destinationName, recommendations }: { destinationNa
   if (gems.length === 0) return null;
 
   return (
-    <section className="mt-10 rounded-3xl bg-zinc-900 p-6 sm:p-8">
+    <section className="mt-10 rounded-3xl bg-stone-900 p-6 sm:p-8">
       <div className="flex items-center gap-2.5">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-amber-300">
           <Gem className="h-4 w-4" aria-hidden />

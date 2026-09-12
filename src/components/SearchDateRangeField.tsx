@@ -86,7 +86,7 @@ export function SearchDateRangeField({
           <span
             className={cn(
               "block truncate text-sm",
-              checkInLabel ? "text-foreground" : "text-zinc-500",
+              checkInLabel ? "text-foreground" : "text-stone-500",
             )}
           >
             {checkInLabel ?? "Add date"}
@@ -109,7 +109,7 @@ export function SearchDateRangeField({
           <span
             className={cn(
               "block truncate text-sm",
-              checkOutLabel ? "text-foreground" : "text-zinc-500",
+              checkOutLabel ? "text-foreground" : "text-stone-500",
             )}
           >
             {checkOutLabel ?? "Add date"}

@@ -23,7 +23,7 @@ export default function GlobalError({
         <TriangleAlert className="h-7 w-7" />
       </span>
       <h1 className="text-2xl font-bold text-foreground">Something went wrong</h1>
-      <p className="mt-2 text-zinc-500">
+      <p className="mt-2 text-stone-500">
         An unexpected error occurred. You can try again, or head back home.
       </p>
       <div className="mt-6 flex gap-3">

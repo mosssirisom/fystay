@@ -40,7 +40,7 @@ export function WhatGuestsLove({
         {standoutCategories.map((category) => (
           <li
             key={category}
-            className="rounded-full bg-surface px-3 py-1 text-sm text-zinc-700 shadow-[var(--shadow-card)]"
+            className="rounded-full bg-surface px-3 py-1 text-sm text-stone-700 shadow-[var(--shadow-card)]"
           >
             {REVIEW_CATEGORY_LABEL[category]} · {(categoryAverages[category] as number).toFixed(1)}
           </li>

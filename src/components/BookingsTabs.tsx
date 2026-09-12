@@ -45,14 +45,14 @@ export function BookingsTabs({
               "focus-ring -mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
               tab === t.key
                 ? "border-brand-700 text-brand-700"
-                : "border-transparent text-zinc-500 hover:text-foreground",
+                : "border-transparent text-stone-500 hover:text-foreground",
             )}
           >
             {t.label}
             <span
               className={cn(
                 "rounded-full px-1.5 py-0.5 text-xs font-semibold",
-                tab === t.key ? "bg-brand-50 text-brand-800" : "bg-surface-muted text-zinc-500",
+                tab === t.key ? "bg-brand-50 text-brand-800" : "bg-surface-muted text-stone-500",
               )}
             >
               {counts[t.key]}

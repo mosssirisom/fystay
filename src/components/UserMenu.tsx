@@ -90,7 +90,7 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
             <Link
               href="/host/dashboard"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
             >
               <LayoutDashboard className="h-4 w-4" /> Host dashboard
             </Link>
@@ -98,7 +98,7 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
           <Link
             href="/inbox"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
           >
             <MessageCircle className="h-4 w-4" /> Messages
             {unreadMessageCount > 0 && (
@@ -110,28 +110,28 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
           <Link
             href="/bookings"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
           >
             <Luggage className="h-4 w-4" /> My trips
           </Link>
           <Link
             href="/wishlist"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
           >
             <Heart className="h-4 w-4" /> Wishlist
           </Link>
           <Link
             href="/refer"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
           >
             <Gift className="h-4 w-4" /> Refer a friend
           </Link>
           <Link
             href="/account"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-surface-muted"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
           >
             <UserCircle className="h-4 w-4" /> Account
           </Link>
@@ -150,7 +150,7 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
           <form action={signOutAction}>
             <button
               type="submit"
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-zinc-700 hover:bg-surface-muted"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-700 hover:bg-surface-muted"
             >
               <LogOut className="h-4 w-4" /> Log out
             </button>

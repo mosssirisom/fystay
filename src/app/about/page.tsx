@@ -38,14 +38,14 @@ export default function AboutPage() {
       <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-brand-700">
         Your stay, your way
       </p>
-      <p className="mt-4 text-sm leading-relaxed text-zinc-600">
+      <p className="mt-4 text-sm leading-relaxed text-stone-600">
         FYStay is a booking platform for independent accommodation across Blackpool and the Fylde
         Coast - a local alternative to the big booking platforms. We built it because the area is
         full of great, independently-run places to stay that deserve a straightforward way to
         reach guests directly, without disappearing into a global marketplace alongside thousands
         of listings from everywhere else.
       </p>
-      <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+      <p className="mt-3 text-sm leading-relaxed text-stone-600">
         Guests get a simple way to search, compare, and book real local stays with genuine
         reviews. Hosts get a dashboard to manage listings, availability, pricing, and bookings
         without giving up a large cut of every booking to a global platform.
@@ -56,7 +56,7 @@ export default function AboutPage() {
           <div key={title} className="flex flex-col gap-2">
             <Icon className="h-5 w-5 text-brand-700" />
             <p className="text-sm font-semibold text-foreground">{title}</p>
-            <p className="text-sm text-zinc-500">{description}</p>
+            <p className="text-sm text-stone-500">{description}</p>
           </div>
         ))}
       </div>

@@ -282,7 +282,7 @@ export default async function ListingDetailPage({
       />
 
       <div className="mt-6 flex flex-col gap-3">
-        <p className="flex items-center gap-1.5 text-sm text-zinc-500">
+        <p className="flex items-center gap-1.5 text-sm text-stone-500">
           <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
           {listing.city}, {listing.country}
         </p>
@@ -293,7 +293,7 @@ export default async function ListingDetailPage({
           {listing.title}
         </h1>
         <TrustLine rating={rating} reviewCount={reviewCount} />
-        <div className="mt-1 flex flex-wrap gap-x-5 gap-y-2 text-zinc-700">
+        <div className="mt-1 flex flex-wrap gap-x-5 gap-y-2 text-stone-700">
           {stats.map(({ icon: Icon, label }) => (
             <span key={label} className="flex items-center gap-2">
               <Icon className="h-4.5 w-4.5 text-brand-600" />
@@ -321,7 +321,7 @@ export default async function ListingDetailPage({
 
           <div className="mt-10 border-t border-border-subtle pt-8">
             <SectionHeading icon={Home}>About this stay</SectionHeading>
-            <ReadMoreText text={listing.description} className="mt-3 whitespace-pre-line text-zinc-700" />
+            <ReadMoreText text={listing.description} className="mt-3 whitespace-pre-line text-stone-700" />
             <WhatGuestsLove categoryAverages={ratingBreakdown.categoryAverages} reviewCount={reviewCount} />
           </div>
 
@@ -334,7 +334,7 @@ export default async function ListingDetailPage({
 
           <div className="mt-10 border-t border-border-subtle pt-8">
             <SectionHeading icon={MapPin}>Where you&apos;ll be</SectionHeading>
-            <p className="mt-3 text-zinc-700">
+            <p className="mt-3 text-stone-700">
               {listing.city}, {listing.country}
             </p>
             {listing.latitude !== null && listing.longitude !== null && (
@@ -355,7 +355,7 @@ export default async function ListingDetailPage({
               </div>
             )}
             {localGuide?.insiderTip && (
-              <p className="mt-4 border-l-2 border-brand-200 pl-4 text-sm italic text-zinc-600">
+              <p className="mt-4 border-l-2 border-brand-200 pl-4 text-sm italic text-stone-600">
                 &ldquo;{localGuide.insiderTip}&rdquo;
               </p>
             )}
@@ -389,7 +389,7 @@ export default async function ListingDetailPage({
             <SectionHeading icon={ShieldCheck} id="cancellation-policy">
               Cancellation policy
             </SectionHeading>
-            <p className="mt-3 text-zinc-700">
+            <p className="mt-3 text-stone-700">
               <span className="font-medium text-foreground">{cancellationPolicy.label}.</span>{" "}
               {cancellationPolicy.description}
             </p>
@@ -416,7 +416,7 @@ export default async function ListingDetailPage({
             ) : (
               <div className="mt-4 flex flex-col items-start gap-2">
                 <TrustLine rating={null} reviewCount={0} />
-                <p className="text-zinc-700">
+                <p className="text-stone-700">
                   Be one of the first guests to stay here and leave a review - reviews only appear
                   once a guest has completed a real, paid booking.
                 </p>

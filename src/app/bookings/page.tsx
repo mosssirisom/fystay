@@ -25,9 +25,9 @@ function EmptySection({
 }) {
   return (
     <Card className="flex flex-col items-center gap-3 p-12 text-center">
-      <Luggage className="h-8 w-8 text-zinc-300" />
+      <Luggage className="h-8 w-8 text-stone-300" />
       <p className="font-medium text-foreground">{message}</p>
-      <p className="max-w-sm text-sm text-zinc-500">{hint}</p>
+      <p className="max-w-sm text-sm text-stone-500">{hint}</p>
       {showCta && (
         <Link href="/" className={cn(buttonVariants(), "mt-2")}>
           Start exploring

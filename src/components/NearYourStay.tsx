@@ -38,7 +38,7 @@ export function NearYourStay({
     return (
       <section className="mt-10 rounded-3xl border border-dashed border-border-subtle bg-surface-muted p-6">
         <SectionHeading icon={MapPinned}>Near Your Stay</SectionHeading>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Come back here from one of our {destinationName} listings and this section shows real walking and
           driving times to everything nearby, from your exact property.
         </p>
@@ -65,7 +65,7 @@ export function NearYourStay({
                 {items.map((item) => (
                   <li key={item.id} className="text-sm">
                     <p className="font-medium text-foreground">{item.name}</p>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-zinc-500">
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-stone-500">
                       {item.distanceMiles !== null && (
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" aria-hidden />
@@ -101,9 +101,9 @@ export function NearYourStay({
                 return (
                   <li key={entry.name} className="text-sm">
                     <p className="font-medium text-foreground">{entry.name}</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">{entry.note}</p>
+                    <p className="mt-0.5 text-xs text-stone-500">{entry.note}</p>
                     {location && (
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-zinc-500">
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-stone-500">
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" aria-hidden />
                           {location.distanceMiles} mi

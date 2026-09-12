@@ -65,23 +65,23 @@ export function CancelBookingButton({
 
       <Dialog open={open} onClose={() => setOpen(false)} title="Cancel booking">
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-stone-600">
             Cancel your stay at &quot;{listingTitle}&quot;?
           </p>
 
           <div className="rounded-lg bg-surface-muted p-3 text-sm">
             <p className="font-medium text-foreground">{policyLabel} cancellation policy</p>
-            <p className="mt-0.5 text-zinc-600">{policyDescription}</p>
+            <p className="mt-0.5 text-stone-600">{policyDescription}</p>
           </div>
 
           {amountPaidCents > 0 && (
             <dl className="flex flex-col gap-1.5 text-sm">
-              <div className="flex justify-between text-zinc-600">
+              <div className="flex justify-between text-stone-600">
                 <dt>Amount paid</dt>
                 <dd>{formatPrice(amountPaidCents)}</dd>
               </div>
               {nonRefundableCents > 0 && (
-                <div className="flex justify-between text-zinc-600">
+                <div className="flex justify-between text-stone-600">
                   <dt>Non-refundable</dt>
                   <dd>{formatPrice(nonRefundableCents)}</dd>
                 </div>

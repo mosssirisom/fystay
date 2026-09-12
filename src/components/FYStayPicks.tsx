@@ -52,7 +52,7 @@ export function FYStayPicks({
         </span>
         <p className="text-lg font-semibold text-foreground">FYStay Picks</p>
       </div>
-      <p className="mt-1.5 max-w-2xl text-sm text-zinc-600">
+      <p className="mt-1.5 max-w-2xl text-sm text-stone-600">
         Our own shortlist, ranked for you - not just a list of everything nearby.
       </p>
 
@@ -70,12 +70,12 @@ export function FYStayPicks({
                     {PLACE_CATEGORY_LABEL[rec.category]}
                   </p>
                   {rec.priceLevel && (
-                    <span className="text-xs font-semibold text-zinc-500">{PRICE_LABEL[rec.priceLevel] ?? ""}</span>
+                    <span className="text-xs font-semibold text-stone-500">{PRICE_LABEL[rec.priceLevel] ?? ""}</span>
                   )}
                 </div>
                 <p className="mt-1 font-semibold text-foreground">{rec.name}</p>
                 {rec.description && (
-                  <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-zinc-600">{rec.description}</p>
+                  <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-stone-600">{rec.description}</p>
                 )}
 
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -85,7 +85,7 @@ export function FYStayPicks({
                 </div>
 
                 {(rec.distanceMiles !== null || rec.walkMinutes !== null) && (
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500">
                     {rec.distanceMiles !== null && (
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 shrink-0" aria-hidden />

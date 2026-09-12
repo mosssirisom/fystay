@@ -44,7 +44,7 @@ export default function SafetyPage() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
       <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Safety information</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="mt-2 text-sm text-stone-500">
         How we help keep bookings, payments, and your account safe.
       </p>
 
@@ -56,13 +56,13 @@ export default function SafetyPage() {
             </span>
             <div>
               <p className="text-sm font-semibold text-foreground">{title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-600">{description}</p>
+              <p className="mt-1 text-sm leading-relaxed text-stone-600">{description}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <p className="mt-10 text-sm text-zinc-500">
+      <p className="mt-10 text-sm text-stone-500">
         If something feels wrong about a listing, a booking, or a message from another user,
         contact us straight away at{" "}
         <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">

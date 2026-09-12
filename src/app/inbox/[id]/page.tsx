@@ -63,7 +63,7 @@ export default async function ConversationPage({
       <RefreshOnMount />
       <Link
         href="/inbox"
-        className="focus-ring -ml-1 inline-flex items-center gap-1 self-start rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"
+        className="focus-ring -ml-1 inline-flex items-center gap-1 self-start rounded-lg py-1 pr-2 text-sm font-medium text-stone-600 hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" />
         Back to messages
@@ -73,7 +73,7 @@ export default async function ConversationPage({
         <h1 className="text-xl font-bold text-foreground">{counterparty.name}</h1>
         <Link
           href={`/listings/${conversation.listing.id}`}
-          className="text-sm text-zinc-500 hover:text-brand-700 hover:underline"
+          className="text-sm text-stone-500 hover:text-brand-700 hover:underline"
         >
           {conversation.listing.title}
         </Link>

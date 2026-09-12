@@ -61,11 +61,11 @@ export function DateRangeField({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "focus-ring flex w-full items-center gap-2 rounded-lg border border-border-subtle px-3 py-2.5 text-left text-sm hover:border-zinc-300",
-          !range?.from && "text-zinc-500",
+          "focus-ring flex w-full items-center gap-2 rounded-lg border border-border-subtle px-3 py-2.5 text-left text-sm hover:border-stone-300",
+          !range?.from && "text-stone-500",
         )}
       >
-        <CalendarDays className="h-4 w-4 shrink-0 text-zinc-400" />
+        <CalendarDays className="h-4 w-4 shrink-0 text-stone-400" />
         {label}
       </button>
 

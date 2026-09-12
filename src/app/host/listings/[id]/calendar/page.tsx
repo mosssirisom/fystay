@@ -84,18 +84,18 @@ export default async function ListingCalendarPage({
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
       <Link
         href="/host/dashboard"
-        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"
+        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-stone-600 hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" />
         Back to dashboard
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-foreground">{listing.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">Availability calendar</p>
+      <p className="mt-1 text-sm text-stone-500">Availability calendar</p>
 
       {isHotel && (
         <div className="mt-4 flex flex-wrap gap-2">
           {listing.roomTypes.length === 0 ? (
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-stone-500">
               Add a room type on the listing&apos;s edit page to manage its calendar.
             </p>
           ) : (
@@ -107,7 +107,7 @@ export default async function ListingCalendarPage({
                   "focus-ring rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
                   roomType.id === selectedRoomTypeId
                     ? "border-brand-600 bg-brand-50 text-brand-800"
-                    : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
+                    : "border-border-subtle text-stone-600 hover:bg-surface-muted",
                 )}
               >
                 {roomType.name}

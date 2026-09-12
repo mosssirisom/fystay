@@ -24,7 +24,7 @@ export function PerfectDays({
   return (
     <section className="mt-10">
       <SectionHeading icon={Route}>Perfect Days in {destinationName}</SectionHeading>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
         Ready-made plans for however you want to spend the day - pick one and go.
       </p>
 
@@ -49,7 +49,7 @@ export function PerfectDays({
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-700">{step.time}</p>
                       <p className="mt-0.5 text-foreground">{step.activity}</p>
                       {location && (
-                        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-zinc-500">
+                        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-stone-500">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3 shrink-0" aria-hidden />
                             {location.distanceMiles} mi

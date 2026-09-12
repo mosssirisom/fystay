@@ -49,7 +49,7 @@ export default function HostGuidePage() {
         ← Why host with FYStay
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-foreground sm:text-3xl">Host guide</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="mt-2 text-sm text-stone-500">
         A quick walkthrough of listing your property and managing bookings on FYStay.
       </p>
 
@@ -57,7 +57,7 @@ export default function HostGuidePage() {
         {STEPS.map((step) => (
           <div key={step.title}>
             <p className="text-sm font-semibold text-foreground">{step.title}</p>
-            <p className="mt-1 text-sm leading-relaxed text-zinc-600">{step.description}</p>
+            <p className="mt-1 text-sm leading-relaxed text-stone-600">{step.description}</p>
           </div>
         ))}
       </div>

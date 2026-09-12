@@ -18,7 +18,7 @@ export function StarRating({
           key={i}
           width={size}
           height={size}
-          className={i < rounded ? "fill-accent-500 text-accent-500" : "text-zinc-300"}
+          className={i < rounded ? "fill-accent-500 text-accent-500" : "text-stone-300"}
         />
       ))}
     </span>

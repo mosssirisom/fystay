@@ -6,7 +6,7 @@ export function Label({
 }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cn("mb-1.5 block text-sm font-medium text-zinc-800", className)}
+      className={cn("mb-1.5 block text-sm font-medium text-stone-800", className)}
       {...props}
     />
   );
@@ -28,5 +28,5 @@ export function FieldError({ children }: { children?: string | null }) {
 }
 
 export function FieldHint({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1.5 text-xs text-zinc-500">{children}</p>;
+  return <p className="mt-1.5 text-xs text-stone-500">{children}</p>;
 }

@@ -74,7 +74,7 @@ export function ChangeRequestStatus({
   const newTotalPriceCents = originalTotalPriceCents + priceDeltaCents;
 
   const priceSummary = priceDeltaCents !== 0 && (
-    <div className="flex flex-col gap-1 border-t border-border-subtle pt-2 text-zinc-600">
+    <div className="flex flex-col gap-1 border-t border-border-subtle pt-2 text-stone-600">
       <div className="flex justify-between">
         <span>Original total</span>
         <span>{formatPrice(originalTotalPriceCents)}</span>
@@ -95,14 +95,14 @@ export function ChangeRequestStatus({
       <div className="mt-3 flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 text-sm">
         <div className="flex items-center gap-2">
           <Badge variant="warning">Change requested</Badge>
-          <span className="text-zinc-600">Awaiting host response</span>
+          <span className="text-stone-600">Awaiting host response</span>
         </div>
-        <p className="text-zinc-600">{dateLabel}</p>
+        <p className="text-stone-600">{dateLabel}</p>
         {priceSummary}
         <button
           onClick={withdraw}
           disabled={loading}
-          className="focus-ring self-start rounded-lg text-sm font-medium text-zinc-600 underline-offset-2 hover:underline disabled:opacity-50"
+          className="focus-ring self-start rounded-lg text-sm font-medium text-stone-600 underline-offset-2 hover:underline disabled:opacity-50"
         >
           Withdraw request
         </button>
@@ -116,7 +116,7 @@ export function ChangeRequestStatus({
         <div className="flex items-center gap-2">
           <Badge variant="neutral">Change declined</Badge>
         </div>
-        <p className="text-zinc-600">The host declined this change request.</p>
+        <p className="text-stone-600">The host declined this change request.</p>
       </div>
     );
   }
@@ -128,9 +128,9 @@ export function ChangeRequestStatus({
         <div className="flex items-center gap-2">
           <Badge variant="success">Change approved</Badge>
         </div>
-        <p className="text-zinc-600">{dateLabel}</p>
+        <p className="text-stone-600">{dateLabel}</p>
         {priceSummary}
-        <p className="text-zinc-600">
+        <p className="text-stone-600">
           Pay {formatPrice(priceDeltaCents)} to confirm these new dates.
         </p>
         <Button size="sm" onClick={pay} loading={loading} className="self-start">

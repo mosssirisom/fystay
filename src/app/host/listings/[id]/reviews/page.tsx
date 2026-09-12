@@ -67,20 +67,20 @@ export default async function HostListingReviewsPage({
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
       <Link
         href="/host/dashboard"
-        className="focus-ring inline-flex items-center gap-1 rounded-lg text-sm font-medium text-zinc-500 hover:text-foreground"
+        className="focus-ring inline-flex items-center gap-1 rounded-lg text-sm font-medium text-stone-500 hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" />
         Back to your listings
       </Link>
 
       <h1 className="mt-4 text-2xl font-bold text-foreground">Reviews</h1>
-      <p className="mt-1 text-sm text-zinc-500">{listing.title}</p>
+      <p className="mt-1 text-sm text-stone-500">{listing.title}</p>
 
       {listing.reviews.length === 0 ? (
         <Card className="mt-8 flex flex-col items-center gap-3 p-12 text-center">
-          <MessageSquare className="h-8 w-8 text-zinc-300" />
+          <MessageSquare className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No reviews yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             Reviews from guests appear here once they&apos;ve completed a stay.
           </p>
         </Card>
@@ -100,17 +100,17 @@ export default async function HostListingReviewsPage({
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-medium text-foreground">{review.author.name}</p>
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-stone-500">
                         {dateFormatter.format(review.createdAt)}
                       </span>
                     </div>
                     <StarRating rating={review.rating} size={14} />
                   </div>
 
-                  <p className="mt-2 text-sm text-zinc-700">{review.comment}</p>
+                  <p className="mt-2 text-sm text-stone-700">{review.comment}</p>
 
                   {ratedCategories.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
                       {ratedCategories.map((category) => (
                         <span key={category}>
                           {CATEGORY_LABEL[category]}: {review[CATEGORY_FIELD[category]]}/5

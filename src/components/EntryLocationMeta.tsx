@@ -14,7 +14,7 @@ export function EntryLocationMeta({ location }: { location: EntryLocation | null
   if (!location) return null;
 
   return (
-    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-zinc-500">
+    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-stone-500">
       <span className="flex items-center gap-1">
         <MapPin className="h-3 w-3 shrink-0" aria-hidden />
         {location.distanceMiles} mi

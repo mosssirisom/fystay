@@ -262,7 +262,7 @@ export function DestinationAutocomplete({
             // text-base below sm: see ui/Input.tsx - prevents iOS Safari's
             // auto-zoom-on-focus for any field with a computed font-size
             // under 16px.
-            className="focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-base text-foreground placeholder:text-zinc-500 sm:text-sm"
+            className="focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-base text-foreground placeholder:text-stone-500 sm:text-sm"
           />
         </span>
       </label>
@@ -275,14 +275,14 @@ export function DestinationAutocomplete({
           className="animate-dropdown-in absolute left-0 top-full z-20 mt-2 max-h-[70vh] w-full min-w-[280px] overflow-y-auto rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)] sm:w-96"
         >
           {loading && (
-            <div className="flex items-center gap-2 px-3 py-3 text-sm text-zinc-500">
+            <div className="flex items-center gap-2 px-3 py-3 text-sm text-stone-500">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Searching destinations and hotels…
             </div>
           )}
 
           {!loading && errored && (
-            <div className="px-3 py-3 text-sm text-zinc-500">
+            <div className="px-3 py-3 text-sm text-stone-500">
               Something went wrong loading suggestions. You can still type a destination and press
               Search.
             </div>
@@ -290,16 +290,16 @@ export function DestinationAutocomplete({
 
           {!loading && !errored && showNoResults && (
             <div className="flex flex-col items-center gap-1.5 px-3 py-6 text-center">
-              <SearchX className="h-5 w-5 text-zinc-300" aria-hidden />
+              <SearchX className="h-5 w-5 text-stone-300" aria-hidden />
               <p className="text-sm font-medium text-foreground">No destinations, places or hotels found</p>
-              <p className="text-xs text-zinc-500">Try a city, town, region or hotel name.</p>
+              <p className="text-xs text-stone-500">Try a city, town, region or hotel name.</p>
             </div>
           )}
 
           {!loading && !errored && flatItems.length > 0 && (
             <ul className="flex flex-col gap-0.5">
               {popular && recentSearches.length > 0 && (
-                <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-stone-500">
                   Recent searches
                 </li>
               )}
@@ -312,7 +312,7 @@ export function DestinationAutocomplete({
                       key={`recent-${item.city}`}
                       id={`${id}-option-${index}`}
                       active={highlightedIndex === index}
-                      icon={<History className="h-4 w-4 text-zinc-400" aria-hidden />}
+                      icon={<History className="h-4 w-4 text-stone-400" aria-hidden />}
                       label={item.city}
                       onSelect={() => select(item)}
                       onHover={() => setHighlightedIndex(index)}
@@ -327,7 +327,7 @@ export function DestinationAutocomplete({
                       <SuggestionRow
                         id={`${id}-option-${index}`}
                         active={highlightedIndex === index}
-                        icon={<Sparkles className="h-4 w-4 text-zinc-400" aria-hidden />}
+                        icon={<Sparkles className="h-4 w-4 text-stone-400" aria-hidden />}
                         label={item.suggestion.label}
                         sublabel={item.suggestion.sublabel}
                         onSelect={() => select(item)}
@@ -426,7 +426,7 @@ function FirstOfGroup({
   return (
     <>
       {label && (
-        <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 first:pt-0">
+        <li className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-stone-500 first:pt-0">
           {label}
         </li>
       )}
@@ -472,7 +472,7 @@ function SuggestionRow({
       <span className="flex h-8 w-8 shrink-0 items-center justify-center">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium text-foreground">{label}</span>
-        {sublabel && <span className="block truncate text-xs text-zinc-500">{sublabel}</span>}
+        {sublabel && <span className="block truncate text-xs text-stone-500">{sublabel}</span>}
       </span>
     </li>
   );

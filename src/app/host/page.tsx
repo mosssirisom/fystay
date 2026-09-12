@@ -132,7 +132,7 @@ export default async function BecomeAHostPage() {
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">
             Why local hosts choose FYStay
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-stone-500">
             No unsupported promises about bookings or earnings - just how the platform actually
             works for a host on this coast.
           </p>
@@ -144,7 +144,7 @@ export default async function BecomeAHostPage() {
                 <Icon className="h-4.5 w-4.5" aria-hidden />
               </span>
               <p className="text-sm font-semibold text-foreground">{reasonTitle}</p>
-              <p className="text-sm leading-relaxed text-zinc-600">{reasonDescription}</p>
+              <p className="text-sm leading-relaxed text-stone-600">{reasonDescription}</p>
             </div>
           ))}
         </div>
@@ -153,7 +153,7 @@ export default async function BecomeAHostPage() {
       <section id="how-it-works" className="scroll-mt-20 border-y border-border-subtle bg-surface-muted">
         <div className="mx-auto max-w-3xl px-6 py-14">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">How listing works</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-stone-500">
             Four steps from an empty dashboard to a bookable listing.
           </p>
           <div className="mt-8 flex flex-col gap-6">
@@ -162,7 +162,7 @@ export default async function BecomeAHostPage() {
                 <Camera className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
                 <div>
                   <p className="text-sm font-semibold text-foreground">{step.title}</p>
-                  <p className="mt-0.5 text-sm text-zinc-600">{step.description}</p>
+                  <p className="mt-0.5 text-sm text-stone-600">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -181,7 +181,7 @@ export default async function BecomeAHostPage() {
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">
             Ready to welcome your first guest?
           </h2>
-          <p className="mt-2 text-sm text-zinc-500">
+          <p className="mt-2 text-sm text-stone-500">
             It takes a few minutes to create a listing, and you choose when to publish it.
           </p>
           <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }), "mt-6")}>

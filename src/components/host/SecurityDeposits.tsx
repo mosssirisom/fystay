@@ -106,13 +106,13 @@ function DepositRow({ deposit, onResolved }: { deposit: AuthorizedDeposit; onRes
         <p className="font-medium text-foreground">
           {formatPrice(deposit.securityDepositCents)} authorized - {deposit.guestName ?? "a guest"}
         </p>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-stone-600">
           <Link href={`/listings/${deposit.listingId}`} className="hover:text-brand-700">
             {deposit.listingTitle}
           </Link>{" "}
           · {deposit.checkIn.toLocaleDateString()} – {deposit.checkOut.toLocaleDateString()}
         </p>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-stone-500">
           Releases automatically {deposit.depositClaimDeadline.toLocaleDateString()} unless you file a claim
         </p>
       </div>
@@ -127,7 +127,7 @@ function DepositRow({ deposit, onResolved }: { deposit: AuthorizedDeposit; onRes
 
       <Dialog open={claimOpen} onClose={() => setClaimOpen(false)} title="File a damage claim">
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-stone-600">
             This charges the guest&apos;s card for the amount you specify, up to the authorized{" "}
             {formatPrice(deposit.securityDepositCents)}. The guest will see the reason you give.
           </p>

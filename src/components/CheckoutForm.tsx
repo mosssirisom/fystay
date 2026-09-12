@@ -126,7 +126,7 @@ export function CheckoutForm({
             <FieldError>{error}</FieldError>
           </Field>
           <div className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2 text-sm">
-            <span className="text-zinc-600">Guests</span>
+            <span className="text-stone-600">Guests</span>
             <span className="font-medium text-foreground">
               {guests} guest{guests === 1 ? "" : "s"}
             </span>
@@ -137,7 +137,7 @@ export function CheckoutForm({
       <Button type="submit" loading={loading} size="lg" className="mt-6 hidden w-full lg:flex">
         Pay securely {formatPrice(totalPriceCents)}
       </Button>
-      <p className="mt-3 hidden items-center justify-center gap-1.5 text-center text-xs text-zinc-500 lg:flex">
+      <p className="mt-3 hidden items-center justify-center gap-1.5 text-center text-xs text-stone-500 lg:flex">
         <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
         You&apos;ll pay on Stripe&apos;s secure checkout page. FYStay never sees or stores your
         card details.
@@ -148,7 +148,7 @@ export function CheckoutForm({
         className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border-subtle bg-surface px-4 py-3 [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden"
       >
         <div>
-          <p className="text-xs text-zinc-500">Total</p>
+          <p className="text-xs text-stone-500">Total</p>
           <p className="text-base font-semibold text-foreground">{formatPrice(totalPriceCents)}</p>
         </div>
         <Button type="submit" loading={loading} size="lg" className="flex-1">
@@ -157,7 +157,7 @@ export function CheckoutForm({
       </div>
 
       {redirecting && (
-        <div className="animate-confirm-message-in fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white/95 backdrop-blur-sm">
+        <div className="animate-confirm-message-in fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-surface/95 backdrop-blur-sm">
           <Loader2 className="h-8 w-8 animate-spin text-brand-700" aria-hidden />
           <p className="text-sm font-medium text-foreground">Taking you to secure payment…</p>
         </div>

@@ -42,13 +42,13 @@ export function WhatsOn({
         </span>
         <p className="text-lg font-semibold text-foreground">What&apos;s On</p>
       </div>
-      <p className="mt-1.5 max-w-2xl text-sm text-zinc-600">
+      <p className="mt-1.5 max-w-2xl text-sm text-stone-600">
         Live events and entertainment in {destinationName}
         {checkIn && checkOut ? " - anything during your stay is marked below." : "."}
       </p>
 
       {events.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-dashed border-border-subtle bg-surface-muted p-5 text-sm text-zinc-500">
+        <p className="mt-4 rounded-2xl border border-dashed border-border-subtle bg-surface-muted p-5 text-sm text-stone-500">
           No upcoming events found for {destinationName} yet.
         </p>
       ) : (
@@ -62,7 +62,7 @@ export function WhatsOn({
                     <p className="font-medium text-foreground">{event.name}</p>
                     {duringStay && <Badge variant="brand">During your stay</Badge>}
                   </div>
-                  <p className="mt-0.5 text-sm text-zinc-500">
+                  <p className="mt-0.5 text-sm text-stone-500">
                     {format(event.startsAt, "EEE d MMM, HH:mm")}
                     {event.venueName && ` · ${event.venueName}`}
                   </p>

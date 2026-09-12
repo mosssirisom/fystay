@@ -48,7 +48,7 @@ export function CookieConsentBanner() {
       className="border-b border-border-subtle bg-surface-muted px-6 py-3"
     >
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-stone-600">
           We only use strictly necessary cookies to keep you signed in and run the site - no
           tracking or advertising cookies. See our{" "}
           <Link href="/legal/cookies" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">

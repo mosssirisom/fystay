@@ -49,14 +49,14 @@ export function PersonalizedGuideSection({
             <button
               type="button"
               onClick={() => setMood(null)}
-              className="focus-ring flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium text-zinc-500 hover:text-zinc-700"
+              className="focus-ring flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium text-stone-500 hover:text-stone-700"
             >
               <X className="h-3.5 w-3.5" aria-hidden />
               Clear
             </button>
           )}
         </div>
-        <p className="mt-1.5 max-w-2xl text-sm text-zinc-600">
+        <p className="mt-1.5 max-w-2xl text-sm text-stone-600">
           Tell us what you&apos;re after and we&apos;ll reorder our picks for {destinationName} to match.
         </p>
 
@@ -73,7 +73,7 @@ export function PersonalizedGuideSection({
                   "focus-ring flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
                   active
                     ? "border-brand-600 bg-brand-600 text-white"
-                    : "border-border-subtle bg-surface text-zinc-600 hover:bg-surface-muted",
+                    : "border-border-subtle bg-surface text-stone-600 hover:bg-surface-muted",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -88,7 +88,7 @@ export function PersonalizedGuideSection({
 
       <section className="mt-10">
         <SectionHeading icon={BookOpen}>The full {destinationName} guide</SectionHeading>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Every category, in one place - jump here from any Quick Discovery button above.
         </p>
         <LocalGuideExplorer

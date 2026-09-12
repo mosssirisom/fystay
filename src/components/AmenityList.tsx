@@ -70,7 +70,7 @@ export function AmenityList({ amenities }: { amenities: string[] }) {
       {amenities.map((amenity) => {
         const Icon = iconForAmenity(amenity);
         return (
-          <li key={amenity} className="flex items-center gap-3 text-zinc-700">
+          <li key={amenity} className="flex items-center gap-3 text-stone-700">
             <Icon className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
             {amenity}
           </li>

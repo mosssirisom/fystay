@@ -50,7 +50,7 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
       <div className="mb-8 flex flex-col items-center text-center">
         <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="mt-1 text-sm text-zinc-500">Log in to continue to {SITE_NAME}</p>
+        <p className="mt-1 text-sm text-stone-500">Log in to continue to {SITE_NAME}</p>
       </div>
 
       <Card>
@@ -58,7 +58,7 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
           {googleEnabled && (
             <>
               <GoogleSignInButton callbackUrl={callbackUrl} />
-              <div className="my-4 flex items-center gap-3 text-xs text-zinc-400">
+              <div className="my-4 flex items-center gap-3 text-xs text-stone-400">
                 <span className="h-px flex-1 bg-border-subtle" />
                 or
                 <span className="h-px flex-1 bg-border-subtle" />
@@ -109,7 +109,7 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         </CardContent>
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-600">
+      <p className="mt-6 text-center text-sm text-stone-600">
         Don&apos;t have an account?{" "}
         <Link
           href={callbackUrl !== "/" ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/register"}

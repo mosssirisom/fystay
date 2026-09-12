@@ -40,7 +40,7 @@ function AmenityCheckbox({
         "focus-ring rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
         active
           ? "border-brand-600 bg-brand-50 text-brand-800"
-          : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
+          : "border-border-subtle text-stone-600 hover:bg-surface-muted",
       )}
     >
       {children}
@@ -536,7 +536,7 @@ export function ListingForm({ listingId, initialValues }: Props) {
         <Card>
           <CardHeader>
             <SectionHeading icon={Wallet}>Room types</SectionHeading>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-stone-500">
               Each room type has its own price, capacity, photos, and a count of how many
               identical rooms you have.
             </p>

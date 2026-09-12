@@ -36,14 +36,14 @@ export default async function AccountPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Account</h1>
-          <p className="text-sm text-zinc-500">Manage your trust and safety details.</p>
+          <p className="text-sm text-stone-500">Manage your trust and safety details.</p>
         </div>
       </div>
 
       <Card className="mt-6 p-5">
         <CardContent className="flex flex-col gap-1 p-0 text-sm">
           <p className="font-medium text-foreground">{user.name}</p>
-          <p className="text-zinc-500">{user.email}</p>
+          <p className="text-stone-500">{user.email}</p>
         </CardContent>
       </Card>
 

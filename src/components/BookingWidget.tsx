@@ -263,13 +263,13 @@ export function BookingWidget({
         <div className="flex items-baseline justify-between gap-2">
           <p className="text-2xl font-bold text-brand-800">
             {formatPrice(pricePerNightCents)}
-            <span className="ml-1 text-sm font-normal text-zinc-500">/ night</span>
+            <span className="ml-1 text-sm font-normal text-stone-500">/ night</span>
           </p>
           {rating !== null && (
-            <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-zinc-600">
+            <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-stone-600">
               <Star className="h-4 w-4 fill-accent-500 text-accent-500" aria-hidden />
               {rating.toFixed(1)}
-              {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
+              {reviewCount > 0 && <span className="text-stone-500">({reviewCount})</span>}
             </span>
           )}
         </div>
@@ -291,7 +291,7 @@ export function BookingWidget({
             maxNights={maxNights}
           />
           {nights === 0 && (minNights > 1 || maxNights !== null) && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-stone-500">
               {minNights > 1 && maxNights !== null
                 ? `${minNights}–${maxNights} night stay`
                 : minNights > 1
@@ -304,12 +304,12 @@ export function BookingWidget({
             onChange={setGuestCounts}
             capacity={maxGuests}
             showPets={petsAllowed}
-            triggerClassName="rounded-lg border border-border-subtle px-3 py-2 hover:border-zinc-300 hover:bg-transparent"
+            triggerClassName="rounded-lg border border-border-subtle px-3 py-2 hover:border-stone-300 hover:bg-transparent"
           />
         </div>
 
         {nights > 0 && (
-          <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
+          <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-stone-700">
             <div className="flex justify-between">
               <span>
                 {formatPrice(pricePerNightCents)} × {nights} night{nights > 1 ? "s" : ""}
@@ -345,7 +345,7 @@ export function BookingWidget({
               <span>Total</span>
               <span>{formatPrice(pricing.totalPriceCents - promoDiscountCents)}</span>
             </div>
-            <p className="text-xs text-zinc-500">Taxes aren&apos;t charged today - the total above is everything you pay.</p>
+            <p className="text-xs text-stone-500">Taxes aren&apos;t charged today - the total above is everything you pay.</p>
 
             {availabilityChecked &&
               (promoActive ? (
@@ -430,8 +430,8 @@ export function BookingWidget({
           </Button>
         )}
 
-        <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-xs text-zinc-500">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+        <div className="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-4 text-xs text-stone-500">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
             Book with confidence
           </p>
           {isLoggedIn && (
@@ -458,7 +458,7 @@ export function BookingWidget({
           <p className="flex items-center gap-2">
             <CalendarClock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             <span>
-              <span className="font-medium text-zinc-700">{cancellationPolicy.label}</span> cancellation
+              <span className="font-medium text-stone-700">{cancellationPolicy.label}</span> cancellation
               -{" "}
               <a href="#cancellation-policy" className="underline hover:text-brand-700">
                 see policy

@@ -40,13 +40,13 @@ export default async function HostPayoutsPage({
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-8">
       <Link
         href="/host/dashboard"
-        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"
+        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-stone-600 hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" />
         Back to dashboard
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-foreground">Payouts</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <p className="mt-1 text-sm text-stone-500">
         Connect a Stripe account so guest payments pay you out directly.
       </p>
 
@@ -73,7 +73,7 @@ export default async function HostPayoutsPage({
         <CardContent className="flex flex-col gap-4">
           {ready ? (
             <>
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-stone-600">
                 Guest payments now pay out to your bank account automatically, minus FYStay&apos;s
                 service fee - you don&apos;t need to do anything else. Bookings taken before you
                 connected settled to FYStay directly and aren&apos;t affected.
@@ -88,12 +88,12 @@ export default async function HostPayoutsPage({
             </>
           ) : (
             <>
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-stone-600">
                 {started
                   ? "Stripe still needs a few more details before payouts can start."
                   : "FYStay uses Stripe to pay hosts directly and securely - we never see or store your bank details."}
               </p>
-              <ul className="flex flex-col gap-1.5 text-sm text-zinc-600">
+              <ul className="flex flex-col gap-1.5 text-sm text-stone-600">
                 <ChecklistItem label="Details submitted" done={host.stripeConnectDetailsSubmitted} />
                 <ChecklistItem label="Charges enabled" done={host.stripeConnectChargesEnabled} />
                 <ChecklistItem label="Payouts enabled" done={host.stripeConnectPayoutsEnabled} />
@@ -115,7 +115,7 @@ function ChecklistItem({ label, done }: { label: string; done: boolean }) {
       {done ? (
         <Check className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
       ) : (
-        <X className="h-4 w-4 shrink-0 text-zinc-300" aria-hidden />
+        <X className="h-4 w-4 shrink-0 text-stone-300" aria-hidden />
       )}
       {label}
     </li>

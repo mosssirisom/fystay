@@ -98,7 +98,7 @@ export function PhotoUploader({
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className={cn(
-            "focus-ring flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-border-subtle text-zinc-400 transition-colors hover:border-zinc-300 hover:text-zinc-500",
+            "focus-ring flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-border-subtle text-stone-400 transition-colors hover:border-stone-300 hover:text-stone-500",
             uploading && "pointer-events-none opacity-60",
           )}
         >
@@ -120,7 +120,7 @@ export function PhotoUploader({
       />
 
       <details className="mt-3 text-sm">
-        <summary className="cursor-pointer font-medium text-zinc-600">
+        <summary className="cursor-pointer font-medium text-stone-600">
           Or paste an image URL instead
         </summary>
         <div className="mt-2 flex gap-2">

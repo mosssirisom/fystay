@@ -48,16 +48,16 @@ function SourceRow({ source }: { source: SourceSummary }) {
       <td className="py-3 pr-4">
         <Badge variant={STATUS_VARIANT[source.status]}>{STATUS_LABEL[source.status]}</Badge>
       </td>
-      <td className="py-3 pr-4 text-zinc-600">{relativeOrNever(source.lastSuccessAt)}</td>
-      <td className="py-3 pr-4 font-mono tabular-nums text-zinc-700">{source.recordCount.toLocaleString()}</td>
-      <td className="py-3 pr-4 font-mono tabular-nums text-zinc-700">
+      <td className="py-3 pr-4 text-stone-600">{relativeOrNever(source.lastSuccessAt)}</td>
+      <td className="py-3 pr-4 font-mono tabular-nums text-stone-700">{source.recordCount.toLocaleString()}</td>
+      <td className="py-3 pr-4 font-mono tabular-nums text-stone-700">
         <span className={source.failuresLast7Days > 0 ? "font-semibold text-red-600" : undefined}>
           {source.failuresLast7Days}
         </span>{" "}
-        <span className="text-xs text-zinc-400">/ 7d</span>
+        <span className="text-xs text-stone-400">/ 7d</span>
       </td>
-      <td className="py-3 font-mono tabular-nums text-zinc-700">
-        {source.syncRunsLast24h} <span className="text-xs text-zinc-400">/ 24h</span>
+      <td className="py-3 font-mono tabular-nums text-stone-700">
+        {source.syncRunsLast24h} <span className="text-xs text-stone-400">/ 24h</span>
       </td>
     </tr>
   );
@@ -84,7 +84,7 @@ export default async function LocalDataAdminPage() {
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
       <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Local data platform</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
         Operational status for the Local Guide&apos;s live data - weather, places and events feeding the
         &quot;Right now&quot; concierge panel on every town&apos;s destination page.
       </p>
@@ -121,7 +121,7 @@ export default async function LocalDataAdminPage() {
           <CardContent className="pt-5">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
-                <tr className="border-b border-border-subtle text-xs font-medium uppercase tracking-wide text-zinc-500">
+                <tr className="border-b border-border-subtle text-xs font-medium uppercase tracking-wide text-stone-500">
                   <th className="pb-2 pr-4 font-medium">Data source</th>
                   <th className="pb-2 pr-4 font-medium">Status</th>
                   <th className="pb-2 pr-4 font-medium">Last successful refresh</th>
@@ -142,18 +142,18 @@ export default async function LocalDataAdminPage() {
 
       <div className="mt-8">
         <SectionHeading icon={Sparkles}>Manually featured recommendations</SectionHeading>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Every FYStay editorial pick currently live on a destination page&apos;s concierge panel and Local
           Guide, in the order each town shows them.
         </p>
         <Card className="mt-4 overflow-x-auto">
           <CardContent className="pt-5">
             {summary.featured.length === 0 ? (
-              <p className="py-4 text-sm text-zinc-500">No editorial recommendations yet.</p>
+              <p className="py-4 text-sm text-stone-500">No editorial recommendations yet.</p>
             ) : (
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border-subtle text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  <tr className="border-b border-border-subtle text-xs font-medium uppercase tracking-wide text-stone-500">
                     <th className="pb-2 pr-4 font-medium">Town</th>
                     <th className="pb-2 pr-4 font-medium">Tag</th>
                     <th className="pb-2 pr-4 font-medium">Name</th>
@@ -164,13 +164,13 @@ export default async function LocalDataAdminPage() {
                 <tbody>
                   {summary.featured.map((rec) => (
                     <tr key={rec.id} className="border-b border-border-subtle last:border-0">
-                      <td className="py-2.5 pr-4 text-zinc-700">{rec.townName}</td>
+                      <td className="py-2.5 pr-4 text-stone-700">{rec.townName}</td>
                       <td className="py-2.5 pr-4">
                         <Badge variant="brand">{rec.tag.replaceAll("_", " ").toLowerCase()}</Badge>
                       </td>
                       <td className="py-2.5 pr-4 font-medium text-foreground">{rec.name}</td>
-                      <td className="py-2.5 pr-4 text-zinc-600">{rec.category.toLowerCase()}</td>
-                      <td className="py-2.5 text-zinc-500">{rec.linkedToLivePlace ? "Yes" : "Not yet"}</td>
+                      <td className="py-2.5 pr-4 text-stone-600">{rec.category.toLowerCase()}</td>
+                      <td className="py-2.5 text-stone-500">{rec.linkedToLivePlace ? "Yes" : "Not yet"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -184,7 +184,7 @@ export default async function LocalDataAdminPage() {
         <CardHeader>
           <CardTitle>How to promote a user to admin</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm leading-relaxed text-zinc-600">
+        <CardContent className="text-sm leading-relaxed text-stone-600">
           There&apos;s no self-service admin invite flow yet - this page exists for one operator. To grant
           access, set that user&apos;s <code className="rounded bg-surface-muted px-1 py-0.5">role</code> column
           to <code className="rounded bg-surface-muted px-1 py-0.5">ADMIN</code> directly (Prisma Studio, or{" "}

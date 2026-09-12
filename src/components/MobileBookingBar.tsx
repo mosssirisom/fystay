@@ -26,7 +26,7 @@ export function MobileBookingBar({ pricePerNightCents }: { pricePerNightCents: n
     >
       <p className="text-base text-foreground">
         <span className="font-bold text-brand-800">{formatPrice(pricePerNightCents)}</span>{" "}
-        <span className="text-sm text-zinc-500">/ night</span>
+        <span className="text-sm text-stone-500">/ night</span>
       </p>
       <Button onClick={scrollToWidget} size="lg">
         Check dates & price

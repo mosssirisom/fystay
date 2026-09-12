@@ -25,7 +25,7 @@ import type { BadgeProps } from "@/components/ui/Badge";
 export const metadata: Metadata = { title: "Booking details", robots: { index: false } };
 
 const actionLinkClass =
-  "focus-ring w-fit rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted";
+  "focus-ring w-fit rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted";
 
 const statusVariant: Record<string, BadgeProps["variant"]> = {
   PENDING: "warning",
@@ -118,7 +118,7 @@ export default async function BookingDetailPage({
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 pb-24 lg:pb-8">
       <Link
         href="/bookings"
-        className="focus-ring inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-foreground"
+        className="focus-ring inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-stone-500 hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to my trips
@@ -127,10 +127,10 @@ export default async function BookingDetailPage({
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{booking.listing.title}</h1>
-          <p className="mt-1 text-zinc-600">
+          <p className="mt-1 text-stone-600">
             {booking.listing.city}, {booking.listing.country}
           </p>
-          <p className="mt-1 text-xs font-medium text-zinc-500">Booking #{booking.reference}</p>
+          <p className="mt-1 text-xs font-medium text-stone-500">Booking #{booking.reference}</p>
         </div>
         <Badge variant={requestBadge?.variant ?? statusVariant[booking.status]}>
           {requestBadge?.label ?? statusLabel[booking.status] ?? booking.status}
@@ -206,7 +206,7 @@ export default async function BookingDetailPage({
             <CardHeader>
               <CardTitle>Where you&apos;re staying</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-1 text-sm text-zinc-600">
+            <CardContent className="flex flex-col gap-1 text-sm text-stone-600">
               <p>
                 {booking.listing.city}, {booking.listing.country}
               </p>
@@ -223,7 +223,7 @@ export default async function BookingDetailPage({
                 <CardHeader>
                   <CardTitle>Check-in details</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-3 text-sm text-zinc-600">
+                <CardContent className="flex flex-col gap-3 text-sm text-stone-600">
                   {(booking.listing.checkInTime || booking.listing.checkOutTime) && (
                     <div className="flex flex-wrap gap-x-6 gap-y-1">
                       {booking.listing.checkInTime && (
@@ -264,7 +264,7 @@ export default async function BookingDetailPage({
               <div>
                 <p className="font-medium text-foreground">{booking.listing.host.name}</p>
                 {canSeeStayDetails && booking.listing.host.email && (
-                  <p className="text-sm text-zinc-500">{booking.listing.host.email}</p>
+                  <p className="text-sm text-stone-500">{booking.listing.host.email}</p>
                 )}
               </div>
             </CardContent>

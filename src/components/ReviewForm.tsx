@@ -47,7 +47,7 @@ function StarPicker({
           <Star
             className={cn(
               size,
-              (hover || value) >= star ? "fill-accent-500 text-accent-500" : "text-zinc-300",
+              (hover || value) >= star ? "fill-accent-500 text-accent-500" : "text-stone-300",
             )}
           />
         </button>
@@ -128,7 +128,7 @@ export function ReviewForm({
             <p className="text-xs font-semibold text-foreground">Rate specific aspects (optional)</p>
             {REVIEW_CATEGORIES.map((category) => (
               <div key={category} className="flex items-center justify-between gap-3">
-                <span className="text-sm text-zinc-600">{CATEGORY_LABEL[category]}</span>
+                <span className="text-sm text-stone-600">{CATEGORY_LABEL[category]}</span>
                 <StarPicker
                   value={categoryRatings[category] ?? 0}
                   onChange={(value) => setCategoryRating(category, value)}

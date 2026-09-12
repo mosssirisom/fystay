@@ -114,7 +114,7 @@ export default async function DestinationPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
 
-      <nav aria-label="Breadcrumb" className="text-sm text-zinc-500">
+      <nav aria-label="Breadcrumb" className="text-sm text-stone-500">
         <Link href="/" className="hover:text-brand-700 hover:underline">
           Home
         </Link>
@@ -133,7 +133,7 @@ export default async function DestinationPage({
 
       <div className="mt-8">
         <h2 className="text-xl font-bold text-foreground sm:text-2xl">Accommodation in {destination.name}</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">{destination.description}</p>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">{destination.description}</p>
 
         <div className="mt-6">
           <Suspense fallback={<ListingsGridSkeleton />}>

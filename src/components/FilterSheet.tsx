@@ -53,7 +53,7 @@ function ToggleChip({
         "focus-ring flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
         active
           ? "border-brand-600 bg-brand-50 text-brand-800"
-          : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
+          : "border-border-subtle text-stone-600 hover:bg-surface-muted",
       )}
     >
       {children}
@@ -182,7 +182,7 @@ export function FilterSheet({
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
               />
-              <span className="text-zinc-500">–</span>
+              <span className="text-stone-500">–</span>
               <Input
                 type="number"
                 min={0}
@@ -286,7 +286,7 @@ export function FilterSheet({
             type="button"
             onClick={resetDraft}
             disabled={!draftHasFilters}
-            className="focus-ring rounded-lg text-sm font-medium text-zinc-600 underline-offset-2 hover:underline disabled:pointer-events-none disabled:opacity-40"
+            className="focus-ring rounded-lg text-sm font-medium text-stone-600 underline-offset-2 hover:underline disabled:pointer-events-none disabled:opacity-40"
           >
             Clear all
           </button>

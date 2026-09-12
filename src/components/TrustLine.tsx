@@ -28,7 +28,7 @@ export function TrustLine({
       >
         <Star className="h-4 w-4 shrink-0 fill-accent-500 text-accent-500" aria-hidden />
         {rating.toFixed(1)}
-        <span className="font-normal text-zinc-500">
+        <span className="font-normal text-stone-500">
           · {reviewCount} verified stay{reviewCount === 1 ? "" : "s"}
         </span>
       </a>

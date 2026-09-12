@@ -24,7 +24,7 @@ export function AdminNav({ active }: { active: (typeof ADMIN_LINKS)[number]["hre
             "focus-ring rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
             link.href === active
               ? "bg-brand-700 text-white"
-              : "text-zinc-600 hover:bg-surface-muted",
+              : "text-stone-600 hover:bg-surface-muted",
           )}
         >
           {link.label}

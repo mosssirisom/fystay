@@ -29,14 +29,14 @@ export function NearbyAttractions({
       <SectionHeading icon={MapPin}>Getting around</SectionHeading>
       <ul className="mt-3 flex flex-col gap-2">
         {landmarks.map((landmark) => (
-          <li key={landmark.name} className="flex items-center gap-2.5 text-sm text-zinc-700">
+          <li key={landmark.name} className="flex items-center gap-2.5 text-sm text-stone-700">
             {landmark.category === "station" ? (
               <TrainFront className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             ) : (
               <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             )}
             <span className="font-medium text-foreground">{landmark.name}</span>
-            <span className="text-zinc-500">
+            <span className="text-stone-500">
               · {landmark.distanceMiles} mi
               {landmark.walkMinutes !== null && ` · ~${landmark.walkMinutes} min walk`}
             </span>

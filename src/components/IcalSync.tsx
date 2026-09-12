@@ -92,7 +92,7 @@ export function IcalSync({
               readOnly
               value={exportUrl}
               onFocus={(e) => e.currentTarget.select()}
-              className="text-xs text-zinc-500"
+              className="text-xs text-stone-500"
             />
             <Button type="button" variant="outline" onClick={handleCopyExportUrl}>
               <Copy className="h-4 w-4" />
@@ -124,7 +124,7 @@ export function IcalSync({
           </FieldHint>
           {initialImportUrl && (
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-stone-500">
                 {syncedAt
                   ? `Last synced ${formatDistanceToNow(syncedAt, { addSuffix: true })}`
                   : "Not yet synced"}
@@ -133,7 +133,7 @@ export function IcalSync({
                 type="button"
                 onClick={handleSyncNow}
                 disabled={syncing}
-                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-50"
+                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-stone-700 hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-50"
               >
                 <RefreshCw className={syncing ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
                 Sync now

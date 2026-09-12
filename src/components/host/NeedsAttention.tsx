@@ -75,7 +75,7 @@ export function NeedsAttention({ requests }: { requests: AttentionItem[] }) {
             >
               <div>
                 <p className="font-medium text-foreground">Guest requested a change</p>
-                <p className="text-sm text-zinc-600">
+                <p className="text-sm text-stone-600">
                   <Link href={`/listings/${request.listingId}`} className="hover:text-brand-700">
                     {request.listingTitle}
                   </Link>{" "}
@@ -84,7 +84,7 @@ export function NeedsAttention({ requests }: { requests: AttentionItem[] }) {
                   {request.requestedGuests > 1 ? "s" : ""}
                 </p>
                 {request.priceDeltaCents !== 0 && (
-                  <p className="text-sm text-zinc-600">
+                  <p className="text-sm text-stone-600">
                     {request.priceDeltaCents > 0
                       ? `Guest will owe an extra ${formatPrice(request.priceDeltaCents)}`
                       : `Guest will be refunded ${formatPrice(Math.abs(request.priceDeltaCents))}`}
@@ -107,14 +107,14 @@ export function NeedsAttention({ requests }: { requests: AttentionItem[] }) {
                 <p className="font-medium text-foreground">
                   {request.guestName ?? "A guest"} requested to book
                 </p>
-                <p className="text-sm text-zinc-600">
+                <p className="text-sm text-stone-600">
                   <Link href={`/listings/${request.listingId}`} className="hover:text-brand-700">
                     {request.listingTitle}
                   </Link>{" "}
                   · {request.checkIn.toLocaleDateString()} – {request.checkOut.toLocaleDateString()}{" "}
                   · {request.guests} guest{request.guests > 1 ? "s" : ""}
                 </p>
-                <p className="text-sm text-zinc-600">Total: {formatPrice(request.totalPriceCents)}</p>
+                <p className="text-sm text-stone-600">Total: {formatPrice(request.totalPriceCents)}</p>
               </div>
               <BookingRequestActions
                 bookingId={request.id}

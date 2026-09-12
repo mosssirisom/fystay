@@ -39,7 +39,7 @@ export function WishlistItem({
     <div className="flex flex-col gap-2">
       <ListingCard listing={listing} isSaved isLoggedIn />
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm text-zinc-500">{propertyTypeLabel}</span>
+        <span className="text-sm text-stone-500">{propertyTypeLabel}</span>
         <Button variant="outline" size="sm" onClick={handleRemove} loading={removing}>
           Remove
         </Button>

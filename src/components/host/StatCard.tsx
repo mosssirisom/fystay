@@ -21,9 +21,9 @@ export function StatCard({
         <Icon className="h-4.5 w-4.5" />
       </span>
       <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-stone-500">{label}</p>
         <p className="mt-0.5 truncate text-xl font-bold text-foreground">{value}</p>
-        {sublabel && <p className="mt-0.5 truncate text-xs text-zinc-500">{sublabel}</p>}
+        {sublabel && <p className="mt-0.5 truncate text-xs text-stone-500">{sublabel}</p>}
       </div>
     </Card>
   );

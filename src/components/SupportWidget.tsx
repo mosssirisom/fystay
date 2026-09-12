@@ -55,7 +55,7 @@ export function SupportWidget() {
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-semibold text-foreground">Need a hand?</p>
-              <p className="mt-0.5 text-xs text-zinc-500">
+              <p className="mt-0.5 text-xs text-stone-500">
                 A small team reads every message - not a bot.
               </p>
             </div>
@@ -63,7 +63,7 @@ export function SupportWidget() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="focus-ring -m-1 rounded-full p-1 text-zinc-400 hover:bg-surface-muted hover:text-zinc-600"
+              className="focus-ring -m-1 rounded-full p-1 text-stone-400 hover:bg-surface-muted hover:text-stone-600"
             >
               <X className="h-4 w-4" />
             </button>

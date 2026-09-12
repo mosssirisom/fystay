@@ -10,7 +10,7 @@ export default function NotFound() {
         <Compass className="h-7 w-7" />
       </span>
       <h1 className="text-2xl font-bold text-foreground">We can&apos;t find that page</h1>
-      <p className="mt-2 text-zinc-500">
+      <p className="mt-2 text-stone-500">
         It might have been moved, or the listing may no longer be available.
       </p>
       <Link href="/" className={cn(buttonVariants(), "mt-6")}>

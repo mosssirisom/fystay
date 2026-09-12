@@ -43,7 +43,7 @@ export function ForgotPasswordForm() {
       <div className="mb-8 flex flex-col items-center text-center">
         <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Reset your password</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-stone-500">
           Enter your email and we&apos;ll send you a reset link.
         </p>
       </div>
@@ -53,13 +53,13 @@ export function ForgotPasswordForm() {
           {sent ? (
             <div className="flex flex-col items-center gap-3 py-2 text-center">
               <MailCheck className="h-8 w-8 text-brand-600" />
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-stone-600">
                 If an account exists for <span className="font-medium">{email}</span>, we&apos;ve
                 sent a link to reset your password. It expires in an hour.
               </p>
               {devResetUrl && (
                 <div className="mt-1 w-full rounded-lg border border-dashed border-border-subtle bg-surface-muted p-3 text-left text-xs">
-                  <p className="font-medium text-zinc-700">
+                  <p className="font-medium text-stone-700">
                     Dev mode: no email service is configured, so here&apos;s the link directly.
                   </p>
                   <Link href={devResetUrl} className="mt-1 block break-all text-brand-700 underline">
@@ -92,7 +92,7 @@ export function ForgotPasswordForm() {
         </CardContent>
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-600">
+      <p className="mt-6 text-center text-sm text-stone-600">
         Remembered your password?{" "}
         <Link href="/login" className="font-medium text-brand-700 hover:underline">
           Log in

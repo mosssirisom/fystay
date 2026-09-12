@@ -114,10 +114,10 @@ export function GuestCategoryPicker({
           triggerClassName,
         )}
       >
-        <Users className="h-4 w-4 shrink-0 text-zinc-400" />
+        <Users className="h-4 w-4 shrink-0 text-stone-400" />
         <span className="min-w-0 flex-1">
           <span className="block text-[11px] font-semibold text-foreground">Guests</span>
-          <span className="block truncate text-sm text-zinc-500">
+          <span className="block truncate text-sm text-stone-500">
             {summarizeGuests(displayValue)}
           </span>
         </span>
@@ -138,7 +138,7 @@ export function GuestCategoryPicker({
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">{row.label}</p>
-                    <p className="text-xs text-zinc-500">{row.hint}</p>
+                    <p className="text-xs text-stone-500">{row.hint}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
@@ -147,9 +147,9 @@ export function GuestCategoryPicker({
                       disabled={displayValue[row.key] <= row.min}
                       aria-label={`Decrease ${row.label.toLowerCase()}`}
                       className={cn(
-                        "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
+                        "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-stone-600",
                         "disabled:pointer-events-none disabled:opacity-40",
-                        "hover:border-zinc-400",
+                        "hover:border-stone-400",
                       )}
                     >
                       <Minus className="h-4 w-4" />
@@ -163,9 +163,9 @@ export function GuestCategoryPicker({
                       disabled={displayValue[row.key] >= rowMax}
                       aria-label={`Increase ${row.label.toLowerCase()}`}
                       className={cn(
-                        "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
+                        "focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-stone-600",
                         "disabled:pointer-events-none disabled:opacity-40",
-                        "hover:border-zinc-400",
+                        "hover:border-stone-400",
                       )}
                     >
                       <Plus className="h-4 w-4" />
@@ -176,7 +176,7 @@ export function GuestCategoryPicker({
             })}
           </div>
           {capacity !== undefined && (
-            <p className="mt-3 text-xs text-zinc-500">
+            <p className="mt-3 text-xs text-stone-500">
               This place has a maximum of {capacity} guest{capacity === 1 ? "" : "s"}.
             </p>
           )}

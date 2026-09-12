@@ -34,7 +34,7 @@ export function LocalKnowledge({
         </span>
         <p className="text-lg font-semibold text-foreground">FYStay Local Knowledge</p>
       </div>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
         The stuff regulars know that doesn&apos;t show up in a search engine - parking to avoid, when to
         actually turn up, and where to go instead of the obvious choice in {destinationName}.
       </p>
@@ -50,7 +50,7 @@ export function LocalKnowledge({
                 {label}
               </div>
               <p className="mt-1.5 font-semibold text-foreground">{entry.headline}</p>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-600">{entry.body}</p>
+              <p className="mt-1 text-sm leading-relaxed text-stone-600">{entry.body}</p>
               <EntryLocationMeta location={location} />
             </li>
           );

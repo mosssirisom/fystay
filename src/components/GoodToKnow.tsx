@@ -22,7 +22,7 @@ export function GoodToKnow({ rows }: { rows: GoodToKnowRow[] }) {
       {rows.map(({ icon: Icon, label, value }) => (
         <div key={label} className="flex items-center gap-3 px-4 py-3.5">
           <Icon className="h-4.5 w-4.5 shrink-0 text-brand-600" aria-hidden />
-          <span className="text-sm text-zinc-500">{label}</span>
+          <span className="text-sm text-stone-500">{label}</span>
           <span className="ml-auto text-sm font-medium text-foreground">{value}</span>
         </div>
       ))}

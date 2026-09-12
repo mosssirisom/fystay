@@ -60,14 +60,14 @@ function Stepper({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-border-subtle px-3 py-2">
-      <span className="text-sm text-zinc-600">{label}</span>
+      <span className="text-sm text-stone-600">{label}</span>
       <div className="flex items-center gap-2">
         <button
           type="button"
           aria-label={`Decrease ${label.toLowerCase()}`}
           disabled={value <= min}
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="focus-ring flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle text-zinc-600 hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-40"
+          className="focus-ring flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle text-stone-600 hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-40"
         >
           <Minus className="h-3.5 w-3.5" />
         </button>
@@ -77,7 +77,7 @@ function Stepper({
           aria-label={`Increase ${label.toLowerCase()}`}
           disabled={value >= max}
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="focus-ring flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle text-zinc-600 hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-40"
+          className="focus-ring flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle text-stone-600 hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-40"
         >
           <Plus className="h-3.5 w-3.5" />
         </button>
@@ -122,7 +122,7 @@ export function HotelBookingWidget({
       <CardContent className="p-5 sm:p-6">
         <p className="text-2xl font-bold text-brand-800">
           {formatPrice(cheapestPrice)}
-          <span className="ml-1 text-sm font-normal text-zinc-500">/ night from</span>
+          <span className="ml-1 text-sm font-normal text-stone-500">/ night from</span>
         </p>
 
         <div className="mt-4">
@@ -135,7 +135,7 @@ export function HotelBookingWidget({
             maxNights={maxNights}
           />
           {nights === 0 && (minNights > 1 || maxNights !== null) && (
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-stone-500">
               {minNights > 1 && maxNights !== null
                 ? `${minNights}–${maxNights} night stay`
                 : minNights > 1
@@ -163,7 +163,7 @@ export function HotelBookingWidget({
           ))}
         </div>
 
-        <div className="mt-5 flex flex-col gap-2 border-t border-border-subtle pt-4 text-xs text-zinc-500">
+        <div className="mt-5 flex flex-col gap-2 border-t border-border-subtle pt-4 text-xs text-stone-500">
           <p className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             {instantBook
@@ -175,7 +175,7 @@ export function HotelBookingWidget({
             Secure payment via Stripe - we never see your card details
           </p>
           <p>
-            <span className="font-medium text-zinc-700">{cancellationPolicy.label}</span>{" "}
+            <span className="font-medium text-stone-700">{cancellationPolicy.label}</span>{" "}
             cancellation -{" "}
             <a href="#cancellation-policy" className="underline hover:text-brand-700">
               see policy
@@ -365,14 +365,14 @@ function RoomTypeBookingCard({
               unoptimized={!isOptimizableImage(roomType.photos[0])}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-zinc-400">
+            <div className="flex h-full w-full items-center justify-center text-stone-400">
               <ImageOff className="h-4 w-4" />
             </div>
           )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-foreground">{roomType.name}</p>
-          <p className="flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
+          <p className="flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5" /> Up to {roomType.maxGuests} guest
               {roomType.maxGuests > 1 ? "s" : ""}
@@ -383,7 +383,7 @@ function RoomTypeBookingCard({
           </p>
           <p className="mt-1 text-sm font-semibold text-brand-800">
             {formatPrice(roomType.pricePerNightCents)}
-            <span className="font-normal text-zinc-500"> / night</span>
+            <span className="font-normal text-stone-500"> / night</span>
           </p>
         </div>
       </div>
@@ -406,7 +406,7 @@ function RoomTypeBookingCard({
       </div>
 
       {pricing && nights > 0 && (
-        <div className="mt-3 flex flex-col gap-1.5 border-t border-border-subtle pt-3 text-sm text-zinc-700">
+        <div className="mt-3 flex flex-col gap-1.5 border-t border-border-subtle pt-3 text-sm text-stone-700">
           <div className="flex justify-between">
             <span>
               {formatPrice(roomType.pricePerNightCents * roomsBooked)} × {nights} night

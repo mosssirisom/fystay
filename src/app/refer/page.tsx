@@ -37,13 +37,13 @@ export default async function ReferPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Refer a friend</h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-stone-500">
             Give {formatPrice(REFERRAL_CREDIT_CENTS)}, get {formatPrice(REFERRAL_CREDIT_CENTS)}.
           </p>
         </div>
       </div>
 
-      <p className="mt-4 max-w-lg text-sm text-zinc-600">
+      <p className="mt-4 max-w-lg text-sm text-stone-600">
         Share your invite link. When a friend signs up with it and completes their first paid
         stay, they get {formatPrice(REFERRAL_CREDIT_CENTS)} credit toward their booking and you
         get {formatPrice(REFERRAL_CREDIT_CENTS)} credit toward your next one.
@@ -54,22 +54,22 @@ export default async function ReferPage() {
       <div className="mt-6 grid grid-cols-2 gap-4">
         <Card className="p-5">
           <CardContent className="p-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
               Your credit balance
             </p>
             <p className="mt-1 text-2xl font-bold text-foreground">
               {formatPrice(user.creditBalanceCents)}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">Applied automatically at your next checkout.</p>
+            <p className="mt-1 text-xs text-stone-500">Applied automatically at your next checkout.</p>
           </CardContent>
         </Card>
         <Card className="p-5">
           <CardContent className="p-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
               Friends who&apos;ve booked
             </p>
             <p className="mt-1 text-2xl font-bold text-foreground">{friendsBooked}</p>
-            <p className="mt-1 text-xs text-zinc-500">Each one earns you another credit.</p>
+            <p className="mt-1 text-xs text-stone-500">Each one earns you another credit.</p>
           </CardContent>
         </Card>
       </div>

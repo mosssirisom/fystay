@@ -19,7 +19,7 @@ export async function Navbar() {
     : 0;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border-subtle bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-border-subtle bg-surface/90 backdrop-blur">
       {/* relative + an absolutely-positioned centering layer, rather than a
           grid with an empty balancing column: a grid track sized to "the
           rest of the space" still has to yield to its content's minimum

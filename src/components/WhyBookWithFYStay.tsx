@@ -43,12 +43,12 @@ export function WhyBookWithFYStay() {
             </span>
             <div>
               <p className="font-medium text-foreground">{title}</p>
-              <p className="mt-0.5 text-sm text-zinc-600">{description}</p>
+              <p className="mt-0.5 text-sm text-stone-600">{description}</p>
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-5 text-sm text-zinc-500">
+      <p className="mt-5 text-sm text-stone-500">
         Have a question before you book?{" "}
         <Link href="/help" className="font-medium text-brand-700 underline-offset-2 hover:underline">
           Visit FYStay support

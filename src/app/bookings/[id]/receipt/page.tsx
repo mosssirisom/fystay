@@ -50,7 +50,7 @@ export default async function BookingReceiptPage({
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-8">
       <Link
         href={`/bookings/${booking.id}`}
-        className="focus-ring inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-foreground print:hidden"
+        className="focus-ring inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-stone-500 hover:text-foreground print:hidden"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to booking
@@ -58,9 +58,9 @@ export default async function BookingReceiptPage({
 
       {!wasPaid ? (
         <Card className="mt-6 flex flex-col items-center gap-3 p-12 text-center">
-          <ReceiptText className="h-8 w-8 text-zinc-300" />
+          <ReceiptText className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No receipt available yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             A receipt is generated once this booking has been paid for.
           </p>
           <Link href={`/bookings/${booking.id}`} className={cn(buttonVariants(), "mt-2")}>
@@ -73,9 +73,9 @@ export default async function BookingReceiptPage({
             <div className="flex items-start justify-between gap-4 border-b border-border-subtle pb-4">
               <div>
                 <p className="text-lg font-bold text-foreground">FYStay</p>
-                <h1 className="text-sm font-semibold text-zinc-500">Payment receipt</h1>
+                <h1 className="text-sm font-semibold text-stone-500">Payment receipt</h1>
               </div>
-              <div className="text-right text-sm text-zinc-500">
+              <div className="text-right text-sm text-stone-500">
                 <p>
                   Receipt for booking <span className="font-medium text-foreground">#{booking.reference}</span>
                 </p>
@@ -84,11 +84,11 @@ export default async function BookingReceiptPage({
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                 Property
               </p>
               <p className="mt-1 font-medium text-foreground">{booking.listing.title}</p>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-stone-500">
                 {booking.listing.address ? `${booking.listing.address}, ` : ""}
                 {booking.listing.city}, {booking.listing.country}
               </p>
@@ -96,31 +96,31 @@ export default async function BookingReceiptPage({
 
             {(booking.guestName || booking.guestEmail || booking.guestPhone) && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                   Billed to
                 </p>
                 {booking.guestName && <p className="mt-1 text-sm text-foreground">{booking.guestName}</p>}
-                {booking.guestEmail && <p className="text-sm text-zinc-500">{booking.guestEmail}</p>}
-                {booking.guestPhone && <p className="text-sm text-zinc-500">{booking.guestPhone}</p>}
+                {booking.guestEmail && <p className="text-sm text-stone-500">{booking.guestEmail}</p>}
+                {booking.guestPhone && <p className="text-sm text-stone-500">{booking.guestPhone}</p>}
               </div>
             )}
 
             <dl className="grid grid-cols-2 gap-y-1.5 border-t border-border-subtle pt-4 text-sm">
-              <dt className="text-zinc-500">Check-in</dt>
+              <dt className="text-stone-500">Check-in</dt>
               <dd className="text-right text-foreground">{dateFormatter.format(booking.checkIn)}</dd>
-              <dt className="text-zinc-500">Check-out</dt>
+              <dt className="text-stone-500">Check-out</dt>
               <dd className="text-right text-foreground">{dateFormatter.format(booking.checkOut)}</dd>
-              <dt className="text-zinc-500">Length of stay</dt>
+              <dt className="text-stone-500">Length of stay</dt>
               <dd className="text-right text-foreground">
                 {booking.nights} night{booking.nights === 1 ? "" : "s"}
               </dd>
-              <dt className="text-zinc-500">Guests</dt>
+              <dt className="text-stone-500">Guests</dt>
               <dd className="text-right text-foreground">
                 {booking.guests} guest{booking.guests === 1 ? "" : "s"}
               </dd>
             </dl>
 
-            <div className="flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
+            <div className="flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-stone-700">
               <div className="flex justify-between">
                 <span>
                   {formatPrice(booking.nightlyPriceCents)} × {booking.nights} night
@@ -168,7 +168,7 @@ export default async function BookingReceiptPage({
               )}
             </div>
 
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-stone-500">
               This receipt was generated automatically by FYStay and reflects the amount actually
               charged for booking #{booking.reference}.
             </p>

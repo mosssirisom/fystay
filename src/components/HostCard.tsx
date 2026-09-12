@@ -48,7 +48,7 @@ export function HostCard({
       <div className="flex items-center gap-4">
         <Avatar name={hostName} src={hostImage} size={56} className="ring-2 ring-brand-50" />
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Hosted by</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Hosted by</p>
           <p className="flex items-center gap-2 text-lg font-semibold text-foreground">
             {hostName}
             {isGreatHost && (
@@ -64,12 +64,12 @@ export function HostCard({
               </Badge>
             )}
           </p>
-          <p className="mt-0.5 text-sm text-zinc-500">
+          <p className="mt-0.5 text-sm text-stone-500">
             FYStay host since {hostingSinceYear}
             {reviewCount > 0 && ` · ${reviewCount} review${reviewCount === 1 ? "" : "s"}`}
           </p>
           {responseRate !== null && (
-            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
               <span className="flex items-center gap-1">
                 <MessageCircle className="h-3.5 w-3.5 text-brand-600" aria-hidden />
                 {responseRate}% response rate

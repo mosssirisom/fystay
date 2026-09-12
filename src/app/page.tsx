@@ -104,7 +104,7 @@ async function MarketplaceSections() {
       {sections.map((section) => (
         <div key={section.key}>
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">{section.title}</h2>
-          <p className="mt-1 text-sm text-zinc-500">{section.subtitle}</p>
+          <p className="mt-1 text-sm text-stone-500">{section.subtitle}</p>
           <div className="mt-6">
             <ListingsCarousel
               listings={section.listings}
@@ -244,7 +244,7 @@ export default async function Home() {
           <div
             className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none] [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)] [&::-webkit-scrollbar]:hidden"
           >
-            <span className="flex shrink-0 snap-start items-center text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <span className="flex shrink-0 snap-start items-center text-xs font-semibold uppercase tracking-wide text-stone-500">
               Now covering
             </span>
             {FYLDE_COAST_DESTINATIONS.map((destination) => {
@@ -255,7 +255,7 @@ export default async function Home() {
                   key={destination.slug}
                   href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
                   className={cn(
-                    "focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800 hover:shadow-[var(--shadow-card-hover)]",
+                    "focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-3 py-1.5 text-sm font-medium text-stone-700 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800 hover:shadow-[var(--shadow-card-hover)]",
                   )}
                 >
                   {Icon && (
@@ -279,7 +279,7 @@ export default async function Home() {
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">
             Popular stays on the Fylde Coast
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-stone-500">
             Hand-picked local places to stay, ready to book today.
           </p>
           <div className="mt-6">
@@ -299,7 +299,7 @@ export default async function Home() {
             landing pages later (see lib/destinations.ts). */}
         <Reveal className="mt-14">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Explore the Fylde Coast</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-stone-500">
             Every FYStay town, one tap away from its own local stays.
           </p>
           <div className="mt-6">
@@ -312,7 +312,7 @@ export default async function Home() {
         <Reveal className="mt-14 border-t border-border-subtle pt-10">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">Why FYStay?</h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-stone-500">
               FYStay is built around one coastline, not spread thin across the world - everything
               here is designed for booking a stay on the Fylde Coast, and nowhere else.
             </p>
@@ -328,7 +328,7 @@ export default async function Home() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-foreground">{title}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-zinc-500">{description}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-stone-500">{description}</p>
                 </div>
               </div>
             ))}

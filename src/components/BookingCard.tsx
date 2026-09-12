@@ -115,7 +115,7 @@ export function BookingCard({
                 unoptimized={!isOptimizableImage(booking.listing.photos[0])}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-zinc-400">
+              <div className="flex h-full w-full items-center justify-center text-stone-400">
                 <ImageOff className="h-5 w-5" />
               </div>
             )}
@@ -128,14 +128,14 @@ export function BookingCard({
             >
               {booking.listing.title}
             </Link>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-stone-500">
               {booking.listing.city}, {booking.listing.country}
             </p>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-stone-500">
               {booking.checkIn.toLocaleDateString()} – {booking.checkOut.toLocaleDateString()} ·{" "}
               {booking.guests} guest{booking.guests > 1 ? "s" : ""}
             </p>
-            <p className="text-xs text-zinc-500">Booking #{booking.reference}</p>
+            <p className="text-xs text-stone-500">Booking #{booking.reference}</p>
           </div>
         </div>
 
@@ -148,7 +148,7 @@ export function BookingCard({
       </div>
 
       {booking.review ? (
-        <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+        <div className="flex items-center gap-1.5 text-sm text-stone-500">
           <StarRating rating={booking.review.rating} size={14} />
           You reviewed this stay
         </div>
@@ -177,7 +177,7 @@ export function BookingCard({
       <div className="flex flex-wrap items-center justify-between gap-1 border-t border-border-subtle pt-3">
         <Link
           href={`/bookings/${booking.id}`}
-          className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+          className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
         >
           View details
         </Link>

@@ -70,7 +70,7 @@ export function LocalGuideExplorer({
               <button
                 type="button"
                 onClick={() => setMood(null)}
-                className="focus-ring flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium text-zinc-500 hover:text-zinc-700"
+                className="focus-ring flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium text-stone-500 hover:text-stone-700"
               >
                 <X className="h-3.5 w-3.5" aria-hidden />
                 Clear
@@ -98,7 +98,7 @@ export function LocalGuideExplorer({
                       "focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
                       active
                         ? "border-brand-600 bg-brand-600 text-white"
-                        : "border-border-subtle bg-surface text-zinc-600 hover:bg-surface-muted",
+                        : "border-border-subtle bg-surface text-stone-600 hover:bg-surface-muted",
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -127,7 +127,7 @@ export function LocalGuideExplorer({
               <li key={category} className="rounded-xl bg-surface p-3">
                 <p className="text-[11px] font-medium uppercase tracking-wide text-brand-700">{categoryLabel}</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{entry.name}</p>
-                <p className="mt-0.5 text-xs text-zinc-500">{entry.note}</p>
+                <p className="mt-0.5 text-xs text-stone-500">{entry.note}</p>
                 <EntryLocationMeta location={locateEntry(fromListing, entry.place)} />
               </li>
             ))}
@@ -161,7 +161,7 @@ export function LocalGuideExplorer({
                   </span>
                 )}
                 <ChevronDown
-                  className="ml-auto h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-200 group-open:rotate-180"
+                  className="ml-auto h-4 w-4 shrink-0 text-stone-400 transition-transform duration-200 group-open:rotate-180"
                   aria-hidden
                 />
               </summary>
@@ -205,7 +205,7 @@ function EntryRow({
         {isFamilyFriendly && <Badge variant="brand">Family-friendly</Badge>}
         {isDogFriendly && <Badge variant="brand">Dog-friendly</Badge>}
       </div>
-      <p className="mt-0.5 text-sm text-zinc-500">{entry.note}</p>
+      <p className="mt-0.5 text-sm text-stone-500">{entry.note}</p>
       <EntryLocationMeta location={locateEntry(fromListing, entry.place)} />
     </li>
   );

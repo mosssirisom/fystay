@@ -30,7 +30,7 @@ export function OnboardingChecklist({ steps }: { steps: OnboardingStep[] }) {
     <Card className="mt-4 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-semibold text-foreground">Finish setting up your hosting account</h2>
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-stone-500">
           {doneCount} of {requiredSteps.length} done
         </span>
       </div>
@@ -40,19 +40,19 @@ export function OnboardingChecklist({ steps }: { steps: OnboardingStep[] }) {
             {step.done ? (
               <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
             ) : (
-              <Circle className="h-5 w-5 shrink-0 text-zinc-300" aria-hidden="true" />
+              <Circle className="h-5 w-5 shrink-0 text-stone-300" aria-hidden="true" />
             )}
             <div className="min-w-0 flex-1">
               <p
                 className={cn(
                   "text-sm font-medium",
-                  step.done ? "text-zinc-500 line-through" : "text-foreground",
+                  step.done ? "text-stone-500 line-through" : "text-foreground",
                 )}
               >
                 {step.label}
                 {step.optional && !step.done ? " (optional)" : ""}
               </p>
-              <p className="text-xs text-zinc-500">{step.description}</p>
+              <p className="text-xs text-stone-500">{step.description}</p>
             </div>
             {!step.done && (
               <Link

@@ -48,7 +48,7 @@ const LEGEND = [
   { label: "Available", swatchClassName: "bg-surface border border-border-subtle" },
   { label: "Booked", swatchClassName: "bg-red-100" },
   { label: "Pending", swatchClassName: "bg-amber-100" },
-  { label: "Blocked", swatchClassName: "bg-zinc-300" },
+  { label: "Blocked", swatchClassName: "bg-stone-300" },
 ];
 
 const WIDE_QUERY = "(min-width: 860px)";
@@ -256,13 +256,13 @@ export function AvailabilityCalendar({
         <CardContent className="p-0">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {LEGEND.map((item) => (
-              <span key={item.label} className="flex items-center gap-1.5 text-xs text-zinc-600">
+              <span key={item.label} className="flex items-center gap-1.5 text-xs text-stone-600">
                 <span className={cn("h-3 w-3 rounded-full", item.swatchClassName)} aria-hidden />
                 {item.label}
               </span>
             ))}
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-xs text-stone-500">
             Click a booked, pending, or blocked day to see details. Drag across available days to select dates to
             block.
           </p>
@@ -277,7 +277,7 @@ export function AvailabilityCalendar({
               modifiersClassNames={{
                 confirmed: "!bg-red-100 !text-red-700",
                 pending: "!bg-amber-100 !text-amber-800",
-                blocked: "!bg-zinc-300 !text-zinc-600 line-through",
+                blocked: "!bg-stone-300 !text-stone-600 line-through",
               }}
               components={{ DayButton: CalendarDayButton }}
               captionLayout="dropdown"
@@ -317,7 +317,7 @@ export function AvailabilityCalendar({
         </CardHeader>
         <CardContent className="mt-3 p-0">
           {bookings.length === 0 ? (
-            <p className="text-sm text-zinc-500">No confirmed or pending bookings yet.</p>
+            <p className="text-sm text-stone-500">No confirmed or pending bookings yet.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-border-subtle">
               {bookings.map((booking) => (
@@ -331,7 +331,7 @@ export function AvailabilityCalendar({
                       <p className="text-sm font-medium text-foreground">
                         {dateFormatter.format(booking.checkIn)} – {dateFormatter.format(booking.checkOut)}
                       </p>
-                      <p className="flex items-center gap-1 text-xs text-zinc-500">
+                      <p className="flex items-center gap-1 text-xs text-stone-500">
                         <Users className="h-3.5 w-3.5" />
                         {booking.guestName ?? "Guest"} · {booking.guests} guest
                         {booking.guests > 1 ? "s" : ""} · #{booking.reference}
@@ -354,7 +354,7 @@ export function AvailabilityCalendar({
         </CardHeader>
         <CardContent className="mt-3 p-0">
           {blocks.length === 0 ? (
-            <p className="text-sm text-zinc-500">No dates manually blocked.</p>
+            <p className="text-sm text-stone-500">No dates manually blocked.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-border-subtle">
               {blocks.map((block) => (
@@ -368,11 +368,11 @@ export function AvailabilityCalendar({
                         </Badge>
                       )}
                     </p>
-                    {block.reason && <p className="text-xs text-zinc-500">{block.reason}</p>}
+                    {block.reason && <p className="text-xs text-stone-500">{block.reason}</p>}
                   </div>
                   <button
                     onClick={() => setUnblockTarget(block)}
-                    className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+                    className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
                   >
                     <CalendarX2 className="h-4 w-4" />
                     Unblock
@@ -399,12 +399,12 @@ export function AvailabilityCalendar({
                 {selectedBooking.status === "CONFIRMED" ? "Confirmed" : "Pending"}
               </Badge>
             </div>
-            <p className="flex items-center gap-1.5 text-zinc-600">
+            <p className="flex items-center gap-1.5 text-stone-600">
               <Users className="h-4 w-4 shrink-0" />
               {selectedBooking.guestName ?? "Guest"} · {selectedBooking.guests} guest
               {selectedBooking.guests > 1 ? "s" : ""}
             </p>
-            <p className="text-zinc-500">Booking reference #{selectedBooking.reference}</p>
+            <p className="text-stone-500">Booking reference #{selectedBooking.reference}</p>
           </div>
         )}
       </Dialog>

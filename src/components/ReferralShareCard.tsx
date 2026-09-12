@@ -34,7 +34,7 @@ export function ReferralShareCard({
               readOnly
               value={referralLink}
               onFocus={(e) => e.currentTarget.select()}
-              className="text-xs text-zinc-500"
+              className="text-xs text-stone-500"
             />
             <Button type="button" variant="outline" onClick={copyLink}>
               <Copy className="h-4 w-4" />
@@ -44,7 +44,7 @@ export function ReferralShareCard({
         </Field>
 
         <div className="flex items-center gap-3 border-t border-border-subtle pt-4">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          <span className="text-xs font-medium uppercase tracking-wide text-stone-500">
             Or share your code
           </span>
           <span className="rounded-lg bg-surface-muted px-3 py-1 font-mono text-sm font-semibold tracking-widest text-foreground">

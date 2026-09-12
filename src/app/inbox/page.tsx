@@ -45,9 +45,9 @@ export default async function InboxPage() {
 
       {conversations.length === 0 ? (
         <Card className="mt-8 flex flex-col items-center gap-3 p-12 text-center">
-          <MessageCircle className="h-8 w-8 text-zinc-300" />
+          <MessageCircle className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No messages yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             Questions to a host, or from a guest about one of your listings, will show up here.
           </p>
         </Card>
@@ -61,7 +61,7 @@ export default async function InboxPage() {
               <li key={conversation.id}>
                 <Link
                   href={`/inbox/${conversation.id}`}
-                  className="focus-ring flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface p-4 transition hover:border-zinc-300"
+                  className="focus-ring flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface p-4 transition hover:border-stone-300"
                 >
                   <Avatar name={counterparty.name} size={40} />
                   <div className="min-w-0 flex-1">
@@ -69,12 +69,12 @@ export default async function InboxPage() {
                       <p className="truncate font-medium text-foreground">{counterparty.name}</p>
                       {unreadCount > 0 && <Badge variant="brand">{unreadCount} new</Badge>}
                     </div>
-                    <p className="truncate text-sm text-zinc-500">{conversation.listing.title}</p>
+                    <p className="truncate text-sm text-stone-500">{conversation.listing.title}</p>
                     {lastMessage && (
                       <p
                         className={cn(
                           "mt-0.5 truncate text-sm",
-                          unreadCount > 0 ? "font-medium text-foreground" : "text-zinc-500",
+                          unreadCount > 0 ? "font-medium text-foreground" : "text-stone-500",
                         )}
                       >
                         {previewMessage(lastMessage.body)}

@@ -43,7 +43,7 @@ export function QuickDiscoveryNav({ className }: { className?: string }) {
               key={item.key}
               type="button"
               onClick={() => activate(item)}
-              className="focus-ring flex shrink-0 snap-start flex-col items-center gap-1.5 rounded-2xl border border-border-subtle bg-surface px-4 py-2.5 text-xs font-semibold text-zinc-700 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800 hover:shadow-[var(--shadow-card-hover)]"
+              className="focus-ring flex shrink-0 snap-start flex-col items-center gap-1.5 rounded-2xl border border-border-subtle bg-surface px-4 py-2.5 text-xs font-semibold text-stone-700 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800 hover:shadow-[var(--shadow-card-hover)]"
             >
               <item.icon className="h-5 w-5 text-brand-600" aria-hidden />
               {item.label}

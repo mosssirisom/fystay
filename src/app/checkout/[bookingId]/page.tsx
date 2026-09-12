@@ -57,7 +57,7 @@ export default async function CheckoutPage({
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
       <Link
         href={`/listings/${booking.listingId}`}
-        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-zinc-600 hover:text-foreground"
+        className="focus-ring -ml-1 inline-flex items-center gap-1 rounded-lg py-1 pr-2 text-sm font-medium text-stone-600 hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" />
         Back to listing
@@ -77,7 +77,7 @@ export default async function CheckoutPage({
         <Card className="mt-6 p-6 text-center">
           <CardContent className="flex flex-col items-center gap-3 p-0">
             <p className="font-medium text-foreground">This reservation hold has expired</p>
-            <p className="max-w-sm text-sm text-zinc-500">
+            <p className="max-w-sm text-sm text-stone-500">
               We held these dates for {PENDING_BOOKING_HOLD_MINUTES} minutes while you checked
               out. Please go back and select your dates again.
             </p>

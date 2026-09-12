@@ -26,7 +26,7 @@ export function CurrencySelector() {
           </option>
         ))}
       </Select>
-      <p className="max-w-[16rem] text-xs text-zinc-500">
+      <p className="max-w-[16rem] text-xs text-stone-500">
         Approximate, for browsing only - you always pay in GBP.
       </p>
     </div>

@@ -147,9 +147,9 @@ export async function ListingsGrid({
     if (petFiltered.length === 0) {
       return (
         <div className="mt-16 flex flex-col items-center gap-3 text-center">
-          <SearchX className="h-8 w-8 text-zinc-300" />
+          <SearchX className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No stays match your search</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             Try different dates, a different destination, or fewer guests.
           </p>
         </div>
@@ -194,7 +194,7 @@ export async function ListingsGrid({
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm font-medium text-zinc-500">
+          <p className="text-sm font-medium text-stone-500">
             {results.length} stay{results.length === 1 ? "" : "s"}
           </p>
           <div className="flex flex-wrap items-center gap-2">
@@ -210,9 +210,9 @@ export async function ListingsGrid({
 
       {results.length === 0 ? (
         <div className="mt-8 flex flex-col items-center gap-3 text-center">
-          <SearchX className="h-8 w-8 text-zinc-300" />
+          <SearchX className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No stays match your search</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-stone-500">
             Try different dates, a wider price range, or fewer filters.
           </p>
         </div>

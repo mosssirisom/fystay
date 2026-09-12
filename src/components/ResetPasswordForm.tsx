@@ -61,7 +61,7 @@ function ResetPasswordFormInner() {
       <Card>
         <CardContent className="pt-5">
           {!token ? (
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-stone-600">
               This reset link is missing its token.{" "}
               <Link href="/forgot-password" className="font-medium text-brand-700 hover:underline">
                 Request a new one
@@ -108,7 +108,7 @@ function ResetPasswordFormInner() {
       </Card>
 
       {token && (
-        <p className="mt-6 text-center text-sm text-zinc-600">
+        <p className="mt-6 text-center text-sm text-stone-600">
           Link expired or not working?{" "}
           <Link href="/forgot-password" className="font-medium text-brand-700 hover:underline">
             Request a new one

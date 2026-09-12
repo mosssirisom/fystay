@@ -83,7 +83,7 @@ export default async function AdminOverviewPage() {
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
       <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Admin overview</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
         Platform-wide numbers - not any one host&apos;s or guest&apos;s own view.
       </p>
 
@@ -127,7 +127,7 @@ export default async function AdminOverviewPage() {
             </Badge>
           ))}
           {activeBookingsCount === 0 && bookingsByStatus.length === 0 && (
-            <p className="text-sm text-zinc-500">No bookings yet.</p>
+            <p className="text-sm text-stone-500">No bookings yet.</p>
           )}
         </div>
       </div>
@@ -135,14 +135,14 @@ export default async function AdminOverviewPage() {
       <div className="mt-8">
         <SectionHeading icon={CalendarCheck2}>Recent bookings</SectionHeading>
         {recentBookings.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">No bookings yet.</p>
+          <p className="mt-3 text-sm text-stone-500">No bookings yet.</p>
         ) : (
           <Card className="mt-3">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-border-subtle text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    <tr className="border-b border-border-subtle text-xs font-medium uppercase tracking-wide text-stone-500">
                       <th className="px-4 py-3">Reference</th>
                       <th className="px-4 py-3">Listing</th>
                       <th className="px-4 py-3">Guest</th>
@@ -162,12 +162,12 @@ export default async function AdminOverviewPage() {
                             {booking.reference}
                           </Link>
                         </td>
-                        <td className="max-w-[200px] truncate px-4 py-3 text-zinc-700">
+                        <td className="max-w-[200px] truncate px-4 py-3 text-stone-700">
                           {booking.listing.title}
                         </td>
-                        <td className="px-4 py-3 text-zinc-700">{booking.guestName ?? "—"}</td>
-                        <td className="px-4 py-3 text-zinc-700">{booking.checkIn.toLocaleDateString()}</td>
-                        <td className="px-4 py-3 tabular-nums text-zinc-700">
+                        <td className="px-4 py-3 text-stone-700">{booking.guestName ?? "—"}</td>
+                        <td className="px-4 py-3 text-stone-700">{booking.checkIn.toLocaleDateString()}</td>
+                        <td className="px-4 py-3 tabular-nums text-stone-700">
                           {formatPrice(booking.totalPriceCents)}
                         </td>
                         <td className="px-4 py-3">

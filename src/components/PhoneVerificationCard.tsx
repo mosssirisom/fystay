@@ -70,12 +70,12 @@ export function PhoneVerificationCard({
     <Card className="p-5">
       <CardHeader className="flex flex-row items-center justify-between gap-3 p-0">
         <CardTitle className="flex items-center gap-2">
-          <Phone className="h-4.5 w-4.5 text-zinc-400" aria-hidden />
+          <Phone className="h-4.5 w-4.5 text-stone-400" aria-hidden />
           Phone verification
         </CardTitle>
         {verifiedPhone && <Badge variant="success">Verified</Badge>}
       </CardHeader>
-      <CardContent className="mt-3 flex flex-col gap-3 p-0 text-sm text-zinc-600">
+      <CardContent className="mt-3 flex flex-col gap-3 p-0 text-sm text-stone-600">
         {verifiedPhone && !codeSent ? (
           // A past verification stays true regardless of whether Twilio
           // happens to be configured in this environment right now - only

@@ -102,7 +102,7 @@ export function HostListingRow({
               unoptimized={!isOptimizableImage(listing.photos[0])}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-zinc-400">
+            <div className="flex h-full w-full items-center justify-center text-stone-400">
               <ImageOff className="h-5 w-5" />
             </div>
           )}
@@ -117,28 +117,28 @@ export function HostListingRow({
               >
                 {listing.title}
               </Link>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-stone-500">
                 {listing.city}, {listing.country} · {formatPrice(listing.pricePerNightCents)}/night
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1 self-end sm:self-auto">
               <Link
                 href={`/host/listings/${listing.id}/calendar`}
-                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
               >
                 <CalendarDays className="h-4 w-4" />
                 Calendar
               </Link>
               <Link
                 href={`/host/listings/${listing.id}/reviews`}
-                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
               >
                 <MessageSquare className="h-4 w-4" />
                 Reviews
               </Link>
               <Link
                 href={`/host/listings/${listing.id}/edit`}
-                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+                className="focus-ring flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
               >
                 <PencilLine className="h-4 w-4" />
                 Edit
@@ -160,27 +160,27 @@ export function HostListingRow({
               {upcomingCount} upcoming booking{upcomingCount === 1 ? "" : "s"}
             </Badge>
             {stats.avgRating !== null && (
-              <span className="inline-flex items-center gap-1 text-sm text-zinc-600">
+              <span className="inline-flex items-center gap-1 text-sm text-stone-600">
                 <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
                 {stats.avgRating.toFixed(1)}
-                <span className="text-zinc-500">({stats.reviewCount})</span>
+                <span className="text-stone-500">({stats.reviewCount})</span>
               </span>
             )}
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3 rounded-xl bg-surface-muted p-3 text-sm sm:grid-cols-3">
             <div>
-              <p className="text-xs text-zinc-500">Revenue this month</p>
+              <p className="text-xs text-stone-500">Revenue this month</p>
               <p className="font-semibold text-foreground">{formatPrice(stats.revenueThisMonthCents)}</p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Occupancy (next 30d)</p>
+              <p className="text-xs text-stone-500">Occupancy (next 30d)</p>
               <p className="font-semibold text-foreground">
                 {stats.occupancyRate === null ? "—" : `${stats.occupancyRate}%`}
               </p>
             </div>
             <div className="col-span-2 sm:col-span-1">
-              <p className="text-xs text-zinc-500">Rating</p>
+              <p className="text-xs text-stone-500">Rating</p>
               <p className="font-semibold text-foreground">
                 {stats.avgRating === null ? "No reviews yet" : `${stats.avgRating.toFixed(1)} / 5`}
               </p>
@@ -188,7 +188,7 @@ export function HostListingRow({
           </div>
 
           {listing.bookings.length > 0 && (
-            <ul className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-3 text-sm text-zinc-600">
+            <ul className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-3 text-sm text-stone-600">
               {visibleBookings.map((booking) => {
                 const approvedRequest = booking.changeRequests.find((cr) => cr.status === "APPROVED");
                 const isCancelled = booking.status === "CANCELLED" || booking.status === "REFUNDED";
@@ -205,7 +205,7 @@ export function HostListingRow({
                     </div>
 
                     {approvedRequest && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-stone-500">
                         Originally {approvedRequest.originalCheckIn.toLocaleDateString()} –{" "}
                         {approvedRequest.originalCheckOut.toLocaleDateString()} ·{" "}
                         {approvedRequest.originalGuests} guest
@@ -216,7 +216,7 @@ export function HostListingRow({
                     )}
 
                     {isCancelled && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-stone-500">
                         {paymentStatusLabel[booking.paymentStatus]}
                         {booking.refundedAmountCents
                           ? ` · ${formatPrice(booking.refundedAmountCents)} refunded`

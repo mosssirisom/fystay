@@ -43,7 +43,7 @@ export default function CancellationPoliciesPage() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
       <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Cancellation policies</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="mt-2 text-sm text-stone-500">
         Every host picks one of these policies for their listing. You&apos;ll always see which one
         applies, in plain language, before you book - and again if you ever preview a
         cancellation.
@@ -56,7 +56,7 @@ export default function CancellationPoliciesPage() {
               <CardTitle>{policy.label}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-stone-600">
                 {policy.tiers.map((tier) => (
                   <li key={tier}>{tier}</li>
                 ))}
@@ -66,7 +66,7 @@ export default function CancellationPoliciesPage() {
         ))}
       </div>
 
-      <p className="mt-8 text-sm text-zinc-500">
+      <p className="mt-8 text-sm text-stone-500">
         Refunds are calculated automatically and shown to you before you confirm a cancellation,
         based on the exact policy on your listing and how many days remain before check-in.
       </p>

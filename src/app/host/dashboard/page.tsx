@@ -154,7 +154,7 @@ export default async function HostDashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Host dashboard</h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-stone-500">
             {listings.length} listing{listings.length === 1 ? "" : "s"}
           </p>
         </div>

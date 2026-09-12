@@ -58,13 +58,13 @@ export function IdentityVerificationCard({
           ) : status === "FAILED" ? (
             <ShieldAlert className="h-4.5 w-4.5 text-amber-500" aria-hidden />
           ) : (
-            <ShieldQuestion className="h-4.5 w-4.5 text-zinc-400" aria-hidden />
+            <ShieldQuestion className="h-4.5 w-4.5 text-stone-400" aria-hidden />
           )}
           Identity verification
         </CardTitle>
         <Badge variant={statusCopy[status].variant}>{statusCopy[status].label}</Badge>
       </CardHeader>
-      <CardContent className="mt-3 flex flex-col gap-3 p-0 text-sm text-zinc-600">
+      <CardContent className="mt-3 flex flex-col gap-3 p-0 text-sm text-stone-600">
         {status === "VERIFIED" ? (
           // A past verification stays true regardless of whether Stripe
           // happens to be configured in this environment right now - only

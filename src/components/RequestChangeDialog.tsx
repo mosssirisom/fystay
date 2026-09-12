@@ -119,7 +119,7 @@ export function RequestChangeDialog({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-surface-muted"
+        className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
       >
         Request changes
       </button>
@@ -146,8 +146,8 @@ export function RequestChangeDialog({
                 disabled={guests <= 1}
                 aria-label="Decrease guests"
                 className={cn(
-                  "focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
-                  "disabled:pointer-events-none disabled:opacity-40 hover:border-zinc-400",
+                  "focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-stone-600",
+                  "disabled:pointer-events-none disabled:opacity-40 hover:border-stone-400",
                 )}
               >
                 <Minus className="h-4 w-4" />
@@ -159,23 +159,23 @@ export function RequestChangeDialog({
                 disabled={guests >= maxGuests}
                 aria-label="Increase guests"
                 className={cn(
-                  "focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-zinc-600",
-                  "disabled:pointer-events-none disabled:opacity-40 hover:border-zinc-400",
+                  "focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-stone-600",
+                  "disabled:pointer-events-none disabled:opacity-40 hover:border-stone-400",
                 )}
               >
                 <Plus className="h-4 w-4" />
               </button>
-              <span className="text-xs text-zinc-500">Max {maxGuests}</span>
+              <span className="text-xs text-stone-500">Max {maxGuests}</span>
             </div>
           </div>
 
           {nights > 0 && (
             <div className="flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 text-sm">
-              <div className="flex justify-between text-zinc-600">
+              <div className="flex justify-between text-stone-600">
                 <span>Original total</span>
                 <span>{formatPrice(currentTotalPriceCents)}</span>
               </div>
-              <div className="flex justify-between text-zinc-600">
+              <div className="flex justify-between text-stone-600">
                 <span>New total</span>
                 <span>{formatPrice(newTotalPriceCents)}</span>
               </div>
@@ -186,7 +186,7 @@ export function RequestChangeDialog({
                 </div>
               )}
               {priceDeltaCents !== 0 && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-stone-500">
                   {priceDeltaCents > 0
                     ? `You'll owe an extra ${formatPrice(priceDeltaCents)} if approved.`
                     : `You'll be refunded ${formatPrice(Math.abs(priceDeltaCents))} if approved.`}

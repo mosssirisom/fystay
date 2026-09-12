@@ -20,7 +20,7 @@ export function ReviewSummary({ reviews }: { reviews: RatableReview[] }) {
           <p className="text-xl font-semibold leading-tight text-foreground">
             {average.toFixed(1)} <span aria-hidden>★</span>
           </p>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-stone-500">
             {count} review{count === 1 ? "" : "s"}
           </p>
         </div>
@@ -31,7 +31,7 @@ export function ReviewSummary({ reviews }: { reviews: RatableReview[] }) {
           const starCount = starCounts[star];
           const pct = count > 0 ? (starCount / count) * 100 : 0;
           return (
-            <div key={star} className="flex items-center gap-2 text-xs text-zinc-500">
+            <div key={star} className="flex items-center gap-2 text-xs text-stone-500">
               <span className="w-3 text-right">{star}</span>
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-muted">
                 <div className="h-full rounded-full bg-accent-500" style={{ width: `${pct}%` }} />
@@ -48,7 +48,7 @@ export function ReviewSummary({ reviews }: { reviews: RatableReview[] }) {
             const value = categoryAverages[category] as number;
             return (
               <div key={category}>
-                <dt className="text-sm text-zinc-500">{REVIEW_CATEGORY_LABEL[category]}</dt>
+                <dt className="text-sm text-stone-500">{REVIEW_CATEGORY_LABEL[category]}</dt>
                 <dd className="mt-1 flex items-center gap-2 text-sm font-medium text-foreground">
                   <span className="w-6">{value.toFixed(1)}</span>
                   <span className="h-1 w-16 overflow-hidden rounded-full bg-surface-muted">

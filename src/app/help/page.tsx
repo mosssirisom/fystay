@@ -113,7 +113,7 @@ export default function HelpCenterPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
       />
       <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Help center</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="mt-2 text-sm text-stone-500">
         Answers to common questions about booking, hosting, and managing your account.
       </p>
 
@@ -123,12 +123,12 @@ export default function HelpCenterPage() {
             <summary className="cursor-pointer list-none text-sm font-semibold text-foreground marker:content-none">
               {question}
             </summary>
-            <div className="mt-2 text-sm leading-relaxed text-zinc-600">{answer}</div>
+            <div className="mt-2 text-sm leading-relaxed text-stone-600">{answer}</div>
           </details>
         ))}
       </div>
 
-      <p className="mt-8 text-sm text-zinc-500">
+      <p className="mt-8 text-sm text-stone-500">
         Can&apos;t find what you&apos;re looking for? Email us at{" "}
         <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
           support@fystay.co.uk

@@ -48,10 +48,10 @@ export function HostReviewResponseForm({
     return (
       <div className="mt-2 flex flex-col gap-1.5 rounded-lg bg-surface-muted p-3 text-sm">
         <p className="font-medium text-foreground">Your response</p>
-        <p className="text-zinc-600">{response}</p>
+        <p className="text-stone-600">{response}</p>
         <button
           onClick={() => setEditing(true)}
-          className="focus-ring self-start rounded-lg text-xs font-medium text-zinc-600 underline-offset-2 hover:underline"
+          className="focus-ring self-start rounded-lg text-xs font-medium text-stone-600 underline-offset-2 hover:underline"
         >
           Edit response
         </button>

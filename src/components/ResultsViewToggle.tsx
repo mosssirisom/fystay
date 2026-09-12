@@ -39,7 +39,7 @@ export function ResultsViewToggle() {
             "focus-ring flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
             view === key
               ? "bg-brand-700 text-white"
-              : "text-zinc-600 hover:bg-surface-muted",
+              : "text-stone-600 hover:bg-surface-muted",
           )}
         >
           <Icon className="h-4 w-4" />

@@ -38,7 +38,7 @@ export function ReviewList({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="font-medium text-foreground">{firstName(review.author.name)}</p>
-              <span className="text-xs text-zinc-500">{dateFormatter.format(review.createdAt)}</span>
+              <span className="text-xs text-stone-500">{dateFormatter.format(review.createdAt)}</span>
             </div>
             {viewerId && viewerId !== review.author.id && (
               <ReportReviewButton
@@ -56,12 +56,12 @@ export function ReviewList({
             </span>
           </div>
 
-          <p className="text-sm text-zinc-700">{review.comment}</p>
+          <p className="text-sm text-stone-700">{review.comment}</p>
 
           {review.hostResponse && (
             <div className="mt-1 rounded-lg bg-surface-muted p-3 text-sm">
               <p className="font-medium text-foreground">Response from {hostName}</p>
-              <p className="mt-1 text-zinc-600">{review.hostResponse}</p>
+              <p className="mt-1 text-stone-600">{review.hostResponse}</p>
             </div>
           )}
         </li>

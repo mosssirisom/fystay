@@ -82,14 +82,14 @@ export function SaveButton({
         <Heart
           className={cn(
             "h-5 w-5 transition-transform",
-            saved ? "scale-110 fill-red-500 text-red-500" : "text-zinc-600",
+            saved ? "scale-110 fill-red-500 text-red-500" : "text-stone-600",
           )}
         />
       </button>
 
       <Dialog open={promptOpen} onClose={() => setPromptOpen(false)} title="Save this property">
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-stone-600">
             Sign in or create a free account to save properties to your wishlist and find them
             again on any device.
           </p>

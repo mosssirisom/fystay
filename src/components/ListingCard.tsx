@@ -212,14 +212,14 @@ export function ListingCard({
         >
           {listing.title}
         </p>
-        <p className="flex items-center gap-1 text-sm text-zinc-500">
+        <p className="flex items-center gap-1 text-sm text-stone-500">
           <MapPin className="h-3.5 w-3.5 shrink-0 text-brand-600" aria-hidden />
           <span className="truncate">
             {listing.city}, {listing.country}
           </span>
         </p>
         {landmarkDistance && <EntryLocationMeta location={landmarkDistance} />}
-        <p className="flex items-center gap-1 text-xs text-zinc-500">
+        <p className="flex items-center gap-1 text-xs text-stone-500">
           <Users className="h-3.5 w-3.5 shrink-0" aria-hidden />
           {listing.maxGuests} guest{listing.maxGuests === 1 ? "" : "s"}
           <span aria-hidden>·</span>
@@ -228,7 +228,7 @@ export function ListingCard({
         {keyAmenities.length > 0 && (
           <ul className="flex items-center gap-2.5">
             {keyAmenities.map((category) => (
-              <li key={category.key} className="flex items-center gap-1 text-xs text-zinc-500">
+              <li key={category.key} className="flex items-center gap-1 text-xs text-stone-500">
                 <category.icon className="h-3.5 w-3.5" aria-hidden="true" />
                 <span className="sr-only sm:not-sr-only">{category.label}</span>
               </li>
@@ -238,16 +238,16 @@ export function ListingCard({
         <div className="mt-1 flex items-end justify-between gap-2">
           <p className="flex flex-wrap items-baseline gap-x-1">
             <span className="text-base font-bold text-brand-800">{formattedNightlyPrice}</span>
-            <span className="text-xs text-zinc-500">/ night</span>
+            <span className="text-xs text-stone-500">/ night</span>
             {totalPriceCents !== null && (
-              <span className="text-xs text-zinc-500">· {formattedTotal} total</span>
+              <span className="text-xs text-stone-500">· {formattedTotal} total</span>
             )}
           </p>
           {rating !== null ? (
-            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-zinc-600">
+            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-stone-600">
               <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
               {rating.toFixed(1)}
-              {reviewCount > 0 && <span className="text-zinc-500">({reviewCount})</span>}
+              {reviewCount > 0 && <span className="text-stone-500">({reviewCount})</span>}
             </span>
           ) : (
             // A blank gap here (rather than a placeholder) reads as broken

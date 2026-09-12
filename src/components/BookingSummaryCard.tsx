@@ -95,7 +95,7 @@ export function BookingSummaryCard({
                 unoptimized={!isOptimizableImage(listing.photos[0])}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-zinc-400">
+              <div className="flex h-full w-full items-center justify-center text-stone-400">
                 <ImageOff className="h-5 w-5" />
               </div>
             )}
@@ -109,35 +109,35 @@ export function BookingSummaryCard({
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-stone-500">
               {listing.city}, {listing.country}
             </p>
             {reference && (
-              <p className="mt-1 text-xs font-medium text-zinc-500">Booking #{reference}</p>
+              <p className="mt-1 text-xs font-medium text-stone-500">Booking #{reference}</p>
             )}
           </div>
         </div>
 
         {(guestName || guestEmail || guestPhone) && (
           <dl className="grid grid-cols-2 gap-y-1.5 border-t border-border-subtle pt-4 text-sm">
-            <dt className="col-span-2 mb-0.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <dt className="col-span-2 mb-0.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
               Guest details
             </dt>
             {guestName && (
               <>
-                <dt className="text-zinc-500">Name</dt>
+                <dt className="text-stone-500">Name</dt>
                 <dd className="text-right text-foreground">{guestName}</dd>
               </>
             )}
             {guestEmail && (
               <>
-                <dt className="text-zinc-500">Email</dt>
+                <dt className="text-stone-500">Email</dt>
                 <dd className="truncate text-right text-foreground">{guestEmail}</dd>
               </>
             )}
             {guestPhone && (
               <>
-                <dt className="text-zinc-500">Phone</dt>
+                <dt className="text-stone-500">Phone</dt>
                 <dd className="text-right text-foreground">{guestPhone}</dd>
               </>
             )}
@@ -145,33 +145,33 @@ export function BookingSummaryCard({
         )}
 
         <dl className="grid grid-cols-2 gap-y-1.5 border-t border-border-subtle pt-4 text-sm">
-          <dt className="text-zinc-500">Check-in</dt>
+          <dt className="text-stone-500">Check-in</dt>
           <dd className="text-right text-foreground">{dateFormatter.format(checkIn)}</dd>
-          <dt className="text-zinc-500">Check-out</dt>
+          <dt className="text-stone-500">Check-out</dt>
           <dd className="text-right text-foreground">{dateFormatter.format(checkOut)}</dd>
-          <dt className="text-zinc-500">Length of stay</dt>
+          <dt className="text-stone-500">Length of stay</dt>
           <dd className="text-right text-foreground">
             {nights} night{nights === 1 ? "" : "s"}
           </dd>
-          <dt className="text-zinc-500">Guests</dt>
+          <dt className="text-stone-500">Guests</dt>
           <dd className="text-right text-foreground">
             {guests} guest{guests === 1 ? "" : "s"}
           </dd>
         </dl>
 
         {cancellationPolicyLabel && (
-          <div className="flex items-start gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
+          <div className="flex items-start gap-2 border-t border-border-subtle pt-4 text-sm text-stone-700">
             <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             <p>
               <span className="font-medium text-foreground">
                 {cancellationPolicyLabel} cancellation.
               </span>{" "}
-              <span className="text-zinc-500">{cancellationPolicyDescription}</span>
+              <span className="text-stone-500">{cancellationPolicyDescription}</span>
             </p>
           </div>
         )}
 
-        <div className="flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-zinc-700">
+        <div className="flex flex-col gap-2 border-t border-border-subtle pt-4 text-sm text-stone-700">
           <div className="flex justify-between">
             <span>
               {formatPrice(nightlyPriceCents)} × {nights} night{nights === 1 ? "" : "s"}
@@ -213,7 +213,7 @@ export function BookingSummaryCard({
             <span>{formatPrice(totalPriceCents)}</span>
           </div>
           {securityDepositCents > 0 && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-stone-500">
               Plus a refundable {formatPrice(securityDepositCents)} security deposit hold,
               authorized separately on your card a few days before check-in - not charged now, and
               not included in the total above.

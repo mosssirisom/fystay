@@ -97,7 +97,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
       <div className="mb-8 flex flex-col items-center text-center">
         <Logo size="lg" className="mb-3" />
         <h1 className="text-2xl font-bold">Create your account</h1>
-        <p className="mt-1 text-sm text-zinc-500">Join {SITE_NAME} in a few seconds</p>
+        <p className="mt-1 text-sm text-stone-500">Join {SITE_NAME} in a few seconds</p>
       </div>
 
       {referralCode && (
@@ -113,7 +113,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
           {googleEnabled && (
             <>
               <GoogleSignInButton callbackUrl={callbackUrl ?? undefined} />
-              <div className="my-4 flex items-center gap-3 text-xs text-zinc-400">
+              <div className="my-4 flex items-center gap-3 text-xs text-stone-400">
                 <span className="h-px flex-1 bg-border-subtle" />
                 or
                 <span className="h-px flex-1 bg-border-subtle" />
@@ -122,7 +122,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
           )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <fieldset>
-              <legend className="mb-1.5 text-sm font-medium text-zinc-800">I want to</legend>
+              <legend className="mb-1.5 text-sm font-medium text-stone-800">I want to</legend>
               <div className="grid grid-cols-2 gap-2">
                 {roleOptions.map(({ value, label, icon: Icon }) => (
                   <button
@@ -134,7 +134,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
                       "focus-ring flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-sm font-medium transition-colors",
                       role === value
                         ? "border-brand-600 bg-brand-50 text-brand-800"
-                        : "border-border-subtle text-zinc-600 hover:bg-surface-muted",
+                        : "border-border-subtle text-stone-600 hover:bg-surface-muted",
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -191,7 +191,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
                 links to the action that actually creates the account is
                 what makes this a real consent, not just a page that
                 happens to exist somewhere on the site. */}
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-stone-500">
               By signing up, you agree to {SITE_NAME}&apos;s{" "}
               <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
                 Terms and Conditions
@@ -210,7 +210,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         </CardContent>
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-600">
+      <p className="mt-6 text-center text-sm text-stone-600">
         Already have an account?{" "}
         <Link
           href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}

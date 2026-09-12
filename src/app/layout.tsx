@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Geist, Geist_Mono, Lora } from "next/font/google";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -19,11 +19,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Warm, soft-terminal serif for headings and the wordmark - closer to the
-// friendly, "charmingly quirky" warmth of Anthropic's own Tiempos headlines
-// than a stricter transitional serif, using a freely licensed Google Fonts
-// family rather than their proprietary type.
-const fraunces = Fraunces({
+// Warm serif for headings and the wordmark. Fraunces (the previous pick
+// here) has enough ink-trap/ball-terminal drama at bold weights that it
+// reads as quirky/editorial rather than warm once it's set as a compact
+// logotype - Lora keeps the same literary, human quality (calligraphic
+// roots, moderate contrast) at a much calmer, more legible register, so it
+// sits comfortably next to the plain Geist sans used everywhere else.
+const lora = Lora({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["600", "700"],
@@ -69,7 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <a

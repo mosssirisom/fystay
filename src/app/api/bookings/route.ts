@@ -16,6 +16,7 @@ import { computeBookingPricing } from "@/lib/pricing";
 import { generateBookingReference } from "@/lib/bookingReference";
 import { completePastBookings, expireStaleBookingRequests } from "@/lib/bookingLifecycle";
 import { computeCreditToApply } from "@/lib/referral";
+import { computePromoDiscount, normalizePromoCode, validatePromoCode } from "@/lib/promoCode";
 import { sendBookingRequestReceivedEmail } from "@/lib/notificationEmails";
 
 // Exactly one of listingId (every non-hotel booking, unchanged) or
@@ -29,6 +30,7 @@ const createBookingSchema = z
     checkIn: z.string().min(1),
     checkOut: z.string().min(1),
     guests: z.number().int().min(1),
+    promoCode: z.string().min(1).max(40).optional(),
   })
   .refine((data) => Boolean(data.listingId) !== Boolean(data.roomTypeId), {
     message: "Provide either a listing or a room type to book",
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { listingId, roomTypeId, guests } = parsed.data;
+  const { listingId, roomTypeId, guests, promoCode } = parsed.data;
   const roomsBooked = parsed.data.roomsBooked ?? 1;
   const checkIn = new Date(parsed.data.checkIn);
   const checkOut = new Date(parsed.data.checkOut);
@@ -115,6 +117,7 @@ export async function POST(request: Request) {
               guests,
               guestId: session.user.id,
               guestAccount,
+              promoCode,
             });
           }
           return createListingBooking(tx, {
@@ -124,6 +127,7 @@ export async function POST(request: Request) {
             guests,
             guestId: session.user.id,
             guestAccount,
+            promoCode,
           });
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -187,14 +191,80 @@ type NewBookingParams = {
   guests: number;
   guestId: string;
   guestAccount: { name: string; email: string } | null;
+  promoCode?: string;
 };
+
+/**
+ * Applies an optional PromoCode and then the guest's referral credit, in
+ * that order, to a booking's pre-discount total - the two stack (a
+ * confirmed product decision), so the credit is computed against what's
+ * left after the promo discount rather than the full total, and the
+ * combined discount can never exceed the total either way. Redemption is
+ * incremented inside this same transaction: two guests racing for the last
+ * redemption of a capped code can't both succeed, by the identical
+ * SERIALIZABLE mechanism already relied on for room-type inventory (see
+ * isRoomTypeRangeAvailable's own comment) - one loses to a P2034 and the
+ * outer retry loop re-validates against the now-current redemptionCount.
+ */
+async function applyPromoAndCredit(
+  tx: Prisma.TransactionClient,
+  params: { promoCodeInput: string | undefined; guestId: string; totalBeforeDiscountsCents: number },
+): Promise<{ promoCodeId: string | null; promoDiscountCents: number; creditAppliedCents: number }> {
+  const { promoCodeInput, guestId, totalBeforeDiscountsCents } = params;
+
+  let promoCodeId: string | null = null;
+  let promoDiscountCents = 0;
+  let remainingCents = totalBeforeDiscountsCents;
+
+  if (promoCodeInput) {
+    const promoCode = await tx.promoCode.findUnique({
+      where: { code: normalizePromoCode(promoCodeInput) },
+    });
+    if (!promoCode) {
+      throw new BookingRequestError(400, "Invalid promo code");
+    }
+    const validation = validatePromoCode(promoCode);
+    if (!validation.valid) {
+      throw new BookingRequestError(400, validation.error);
+    }
+    promoDiscountCents = computePromoDiscount(
+      promoCode.discountType,
+      promoCode.discountValue,
+      remainingCents,
+    );
+    promoCodeId = promoCode.id;
+    remainingCents -= promoDiscountCents;
+    await tx.promoCode.update({
+      where: { id: promoCode.id },
+      data: { redemptionCount: { increment: 1 } },
+    });
+  }
+
+  // Read-and-decrement inside this same transaction, not from a value read
+  // earlier - two bookings by the same guest racing each other must not
+  // both spend the same balance (see the pre-existing comment this
+  // replaces, one call site down, for the same reasoning).
+  const guestCredit = await tx.user.findUniqueOrThrow({
+    where: { id: guestId },
+    select: { creditBalanceCents: true },
+  });
+  const creditAppliedCents = computeCreditToApply(guestCredit.creditBalanceCents, remainingCents);
+  if (creditAppliedCents > 0) {
+    await tx.user.update({
+      where: { id: guestId },
+      data: { creditBalanceCents: { decrement: creditAppliedCents } },
+    });
+  }
+
+  return { promoCodeId, promoDiscountCents, creditAppliedCents };
+}
 
 /** The pre-existing single-unit path, byte-for-byte unchanged in behavior. */
 async function createListingBooking(
   tx: Prisma.TransactionClient,
   params: NewBookingParams & { listingId: string },
 ) {
-  const { listingId, checkIn, checkOut, guests, guestId, guestAccount } = params;
+  const { listingId, checkIn, checkOut, guests, guestId, guestAccount, promoCode } = params;
 
   const listing = await tx.listing.findUnique({
     where: { id: listingId },
@@ -239,27 +309,15 @@ async function createListingBooking(
     monthlyDiscountPercent: listing.monthlyDiscountPercent,
   });
 
-  // Read-and-decrement the guest's referral credit inside this same
-  // transaction, not from the guestAccount fetched earlier - two bookings
-  // by the same guest racing each other must not both spend the same
-  // balance. Spent at creation, not at payment: if this PENDING booking is
-  // later abandoned and expires unpaid (see PENDING_BOOKING_HOLD_MINUTES),
-  // the credit isn't currently refunded back to the balance - the same
-  // trade-off as a guest simply not completing checkout in time.
-  const guestCredit = await tx.user.findUniqueOrThrow({
-    where: { id: guestId },
-    select: { creditBalanceCents: true },
+  // Spent at creation, not at payment: if this PENDING booking is later
+  // abandoned and expires unpaid (see PENDING_BOOKING_HOLD_MINUTES), the
+  // credit and any promo redemption aren't currently refunded/released -
+  // the same trade-off as a guest simply not completing checkout in time.
+  const { promoCodeId, promoDiscountCents, creditAppliedCents } = await applyPromoAndCredit(tx, {
+    promoCodeInput: promoCode,
+    guestId,
+    totalBeforeDiscountsCents: pricing.totalPriceCents,
   });
-  const creditAppliedCents = computeCreditToApply(
-    guestCredit.creditBalanceCents,
-    pricing.totalPriceCents,
-  );
-  if (creditAppliedCents > 0) {
-    await tx.user.update({
-      where: { id: guestId },
-      data: { creditBalanceCents: { decrement: creditAppliedCents } },
-    });
-  }
 
   // instantBook is read at the moment of booking, not re-checked later - a
   // host flipping the setting must never retroactively change a request
@@ -282,7 +340,9 @@ async function createListingBooking(
       serviceFeeCents: pricing.serviceFeeCents,
       taxCents: pricing.taxCents,
       creditAppliedCents,
-      totalPriceCents: pricing.totalPriceCents - creditAppliedCents,
+      promoCodeId,
+      promoDiscountCents,
+      totalPriceCents: pricing.totalPriceCents - promoDiscountCents - creditAppliedCents,
       guestName: guestAccount?.name,
       guestEmail: guestAccount?.email,
       approvalStatus: requiresApproval ? "AWAITING" : "NONE",
@@ -322,7 +382,8 @@ async function createRoomTypeBooking(
   tx: Prisma.TransactionClient,
   params: NewBookingParams & { roomTypeId: string; roomsBooked: number },
 ) {
-  const { roomTypeId, roomsBooked, checkIn, checkOut, guests, guestId, guestAccount } = params;
+  const { roomTypeId, roomsBooked, checkIn, checkOut, guests, guestId, guestAccount, promoCode } =
+    params;
 
   const roomType = await tx.roomType.findUnique({
     where: { id: roomTypeId },
@@ -378,20 +439,11 @@ async function createRoomTypeBooking(
     monthlyDiscountPercent: listing.monthlyDiscountPercent,
   });
 
-  const guestCredit = await tx.user.findUniqueOrThrow({
-    where: { id: guestId },
-    select: { creditBalanceCents: true },
+  const { promoCodeId, promoDiscountCents, creditAppliedCents } = await applyPromoAndCredit(tx, {
+    promoCodeInput: promoCode,
+    guestId,
+    totalBeforeDiscountsCents: pricing.totalPriceCents,
   });
-  const creditAppliedCents = computeCreditToApply(
-    guestCredit.creditBalanceCents,
-    pricing.totalPriceCents,
-  );
-  if (creditAppliedCents > 0) {
-    await tx.user.update({
-      where: { id: guestId },
-      data: { creditBalanceCents: { decrement: creditAppliedCents } },
-    });
-  }
 
   const requiresApproval = !listing.instantBook;
 
@@ -413,7 +465,9 @@ async function createRoomTypeBooking(
       serviceFeeCents: pricing.serviceFeeCents,
       taxCents: pricing.taxCents,
       creditAppliedCents,
-      totalPriceCents: pricing.totalPriceCents - creditAppliedCents,
+      promoCodeId,
+      promoDiscountCents,
+      totalPriceCents: pricing.totalPriceCents - promoDiscountCents - creditAppliedCents,
       guestName: guestAccount?.name,
       guestEmail: guestAccount?.email,
       approvalStatus: requiresApproval ? "AWAITING" : "NONE",

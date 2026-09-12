@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyReferralCreditToApplicationFee,
+  applyDiscountsToApplicationFee,
   computeBookingPricing,
   GUEST_SERVICE_FEE_RATE,
   resolveLengthOfStayDiscount,
@@ -136,20 +136,24 @@ describe("splitByHostShare", () => {
   });
 });
 
-describe("applyReferralCreditToApplicationFee", () => {
-  it("subtracts the credit from the platform fee when the fee covers it", () => {
-    expect(applyReferralCreditToApplicationFee(3000, 1000)).toBe(2000);
+describe("applyDiscountsToApplicationFee", () => {
+  it("subtracts the discount from the platform fee when the fee covers it", () => {
+    expect(applyDiscountsToApplicationFee(3000, 1000)).toBe(2000);
   });
 
-  it("floors at 0 rather than going negative when credit exceeds the whole fee", () => {
-    expect(applyReferralCreditToApplicationFee(500, 1000)).toBe(0);
+  it("floors at 0 rather than going negative when the discount exceeds the whole fee", () => {
+    expect(applyDiscountsToApplicationFee(500, 1000)).toBe(0);
   });
 
-  it("is unchanged when there's no credit applied", () => {
-    expect(applyReferralCreditToApplicationFee(3000, 0)).toBe(3000);
+  it("is unchanged when there's no discount applied", () => {
+    expect(applyDiscountsToApplicationFee(3000, 0)).toBe(3000);
   });
 
-  it("is 0 when the fee itself equals the credit exactly", () => {
-    expect(applyReferralCreditToApplicationFee(1000, 1000)).toBe(0);
+  it("is 0 when the fee itself equals the discount exactly", () => {
+    expect(applyDiscountsToApplicationFee(1000, 1000)).toBe(0);
+  });
+
+  it("combines a referral credit and a promo discount into a single deduction", () => {
+    expect(applyDiscountsToApplicationFee(3000, 1000 + 500)).toBe(1500);
   });
 });

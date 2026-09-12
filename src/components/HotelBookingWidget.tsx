@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { ArrowRight, BedDouble, ImageOff, Lock, Minus, Plus, ShieldCheck, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { DateRangeField } from "@/components/DateRangeField";
+import { usePromoCode } from "@/hooks/usePromoCode";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, stayLengthError } from "@/lib/availability";
 import type { CancellationPolicy } from "@/lib/cancellationPolicy";
@@ -237,6 +239,32 @@ function RoomTypeBookingCard({
       roomsBooked === checkedSelection.roomsBooked,
   );
 
+  const {
+    promoCodeInput,
+    setPromoCodeInput,
+    promoError,
+    applyingPromo,
+    applyPromoCode,
+    clearPromoCode,
+    promoActive,
+    appliedPromoCode,
+    promoDiscountCents,
+    promoCodeToSubmit,
+  } = usePromoCode({
+    listingId,
+    buildParams: () =>
+      range?.from && range?.to
+        ? new URLSearchParams({
+            checkIn: range.from.toISOString(),
+            checkOut: range.to.toISOString(),
+            guests: String(guests),
+            roomTypeId: roomType.id,
+            roomsBooked: String(roomsBooked),
+          })
+        : null,
+    selectionKey: `${range?.from?.toISOString()}|${range?.to?.toISOString()}|${guests}|${roomsBooked}`,
+  });
+
   function updateRoomsBooked(next: number) {
     setRoomsBooked(next);
     setGuests((g) => Math.min(g, roomType.maxGuests * next));
@@ -298,6 +326,7 @@ function RoomTypeBookingCard({
           checkIn: range.from.toISOString(),
           checkOut: range.to.toISOString(),
           guests,
+          promoCode: promoCodeToSubmit,
         }),
       });
       const bookingData = await bookingRes.json();
@@ -404,10 +433,49 @@ function RoomTypeBookingCard({
             <span>Service fee</span>
             <span>{formatPrice(pricing.serviceFeeCents)}</span>
           </div>
+          {promoActive && (
+            <div className="flex justify-between text-brand-700">
+              <span>Promo code ({appliedPromoCode})</span>
+              <span>&minus;{formatPrice(promoDiscountCents)}</span>
+            </div>
+          )}
           <div className="flex justify-between border-t border-border-subtle pt-1.5 font-semibold text-foreground">
             <span>Total</span>
-            <span>{formatPrice(pricing.totalPriceCents)}</span>
+            <span>{formatPrice(pricing.totalPriceCents - promoDiscountCents)}</span>
           </div>
+
+          {availabilityChecked &&
+            (promoActive ? (
+              <div className="flex items-center justify-between rounded-lg bg-brand-50 px-2.5 py-1.5 text-xs text-brand-800">
+                <span>
+                  Promo <strong>{appliedPromoCode}</strong> applied
+                </span>
+                <button type="button" onClick={clearPromoCode} className="underline">
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex gap-2">
+                  <Input
+                    value={promoCodeInput}
+                    onChange={(e) => setPromoCodeInput(e.target.value)}
+                    placeholder="Promo code"
+                    className="text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    loading={applyingPromo}
+                    onClick={applyPromoCode}
+                  >
+                    Apply
+                  </Button>
+                </div>
+                {promoError && <p className="text-xs text-red-600">{promoError}</p>}
+              </div>
+            ))}
         </div>
       )}
 

@@ -8,8 +8,10 @@ import { toast } from "sonner";
 import { ArrowRight, CalendarClock, Lock, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { DateRangeField } from "@/components/DateRangeField";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
+import { usePromoCode } from "@/hooks/usePromoCode";
 import { formatPrice } from "@/lib/format";
 import { nightsBetween, rangesOverlap, stayLengthError } from "@/lib/availability";
 import type { CancellationPolicy } from "@/lib/cancellationPolicy";
@@ -121,6 +123,30 @@ export function BookingWidget({
       guests === checkedSelection.guests,
   );
 
+  const {
+    promoCodeInput,
+    setPromoCodeInput,
+    promoError,
+    applyingPromo,
+    applyPromoCode,
+    clearPromoCode,
+    promoActive,
+    appliedPromoCode,
+    promoDiscountCents,
+    promoCodeToSubmit,
+  } = usePromoCode({
+    listingId,
+    buildParams: () =>
+      range?.from && range?.to
+        ? new URLSearchParams({
+            checkIn: range.from.toISOString(),
+            checkOut: range.to.toISOString(),
+            guests: String(guests),
+          })
+        : null,
+    selectionKey: `${range?.from?.toISOString()}|${range?.to?.toISOString()}|${guests}`,
+  });
+
   function isSelectionValid(): boolean {
     if (!range?.from || !range?.to) return false;
     if (stayLengthError(nightsBetween(range.from, range.to), { minNights, maxNights })) return false;
@@ -192,6 +218,7 @@ export function BookingWidget({
           checkIn: range.from.toISOString(),
           checkOut: range.to.toISOString(),
           guests,
+          promoCode: promoCodeToSubmit,
         }),
       });
       const bookingData = await bookingRes.json();
@@ -308,11 +335,50 @@ export function BookingWidget({
               <span>Service fee</span>
               <span>{formatPrice(pricing.serviceFeeCents)}</span>
             </div>
+            {promoActive && (
+              <div className="flex justify-between text-brand-700">
+                <span>Promo code ({appliedPromoCode})</span>
+                <span>&minus;{formatPrice(promoDiscountCents)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t border-border-subtle pt-2 font-semibold text-foreground">
               <span>Total</span>
-              <span>{formatPrice(pricing.totalPriceCents)}</span>
+              <span>{formatPrice(pricing.totalPriceCents - promoDiscountCents)}</span>
             </div>
             <p className="text-xs text-zinc-500">Taxes aren&apos;t charged today - the total above is everything you pay.</p>
+
+            {availabilityChecked &&
+              (promoActive ? (
+                <div className="flex items-center justify-between rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-800">
+                  <span>
+                    Promo <strong>{appliedPromoCode}</strong> applied
+                  </span>
+                  <button type="button" onClick={clearPromoCode} className="underline">
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex gap-2">
+                    <Input
+                      value={promoCodeInput}
+                      onChange={(e) => setPromoCodeInput(e.target.value)}
+                      placeholder="Promo code"
+                      className="text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      loading={applyingPromo}
+                      onClick={applyPromoCode}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                  {promoError && <p className="text-xs text-red-600">{promoError}</p>}
+                </div>
+              ))}
           </div>
         )}
 

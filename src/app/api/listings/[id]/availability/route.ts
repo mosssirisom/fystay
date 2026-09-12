@@ -9,6 +9,7 @@ import {
   nightsBetween,
 } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
+import { computePromoDiscount, normalizePromoCode, validatePromoCode } from "@/lib/promoCode";
 
 const querySchema = z.object({
   checkIn: z.string().min(1),
@@ -16,7 +17,34 @@ const querySchema = z.object({
   guests: z.coerce.number().int().min(1),
   roomTypeId: z.string().min(1).optional(),
   roomsBooked: z.coerce.number().int().min(1).max(20).optional(),
+  promoCode: z.string().min(1).max(40).optional(),
 });
+
+/**
+ * A read-only preview of what a promo code would do to this total - never
+ * increments PromoCode.redemptionCount (that only happens at real booking
+ * creation, see the bookings route), so typing a code in and never
+ * finishing checkout costs it nothing.
+ */
+async function previewPromoDiscount(
+  promoCodeInput: string,
+  totalBeforeDiscountCents: number,
+): Promise<{ valid: true; discountCents: number } | { valid: false; error: string }> {
+  const promoCode = await prisma.promoCode.findUnique({
+    where: { code: normalizePromoCode(promoCodeInput) },
+  });
+  if (!promoCode) return { valid: false, error: "Invalid promo code" };
+  const validation = validatePromoCode(promoCode);
+  if (!validation.valid) return { valid: false, error: validation.error };
+  return {
+    valid: true,
+    discountCents: computePromoDiscount(
+      promoCode.discountType,
+      promoCode.discountValue,
+      totalBeforeDiscountCents,
+    ),
+  };
+}
 
 /**
  * A read-only preview: tells the widget whether a date range/guest count
@@ -34,6 +62,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     guests: searchParams.get("guests"),
     roomTypeId: searchParams.get("roomTypeId") ?? undefined,
     roomsBooked: searchParams.get("roomsBooked") ?? undefined,
+    promoCode: searchParams.get("promoCode") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -118,8 +147,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       weeklyDiscountPercent: roomType.listing.weeklyDiscountPercent,
       monthlyDiscountPercent: roomType.listing.monthlyDiscountPercent,
     });
+    const promo = parsed.data.promoCode
+      ? await previewPromoDiscount(parsed.data.promoCode, pricing.totalPriceCents)
+      : undefined;
 
-    return NextResponse.json({ available: true, nights, pricing });
+    return NextResponse.json({ available: true, nights, pricing, promo });
   }
 
   const listing = await prisma.listing.findUnique({
@@ -154,6 +186,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     weeklyDiscountPercent: listing.weeklyDiscountPercent,
     monthlyDiscountPercent: listing.monthlyDiscountPercent,
   });
+  const promo = parsed.data.promoCode
+    ? await previewPromoDiscount(parsed.data.promoCode, pricing.totalPriceCents)
+    : undefined;
 
-  return NextResponse.json({ available: true, nights, pricing });
+  return NextResponse.json({ available: true, nights, pricing, promo });
 }

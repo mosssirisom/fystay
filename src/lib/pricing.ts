@@ -106,17 +106,18 @@ export function computeBookingPricing(params: {
  * hostStats.ts) - just applied to a charge instead of a refund.
  */
 /**
- * A referral credit (see referral.ts) is FYStay's own marketing cost, not
- * the host's to bear - so it comes out of the platform's own
- * applicationFeeCents first, and only reduces the host's share if the
- * credit is somehow larger than the entire platform fee (never negative
- * either way; Math.max(0, ...) is the floor, not a rounding nicety).
+ * Referral credit and a promo code's discount (see referral.ts and
+ * promoCode.ts) are both FYStay's own marketing cost, not the host's to
+ * bear - so together they come out of the platform's own
+ * applicationFeeCents first, and only reduce the host's share if their sum
+ * is somehow larger than the entire platform fee (never negative either
+ * way; Math.max(0, ...) is the floor, not a rounding nicety).
  */
-export function applyReferralCreditToApplicationFee(
+export function applyDiscountsToApplicationFee(
   grossApplicationFeeCents: number,
-  creditAppliedCents: number,
+  discountsCents: number,
 ): number {
-  return Math.max(0, grossApplicationFeeCents - creditAppliedCents);
+  return Math.max(0, grossApplicationFeeCents - discountsCents);
 }
 
 export function splitByHostShare(

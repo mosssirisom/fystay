@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { decideExistingSessionAction } from "@/lib/checkoutSession";
 import { isConnectReady } from "@/lib/stripeConnect";
-import { applyReferralCreditToApplicationFee } from "@/lib/pricing";
+import { applyDiscountsToApplicationFee } from "@/lib/pricing";
 import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
 import { awardReferralBonusIfEligible } from "@/lib/referral";
 
@@ -183,33 +183,45 @@ export async function POST(request: Request) {
   // simply sits in FYStay's own Stripe balance until they connect, the same
   // as before Connect existed, rather than blocking the booking outright.
   const connectReady = isConnectReady(booking.listing.host);
-  // A referral credit (see referral.ts) is a marketing cost FYStay bears,
-  // not the host - see applyReferralCreditToApplicationFee's own comment
-  // for why it comes out of this fee first, not the host's transfer.
-  const applicationFeeCents = applyReferralCreditToApplicationFee(
+  // A referral credit and a promo code's discount (see referral.ts and
+  // promoCode.ts) are both a marketing cost FYStay bears, not the host -
+  // see applyDiscountsToApplicationFee's own comment for why their combined
+  // total comes out of this fee first, not the host's transfer.
+  const totalDiscountCents = booking.creditAppliedCents + booking.promoDiscountCents;
+  const applicationFeeCents = applyDiscountsToApplicationFee(
     booking.serviceFeeCents + booking.taxCents,
-    booking.creditAppliedCents,
+    totalDiscountCents,
   );
 
-  // The line items above total the pre-credit price; a one-off coupon
-  // brings what's actually charged down to booking.totalPriceCents
-  // (already net of credit - see /api/bookings), the same way Stripe
+  // The line items above total the pre-discount price; a one-off coupon
+  // brings what's actually charged down to booking.totalPriceCents (already
+  // net of both discounts - see /api/bookings), the same way Stripe
   // Checkout expects any discount to be represented, since a line item's
-  // own unit_amount can never be negative.
-  const discounts = booking.creditAppliedCents > 0
-    ? [
-        {
-          coupon: (
-            await stripe.coupons.create({
-              amount_off: booking.creditAppliedCents,
-              currency: "gbp",
-              duration: "once",
-              name: "Referral credit",
-            })
-          ).id,
-        },
-      ]
-    : undefined;
+  // own unit_amount can never be negative. Referral credit and a promo code
+  // can both apply to the same booking, so they're combined into one
+  // coupon rather than two - Stripe Checkout only accepts a single discount
+  // per session.
+  const discountLabel =
+    booking.creditAppliedCents > 0 && booking.promoDiscountCents > 0
+      ? "Referral credit + promo code"
+      : booking.promoDiscountCents > 0
+        ? "Promo code"
+        : "Referral credit";
+  const discounts =
+    totalDiscountCents > 0
+      ? [
+          {
+            coupon: (
+              await stripe.coupons.create({
+                amount_off: totalDiscountCents,
+                currency: "gbp",
+                duration: "once",
+                name: discountLabel,
+              })
+            ).id,
+          },
+        ]
+      : undefined;
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",

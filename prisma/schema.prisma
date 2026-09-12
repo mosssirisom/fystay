@@ -405,6 +405,37 @@ model AvailabilityBlock {
   @@index([roomTypeId])
 }
 
+enum PromoDiscountType {
+  PERCENT
+  FIXED
+}
+
+// A platform-wide marketing code (e.g. WELCOME10), created and managed only
+// by an ADMIN - never a host, unlike a listing's own weekly/monthly
+// length-of-stay discount. code is always stored and matched uppercase (see
+// normalizePromoCode in src/lib/promoCode.ts) so "welcome10" and "WELCOME10"
+// are the same code. discountValue means a percentage (1-100) under PERCENT
+// or a flat pence amount under FIXED - never both, decided entirely by
+// discountType. redemptionCount is incremented atomically inside the same
+// transaction as the Booking it's used on, so it can never overcount past
+// maxRedemptions under concurrent use. active lets an admin retire a code
+// without deleting it (and losing the history of who used it).
+model PromoCode {
+  id              String            @id @default(cuid())
+  code            String            @unique
+  description     String?
+  discountType    PromoDiscountType
+  discountValue   Int
+  maxRedemptions  Int?
+  redemptionCount Int               @default(0)
+  expiresAt       DateTime?
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  bookings Booking[]
+}
+
 model Booking {
   id            String        @id @default(cuid())
   // A short, human-friendly code shown to the guest (e.g. on the
@@ -437,6 +468,16 @@ model Booking {
   // and absorbed out of the platform's own applicationFeeCents at checkout,
   // never the host's share. 0 when the guest had no balance to spend.
   creditAppliedCents        Int     @default(0)
+  // An admin-issued PromoCode's discount, snapshotted the same way as every
+  // other price field - editing or deactivating the code later never
+  // rewrites what a guest already agreed to. Stacks with creditAppliedCents
+  // (both can be nonzero on the same booking) and is absorbed the same way:
+  // out of the platform's own applicationFeeCents at checkout, never the
+  // host's share - see promoCode.ts's own comment for why. 0/null when no
+  // code was used.
+  promoCodeId               String?
+  promoCode                 PromoCode? @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
+  promoDiscountCents        Int     @default(0)
   totalPriceCents           Int
 
   // Request-to-book (see Listing.instantBook and BookingApprovalStatus).

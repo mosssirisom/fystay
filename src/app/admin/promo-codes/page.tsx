@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { PromoCodeForm } from "@/components/admin/PromoCodeForm";
 import { TogglePromoCodeButton } from "@/components/admin/TogglePromoCodeButton";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { formatPrice } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Promo codes", robots: { index: false } };
@@ -40,6 +41,10 @@ export default async function AdminPromoCodesPage() {
         Platform-wide marketing codes a guest can enter when booking - created here, not by
         hosts.
       </p>
+
+      <div className="mt-6">
+        <AdminNav active="/admin/promo-codes" />
+      </div>
 
       <div className="mt-6">
         <PromoCodeForm />

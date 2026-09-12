@@ -12,6 +12,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { StatCard } from "@/components/host/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
+import { AdminNav } from "@/components/admin/AdminNav";
 
 export const metadata: Metadata = { title: "Local data platform", robots: { index: false } };
 
@@ -87,6 +88,10 @@ export default async function LocalDataAdminPage() {
         Operational status for the Local Guide&apos;s live data - weather, places and events feeding the
         &quot;Right now&quot; concierge panel on every town&apos;s destination page.
       </p>
+
+      <div className="mt-6">
+        <AdminNav active="/admin/local-data" />
+      </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard icon={Database} label="Towns covered" value={summary.towns.toString()} />

@@ -7,7 +7,10 @@ import { cn } from "@/lib/cn";
  * instantly with zero external requests, so the demo never depends on a
  * third-party image host being reachable" - prisma/seed.ts) and this hero
  * is the single most-loaded image on the site, so the same reasoning
- * applies even more strongly here.
+ * applies even more strongly here. Colored as a golden-hour scene (warm
+ * near-black through terracotta to gold, same family as the brand palette
+ * in globals.css) rather than a daytime teal sea, so it never clashes with
+ * the warm parchment background it sits on.
  */
 export function HeroBanner({ className }: { className?: string }) {
   return (
@@ -27,10 +30,10 @@ export function HeroBanner({ className }: { className?: string }) {
     >
       <defs>
         <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#031f1c" />
-          <stop offset="45%" stopColor="#0f766e" />
-          <stop offset="80%" stopColor="#14b8a6" />
-          <stop offset="100%" stopColor="#2dd4bf" />
+          <stop offset="0%" stopColor="#2a1410" />
+          <stop offset="45%" stopColor="#954328" />
+          <stop offset="80%" stopColor="#d97757" />
+          <stop offset="100%" stopColor="#fbbf24" />
         </linearGradient>
         <radialGradient id="hero-sun" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fde68a" stopOpacity="0.95" />
@@ -38,12 +41,12 @@ export function HeroBanner({ className }: { className?: string }) {
           <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="hero-sea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#115e59" />
-          <stop offset="100%" stopColor="#042f2c" />
+          <stop offset="0%" stopColor="#7a3a17" />
+          <stop offset="100%" stopColor="#2a1410" />
         </linearGradient>
         <linearGradient id="hero-sand" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#134e4a" />
-          <stop offset="100%" stopColor="#042f2c" />
+          <stop offset="0%" stopColor="#4a3220" />
+          <stop offset="100%" stopColor="#22130f" />
         </linearGradient>
       </defs>
 
@@ -54,7 +57,7 @@ export function HeroBanner({ className }: { className?: string }) {
       {/* Soft, hand-drawn clouds - kept low-opacity so they read as
           atmosphere rather than competing with the headline text laid over
           this scene. */}
-      <g fill="#f0fdfa" fillOpacity="0.16">
+      <g fill="#fdf1e9" fillOpacity="0.16">
         <ellipse cx="220" cy="90" rx="90" ry="26" />
         <ellipse cx="300" cy="75" rx="60" ry="20" />
         <ellipse cx="740" cy="60" rx="110" ry="24" />
@@ -64,7 +67,7 @@ export function HeroBanner({ className }: { className?: string }) {
       {/* A pair of gulls - the kind of small, hand-crafted detail a stock
           photo wouldn't have, reinforcing that this is a distinct FYStay
           illustration rather than generic coastal imagery. */}
-      <g stroke="#f0fdfa" strokeOpacity="0.55" strokeWidth="3" strokeLinecap="round" fill="none">
+      <g stroke="#fdf1e9" strokeOpacity="0.55" strokeWidth="3" strokeLinecap="round" fill="none">
         <path d="M980 110q14-16 28 0q14-16 28 0" />
         <path d="M1050 150q10-11 20 0q10-11 20 0" />
       </g>
@@ -74,14 +77,14 @@ export function HeroBanner({ className }: { className?: string }) {
       <path
         d="M0 300c60 14 120 14 180 0s120-14 180 0 120 14 180 0 120-14 180 0 120 14 180 0 120-14 180 0 120 14 180 0 120-14 180 0"
         fill="none"
-        stroke="#5eead4"
+        stroke="#e4b1a0"
         strokeOpacity="0.3"
         strokeWidth="3"
       />
       <path
         d="M0 330c60 12 120 12 180 0s120-12 180 0 120 12 180 0 120-12 180 0 120 12 180 0 120-12 180 0 120 12 180 0 120-12 180 0"
         fill="none"
-        stroke="#5eead4"
+        stroke="#e4b1a0"
         strokeOpacity="0.18"
         strokeWidth="3"
       />
@@ -92,7 +95,7 @@ export function HeroBanner({ className }: { className?: string }) {
       <rect y="392" width="1440" height="28" fill="url(#hero-sand)" />
 
       {/* Pier: deck line + support struts running into the sea */}
-      <g stroke="#042f2c" strokeWidth="4" strokeLinecap="round">
+      <g stroke="#22130f" strokeWidth="4" strokeLinecap="round">
         <line x1="0" y1="296" x2="560" y2="296" />
         {Array.from({ length: 9 }, (_, i) => 60 + i * 62).map((x) => (
           <line key={x} x1={x} y1="296" x2={x - 22} y2="340" strokeWidth="3" />
@@ -100,12 +103,12 @@ export function HeroBanner({ className }: { className?: string }) {
       </g>
 
       {/* Tower silhouette, standing on the pier deck */}
-      <g fill="none" stroke="#031f1c" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+      <g fill="none" stroke="#22130f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M330 296 300 130 260 296" />
         <path d="M280 220h40" />
         <path d="M290 170h20" />
         <line x1="300" y1="130" x2="300" y2="104" />
-        <circle cx="300" cy="98" r="5" fill="#031f1c" stroke="none" />
+        <circle cx="300" cy="98" r="5" fill="#22130f" stroke="none" />
       </g>
     </svg>
   );

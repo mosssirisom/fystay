@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Lora, DM_Serif_Display } from "next/font/google";
+import { Geist, Geist_Mono, DM_Serif_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -19,27 +19,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Warm serif for headings and the wordmark. Fraunces (the previous pick
-// here) has enough ink-trap/ball-terminal drama at bold weights that it
-// reads as quirky/editorial rather than warm once it's set as a compact
-// logotype - Lora keeps the same literary, human quality (calligraphic
-// roots, moderate contrast) at a much calmer, more legible register, so it
-// sits comfortably next to the plain Geist sans used everywhere else.
-const lora = Lora({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  style: ["normal"],
-});
-
-// The wordmark gets its own, separate font from every other heading on the
-// site (see --font-logo's own mapping in globals.css) - DM Serif Display's
-// softer, more rounded terminals read as warmer and more approachable than
-// Lora at logotype scale, which is exactly the "premium travel brand, not a
-// traditional hotel/estate-agent" feel the mark is going for. It only ships
-// one weight (400), which keeps the mark from ever reading as heavy-handed.
+// The site's one display serif, used for the wordmark and every heading
+// (h1-h2, which is what every page title/SectionHeading/CardTitle actually
+// render as - see globals.css). Previously headings ran on Lora while only
+// the logo used DM Serif Display; the two are now unified so the whole site
+// reads as one considered typographic system instead of two serifs that
+// happen to sit near each other. Body copy, buttons, nav, and form inputs
+// stay on the plain Geist sans below - DM Serif Display only ships one
+// weight (400) and is a display face, not meant for small/dense text, so it
+// stays scoped to headlines rather than replacing the sans everywhere.
 const dmSerifDisplay = DM_Serif_Display({
-  variable: "--font-logo-serif",
+  variable: "--font-display-serif",
   subsets: ["latin"],
   weight: "400",
   style: ["normal"],
@@ -84,7 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${dmSerifDisplay.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <a

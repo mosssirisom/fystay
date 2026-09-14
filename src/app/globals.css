@@ -79,12 +79,12 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-heading);
-  /* The wordmark's own font, kept independent from --font-heading (used for
-     every h1/h2 on the site) so retyping the logo never touches page
-     typography elsewhere - see the dmSerifDisplay font loader in
-     app/layout.tsx. */
-  --font-logo: var(--font-logo-serif);
+  /* Both the wordmark and every page heading now share the same display
+     serif (DM Serif Display, loaded once in app/layout.tsx) so the site
+     reads as one typographic system rather than the logo and headings
+     using two different serifs. */
+  --font-serif: var(--font-display-serif);
+  --font-logo: var(--font-display-serif);
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 8px rgb(0 0 0 / 0.06);
   --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 4px rgb(0 0 0 / 0.06);
@@ -95,14 +95,26 @@
   border-color: var(--border-subtle);
 }
 
-/* Editorial serif for headings (h1/h2, which is what every page title and
-   SectionHeading/CardTitle actually render as - see the components), sans
-   everywhere else. This is the single typographic move that gives the site
-   the "considered, literary" feel Anthropic's own serif headlines have,
-   without touching every page's markup individually. */
+/* DM Serif Display for every heading (h1/h2, which is what every page title
+   and SectionHeading/CardTitle actually render as - see the components),
+   the plain Geist sans everywhere else (body copy, buttons, nav, forms) -
+   this display face only ships one weight and isn't meant for small/dense
+   text. This single rule gives the whole site one consistent, premium
+   headline voice without touching every page's markup individually.
+
+   font-weight is pinned here too: individual page components still carry
+   font-bold/font-semibold classNames left over from when h1/h2 rendered in
+   Lora's real 600/700 weights. DM Serif Display has no bold face at all, so
+   without this override the browser would fake one (synthetic/faux bold),
+   which looks chunky and uneven rather than "elegant" - this rule (being
+   unlayered, like the font-family rule above, it beats Tailwind's layered
+   utility classes regardless of specificity) makes every heading render at
+   the font's one real weight no matter what weight utility a call site
+   still has on it. */
 h1,
 h2 {
   font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
 }
 
 /* Defense in depth against horizontal page scroll: no legitimate part of

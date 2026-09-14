@@ -28,7 +28,7 @@ export default async function WishlistPage() {
             where: blockingBookingWhere(),
             select: { checkIn: true, checkOut: true },
           },
-          reviews: { select: { rating: true } },
+          reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
         },
       },
     },

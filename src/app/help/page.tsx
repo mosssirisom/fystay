@@ -129,11 +129,15 @@ export default function HelpCenterPage() {
       </div>
 
       <p className="mt-8 text-sm text-stone-500">
-        Can&apos;t find what you&apos;re looking for? Email us at{" "}
-        <a href="mailto:support@fystay.co.uk" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
-          support@fystay.co.uk
-        </a>
-        .
+        Can&apos;t find what you&apos;re looking for?{" "}
+        <Link href="/contact" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
+          Contact us
+        </Link>{" "}
+        - or, if you&apos;re signed in,{" "}
+        <Link href="/help/tickets/new" className="text-brand-700 underline underline-offset-2 hover:text-brand-800">
+          open a support ticket
+        </Link>{" "}
+        and we&apos;ll reply here.
       </p>
     </div>
   );

@@ -8,6 +8,8 @@ const ADMIN_LINKS = [
   { href: "/admin/promo-codes", label: "Promo codes" },
   { href: "/admin/extras", label: "Trip extras" },
   { href: "/admin/disputes", label: "Disputes" },
+  { href: "/admin/review-reports", label: "Review reports" },
+  { href: "/admin/support-tickets", label: "Support tickets" },
   { href: "/admin/local-data", label: "Local data" },
 ] as const;
 

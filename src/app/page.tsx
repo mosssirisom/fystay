@@ -75,7 +75,7 @@ async function MarketplaceSections() {
     auth(),
     prisma.listing.findMany({
       where: { published: true },
-      include: { reviews: { select: { rating: true } } },
+      include: { reviews: { where: { status: "PUBLISHED" }, select: { rating: true } } },
       orderBy: { createdAt: "desc" },
     }),
   ]);

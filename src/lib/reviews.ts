@@ -36,6 +36,16 @@ export function canReportReview(params: {
   return params.reviewAuthorId !== params.currentUserId && !params.alreadyReported;
 }
 
+/**
+ * An admin can only act on a report that's still awaiting a decision - one
+ * already DISMISSED or ACTIONED has already had its outcome recorded, and
+ * re-deciding it (rather than leaving that history alone) isn't a feature
+ * this app offers.
+ */
+export function canActionReport(reportStatus: "OPEN" | "DISMISSED" | "ACTIONED"): boolean {
+  return reportStatus === "OPEN";
+}
+
 export const REVIEW_CATEGORIES = [
   "cleanliness",
   "accuracy",

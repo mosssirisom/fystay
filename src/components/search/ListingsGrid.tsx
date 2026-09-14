@@ -84,7 +84,7 @@ export async function ListingsGrid({
         availabilityBlocks: {
           select: { startDate: true, endDate: true },
         },
-        reviews: { select: { rating: true } },
+        reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
         // Only meaningful for a HOTEL listing (see the dateFiltered check
         // below) - empty for every other property type.
         roomTypes: {

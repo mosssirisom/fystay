@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   averageRating,
+  canActionReport,
   canReportReview,
   canReviewBooking,
   canRespondToReview,
@@ -94,6 +95,20 @@ describe("canReportReview", () => {
         alreadyReported: true,
       }),
     ).toBe(false);
+  });
+});
+
+describe("canActionReport", () => {
+  it("allows acting on an OPEN report", () => {
+    expect(canActionReport("OPEN")).toBe(true);
+  });
+
+  it("rejects a report that's already been dismissed", () => {
+    expect(canActionReport("DISMISSED")).toBe(false);
+  });
+
+  it("rejects a report that's already been actioned", () => {
+    expect(canActionReport("ACTIONED")).toBe(false);
   });
 });
 

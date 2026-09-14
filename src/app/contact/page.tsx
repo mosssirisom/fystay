@@ -49,13 +49,23 @@ export default function ContactPage() {
       </div>
 
       <div className="mt-8 rounded-2xl border border-border-subtle bg-brand-50 px-5 py-5 text-center">
-        <p className="text-sm text-stone-600">Email us directly and we&apos;ll get back to you</p>
-        <a
-          href={`mailto:${SUPPORT_EMAIL}`}
-          className="mt-1 inline-block text-lg font-semibold text-brand-800 underline underline-offset-2 hover:text-brand-900"
+        <p className="text-sm text-stone-600">
+          Signed in? Open a support ticket and we&apos;ll reply on this site, or email us directly.
+        </p>
+        <Link
+          href="/help/tickets/new"
+          className="mt-2 inline-block text-lg font-semibold text-brand-800 underline underline-offset-2 hover:text-brand-900"
         >
-          {SUPPORT_EMAIL}
-        </a>
+          Open a support ticket
+        </Link>
+        <p className="mt-3 text-sm text-stone-600">
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+        </p>
       </div>
 
       <p className="mt-8 text-sm text-stone-500">

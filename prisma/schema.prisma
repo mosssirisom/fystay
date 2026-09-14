@@ -250,6 +250,18 @@ model User {
   hostConversations   Conversation[]       @relation("HostConversations")
   sentMessages        Message[]
 
+  // General-purpose support tickets (see SupportTicket's own comment) -
+  // distinct from Conversation/Message above, which is guest-host only
+  // with no admin visibility, and from PaymentDispute, which is
+  // Stripe-chargeback-specific. supportTicketsOpened is every ticket this
+  // account raised; supportTicketsAbout is tickets *about* this account
+  // raised by someone else (e.g. a guest opening a ticket about a
+  // problem host); supportTicketMessagesSent covers messages this account
+  // wrote into any ticket, whichever side (opener or admin) they wrote as.
+  supportTicketsOpened       SupportTicket[]        @relation("SupportTicketsOpened")
+  supportTicketsAbout        SupportTicket[]        @relation("SupportTicketsAbout")
+  supportTicketMessagesSent  SupportTicketMessage[] @relation("SupportTicketMessagesSent")
+
   // PMS/channel-manager connections this host has set up (see the Pms*
   // models below) - a host, not a listing, owns a connection, since one
   // Cloudbeds/SiteMinder/SuperControl account on the provider's side
@@ -679,6 +691,11 @@ model Booking {
   // change-request payment disputed separately from the original), so
   // this is a list, not a nullable single relation.
   disputes PaymentDispute[]
+
+  // Support tickets that reference this specific booking as context (see
+  // SupportTicket.bookingId's own comment) - almost always empty; most
+  // tickets aren't about any one booking.
+  supportTickets SupportTicket[]
 
   @@index([listingId])
   @@index([guestId])
@@ -1549,4 +1566,67 @@ model PaymentDispute {
   @@index([bookingId])
   @@index([bookingExtraId])
   @@index([status])
+}
+
+// General-purpose escalation to FYStay support, for anything that doesn't
+// fit the two narrower existing paths: PaymentDispute (Stripe-chargeback-
+// specific, driven entirely by Stripe's own webhook) and Conversation/
+// Message (guest-host only - a host or a guest with a problem the other
+// party can't or won't resolve has nowhere else to go). Modeled as a
+// three-party thread (opener, optional about-user, and support) rather than
+// the two-party shape Conversation uses, which is why each message needs
+// its own isAdminReply flag - see SupportTicketMessage.
+enum SupportTicketStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+model SupportTicket {
+  id        String              @id @default(cuid())
+  subject   String
+  status    SupportTicketStatus @default(OPEN)
+  createdAt DateTime            @default(now())
+  // Bumped on every new message (opener or admin), the same way
+  // Conversation.updatedAt is, so the admin queue's "last activity" sort
+  // and the opener's own ticket list both reflect the thread, not just
+  // status changes.
+  updatedAt DateTime            @updatedAt
+
+  openedById String
+  openedBy   User   @relation("SupportTicketsOpened", fields: [openedById], references: [id], onDelete: Cascade)
+
+  // Optional context: who/what this ticket is about, so support has
+  // enough to act without the opener re-explaining it in the first
+  // message. Both nullable - a ticket can be a general question with
+  // neither.
+  aboutUserId String?
+  aboutUser   User?    @relation("SupportTicketsAbout", fields: [aboutUserId], references: [id], onDelete: SetNull)
+  bookingId   String?
+  booking     Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  messages SupportTicketMessage[]
+
+  @@index([openedById])
+  @@index([status])
+}
+
+model SupportTicketMessage {
+  id        String   @id @default(cuid())
+  body      String
+  // True when this message was written by an admin acting in a support
+  // capacity, false when it's from the ticket's own opener - drives which
+  // side of the thread it renders on, the same way Message doesn't need
+  // this (both participants there are just "the other side") but here the
+  // three-party shape (opener, optional about-user, support) needs it.
+  isAdminReply Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  ticketId String
+  ticket   SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("SupportTicketMessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
 }

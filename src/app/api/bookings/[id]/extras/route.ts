@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
@@ -110,22 +111,43 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "This extra doesn't exist" }, { status: 404 });
   }
 
-  const existingExtras = await prisma.bookingExtra.findMany({
-    where: { bookingId: booking.id },
-    select: { id: true, offeringId: true, status: true, stripeSessionId: true },
-  });
-
   const stripe = getStripeClient();
+  const guestNotes = parsed.data.guestNotes ?? null;
+
+  // The eligibility check (has this already been paid for?) and claiming a
+  // row for this purchase attempt happen inside one SERIALIZABLE
+  // transaction, retried on conflict - otherwise two concurrent requests
+  // for the same (booking, offering) could each read "not already paid"
+  // and each create their own BookingExtra + Stripe charge. Postgres's own
+  // conflict detection on the shared read aborts the loser with a P2034,
+  // caught below, and its retry then sees the winner's row and reuses it
+  // instead - the same SSI-based guarantee src/app/api/bookings/route.ts
+  // relies on for room-type inventory.
+  let claim: ClaimedBookingExtra;
+  try {
+    claim = await runClaimWithRetry({ booking, offering, guestNotes, devMode: !stripe });
+  } catch (error) {
+    if (error instanceof TripExtraPurchaseError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    throw error;
+  }
+
+  if (claim.kind === "dev_paid") {
+    // Stripe isn't configured (e.g. local dev without keys) - the claim
+    // step already confirmed this row directly, the same fallback the main
+    // booking checkout uses, so this feature stays fully exercisable
+    // without real Stripe keys.
+    await notifyTripExtraPaid(claim.extraId);
+    return NextResponse.json({ devMode: true, paid: true });
+  }
 
   // A guest re-submitting (double-click, a second tab) for the exact same
   // still-unpaid extra reuses that attempt rather than piling up a second
   // chargeable session - the same reasoning as the main booking checkout's
   // own stripeSessionId reuse.
-  const pendingForThisOffering = existingExtras.find(
-    (extra) => extra.offeringId === offering.id && extra.status === "PENDING_PAYMENT" && extra.stripeSessionId,
-  );
-  if (pendingForThisOffering && stripe) {
-    const existingSession = await stripe.checkout.sessions.retrieve(pendingForThisOffering.stripeSessionId!);
+  if (claim.existingStripeSessionId && stripe) {
+    const existingSession = await stripe.checkout.sessions.retrieve(claim.existingStripeSessionId);
     const action = decideExistingSessionAction(existingSession.status);
     if (action === "reuse" && existingSession.url) {
       return NextResponse.json({ url: existingSession.url });
@@ -141,47 +163,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     // leaving an orphaned PENDING_PAYMENT one behind.
   }
 
-  const eligibilityError = tripExtraPurchaseError(
-    booking,
-    { active: offering.active, providerActive: offering.provider.active },
-    offering.id,
-    existingExtras,
-  );
-  if (eligibilityError) {
-    return NextResponse.json({ error: eligibilityError }, { status: 409 });
+  if (!stripe) {
+    // The claim step only takes this branch when devMode was true above,
+    // so a real Stripe client missing here would mean it flipped out from
+    // under us mid-request - not something to silently paper over.
+    return NextResponse.json({ error: "Payments are not configured" }, { status: 500 });
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const bookingUrl = `${baseUrl}/bookings/${booking.id}`;
 
-  if (!stripe) {
-    // Stripe isn't configured (e.g. local dev without keys) - confirm
-    // directly, same fallback the main booking checkout uses, so this
-    // feature stays fully exercisable without real Stripe keys.
-    const bookingExtra = pendingForThisOffering
-      ? await prisma.bookingExtra.update({
-          where: { id: pendingForThisOffering.id },
-          data: {
-            status: "PAID",
-            paidAt: new Date(),
-            guestNotes: parsed.data.guestNotes ?? null,
-          },
-        })
-      : await prisma.bookingExtra.create({
-          data: {
-            bookingId: booking.id,
-            offeringId: offering.id,
-            priceCents: offering.priceCents,
-            guestNotes: parsed.data.guestNotes ?? null,
-            status: "PAID",
-            paidAt: new Date(),
-          },
-        });
-
-    await notifyTripExtraPaid(bookingExtra.id);
-    return NextResponse.json({ devMode: true, paid: true });
-  }
-
+  // claim.extraId is already known at this point (the row was claimed
+  // before this Stripe call), so the session's metadata can carry it from
+  // the start - no separate metadata-update round trip needed.
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -196,39 +190,137 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         quantity: 1,
       },
     ],
-    metadata: { purpose: "trip_extra" },
+    metadata: { purpose: "trip_extra", bookingExtraId: claim.extraId },
     success_url: `${bookingUrl}?extra_success=1`,
     cancel_url: `${bookingUrl}?extra_cancelled=1`,
   });
 
-  const bookingExtra = pendingForThisOffering
-    ? await prisma.bookingExtra.update({
-        where: { id: pendingForThisOffering.id },
-        data: {
-          stripeSessionId: checkoutSession.id,
-          guestNotes: parsed.data.guestNotes ?? null,
-        },
-      })
-    : await prisma.bookingExtra.create({
-        data: {
-          bookingId: booking.id,
-          offeringId: offering.id,
-          priceCents: offering.priceCents,
-          guestNotes: parsed.data.guestNotes ?? null,
-          stripeSessionId: checkoutSession.id,
-        },
-      });
-
-  // The session's own metadata needs this row's id, but Stripe requires the
-  // line items/price before a session exists to get an id from - so the
-  // session is created first, then the BookingExtra row it belongs to is
-  // stamped onto it via a metadata update, same two-step shape as
-  // src/lib/securityDeposit.ts's own createDepositCheckoutSession callers.
-  await stripe.checkout.sessions.update(checkoutSession.id, {
-    metadata: { purpose: "trip_extra", bookingExtraId: bookingExtra.id },
+  await prisma.bookingExtra.update({
+    where: { id: claim.extraId },
+    data: { stripeSessionId: checkoutSession.id },
   });
 
   return NextResponse.json({ url: checkoutSession.url });
+}
+
+class TripExtraPurchaseError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+type ClaimedBookingExtra =
+  | { kind: "dev_paid"; extraId: string }
+  | { kind: "needs_stripe_session"; extraId: string; existingStripeSessionId: string | null };
+
+/**
+ * Runs claimBookingExtraSlot in a SERIALIZABLE transaction, retrying on a
+ * genuine conflict with a concurrent purchase attempt - the same
+ * retry-on-P2034 shape as src/app/api/bookings/route.ts's own booking
+ * creation loop.
+ */
+async function runClaimWithRetry(params: {
+  booking: { id: string; status: string };
+  offering: { id: string; priceCents: number; active: boolean; provider: { active: boolean } };
+  guestNotes: string | null;
+  devMode: boolean;
+}): Promise<ClaimedBookingExtra> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await prisma.$transaction(
+        (tx) => claimBookingExtraSlot(tx, params),
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+    } catch (error) {
+      if (error instanceof TripExtraPurchaseError) throw error;
+      const isRetryable = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
+      if (!isRetryable || attempt === 2) throw error;
+    }
+  }
+  throw new TripExtraPurchaseError(409, "Please try again");
+}
+
+/**
+ * Reads this booking's existing extras and either hands back the row
+ * already claimed for this offering (a still-unpaid earlier attempt) or
+ * creates a fresh one - all inside the SERIALIZABLE transaction
+ * runClaimWithRetry wraps this in, so the read and the create/update
+ * happen against one consistent snapshot. In dev mode (no Stripe
+ * configured) the row is confirmed PAID right here, since there's no
+ * external checkout step to wait for.
+ */
+async function claimBookingExtraSlot(
+  tx: Prisma.TransactionClient,
+  params: {
+    booking: { id: string; status: string };
+    offering: { id: string; priceCents: number; active: boolean; provider: { active: boolean } };
+    guestNotes: string | null;
+    devMode: boolean;
+  },
+): Promise<ClaimedBookingExtra> {
+  const { booking, offering, guestNotes, devMode } = params;
+
+  const existingExtras = await tx.bookingExtra.findMany({
+    where: { bookingId: booking.id },
+    select: { id: true, offeringId: true, status: true, stripeSessionId: true },
+  });
+
+  const eligibilityError = tripExtraPurchaseError(
+    booking,
+    { active: offering.active, providerActive: offering.provider.active },
+    offering.id,
+    existingExtras,
+  );
+  if (eligibilityError) {
+    throw new TripExtraPurchaseError(409, eligibilityError);
+  }
+
+  const pendingForThisOffering = existingExtras.find(
+    (extra) => extra.offeringId === offering.id && extra.status === "PENDING_PAYMENT",
+  );
+
+  if (devMode) {
+    const paid = pendingForThisOffering
+      ? await tx.bookingExtra.update({
+          where: { id: pendingForThisOffering.id },
+          data: { status: "PAID", paidAt: new Date(), guestNotes },
+        })
+      : await tx.bookingExtra.create({
+          data: {
+            bookingId: booking.id,
+            offeringId: offering.id,
+            priceCents: offering.priceCents,
+            guestNotes,
+            status: "PAID",
+            paidAt: new Date(),
+          },
+        });
+    return { kind: "dev_paid", extraId: paid.id };
+  }
+
+  if (pendingForThisOffering) {
+    if (guestNotes !== null) {
+      await tx.bookingExtra.update({ where: { id: pendingForThisOffering.id }, data: { guestNotes } });
+    }
+    return {
+      kind: "needs_stripe_session",
+      extraId: pendingForThisOffering.id,
+      existingStripeSessionId: pendingForThisOffering.stripeSessionId,
+    };
+  }
+
+  const created = await tx.bookingExtra.create({
+    data: {
+      bookingId: booking.id,
+      offeringId: offering.id,
+      priceCents: offering.priceCents,
+      guestNotes,
+    },
+  });
+  return { kind: "needs_stripe_session", extraId: created.id, existingStripeSessionId: null };
 }
 
 /**

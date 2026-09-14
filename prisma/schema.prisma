@@ -226,6 +226,19 @@ model User {
   twoFactorEnabledAt        DateTime?
   twoFactorBackupCodeHashes String[]  @default([])
 
+  // Set by an admin (PATCH /api/admin/users/[id]/suspend) to lock a bad
+  // account out of authenticating entirely - see src/lib/suspension.ts and
+  // its check in both the Credentials authorize() and Google signIn()
+  // callbacks in src/auth.ts. Null (the default, and true of every account
+  // that exists today) means active; nullable rather than a boolean flag so
+  // "never suspended" and "unsuspended at some point" both stay honest
+  // rather than collapsing to the same false, the same reasoning as
+  // termsAcceptedAt above. suspendedReason is admin-entered free text shown
+  // to the user on their next login attempt - cleared back to null whenever
+  // suspendedAt is, never left dangling from a previous suspension.
+  suspendedAt     DateTime?
+  suspendedReason String?
+
   listings            Listing[]
   bookings            Booking[]
   reviews             Review[]
@@ -361,6 +374,17 @@ model Listing {
   icalExportToken String    @unique @default(cuid())
   icalImportUrl   String?
   icalSyncedAt    DateTime?
+
+  // Set by an admin (PATCH /api/admin/listings/[id]/suspend) to pull a
+  // fraudulent or problem listing out of search/booking without deleting
+  // it - see src/lib/suspension.ts. Null (the default) means active. A
+  // suspended listing is excluded from every search/browse query
+  // (alongside published: true) and can't be booked (see
+  // src/app/api/bookings/route.ts), but its own host - and an admin - can
+  // still open its detail page to see why. suspendedReason is admin-entered
+  // free text; cleared back to null whenever suspendedAt is.
+  suspendedAt     DateTime?
+  suspendedReason String?
 
   hostId             String
   host               User                @relation(fields: [hostId], references: [id], onDelete: Cascade)

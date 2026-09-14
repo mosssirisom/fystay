@@ -8,6 +8,7 @@ import { peekRateLimit, recordFailedAttempt, resetRateLimit } from "@/lib/rateLi
 import { generateReferralCode } from "@/lib/referral";
 import { decryptTwoFactorSecret } from "@/lib/twoFactorCrypto";
 import { verifyAndConsumeBackupCode, verifyTotpCode } from "@/lib/twoFactor";
+import { isSuspended } from "@/lib/suspension";
 
 /**
  * Thrown instead of returning null when a password is correct but the
@@ -23,6 +24,25 @@ class TwoFactorRequiredError extends CredentialsSignin {
   constructor() {
     super();
     this.code = "TwoFactorRequired";
+  }
+}
+
+/**
+ * Thrown instead of returning null when the email/password (and 2FA code,
+ * if enabled) were otherwise correct but an admin has suspended this
+ * account (see User.suspendedAt) - deliberately checked only after the
+ * credentials themselves have already been verified, so a mere guess
+ * against a suspended account's email still gets the same generic
+ * "invalid credentials" response as any other wrong guess, rather than
+ * leaking that the account exists and is suspended. Same code-based
+ * convention as TwoFactorRequiredError above: LoginForm.tsx checks for
+ * this exact "AccountSuspended" code to show a friendly, specific message
+ * instead of "invalid credentials".
+ */
+class AccountSuspendedError extends CredentialsSignin {
+  constructor() {
+    super();
+    this.code = "AccountSuspended";
   }
 }
 
@@ -91,6 +111,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        // Checked only after the password check above succeeds - never
+        // before - so this never distinguishes a suspended account from a
+        // wrong-password one to someone who hasn't actually proven they
+        // know the password. Checked before 2FA (rather than after) since
+        // there's no point asking a suspended account for a code it'll be
+        // refused regardless of. Not recorded against the rate limit and
+        // the limit isn't reset either, the same treatment as the
+        // 2FA-required path just below: nothing was actually guessed, and
+        // no real login has succeeded yet.
+        if (isSuspended(user)) {
+          throw new AccountSuspendedError();
+        }
+
         if (user.twoFactorEnabledAt && user.twoFactorSecretCiphertext) {
           const code = typeof credentials?.code === "string" ? credentials.code.trim() : "";
           // No code submitted yet: the password was right, but this isn't
@@ -157,6 +190,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider !== "google") return true;
       if (!user.email) return false;
 
+      const email = user.email.toLowerCase();
+
+      // A suspended account must be blocked from signing back in via
+      // Google exactly as it is via Credentials (see AccountSuspendedError
+      // above) - checked before the upsert below so re-authenticating
+      // never looks like a no-op success. A brand-new email has no row
+      // yet, so nothing to suspend - existing is simply undefined and this
+      // is a no-op for it, same as before this check existed.
+      const existing = await prisma.user.findUnique({
+        where: { email },
+        select: { suspendedAt: true },
+      });
+      if (existing && isSuspended(existing)) return false;
+
       // Credentials sign-in already resolved to a real User row in
       // authorize() above; Google only ever hands back its own profile, so
       // the first time a given email signs in this way, create the User
@@ -164,7 +211,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // actually points to. passwordHash stays null - see the schema
       // comment on User.passwordHash for why that's a real, expected state
       // rather than a bug.
-      const email = user.email.toLowerCase();
       await prisma.user.upsert({
         where: { email },
         update: {},

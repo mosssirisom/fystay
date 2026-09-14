@@ -62,6 +62,10 @@ export async function ListingsGrid({
     prisma.listing.findMany({
       where: {
         published: true,
+        // See src/app/api/listings/route.ts's own copy of this same guard -
+        // a suspended listing is excluded from search exactly like an
+        // unpublished one.
+        suspendedAt: null,
         maxGuests: { gte: guestsNeeded },
         ...(city
           ? {

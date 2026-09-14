@@ -119,6 +119,11 @@ export async function GET(request: Request) {
   const listings = await prisma.listing.findMany({
     where: {
       published: true,
+      // A suspended listing is pulled out of search the same way an
+      // unpublished one always has been - see Listing.suspendedAt's own
+      // schema comment. Its own host (or an admin) can still reach it
+      // directly by id (see the listing detail page), just not find it here.
+      suspendedAt: null,
       ...(city
         ? {
             OR: [

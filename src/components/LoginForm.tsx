@@ -48,6 +48,13 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
       return;
     }
 
+    // See auth.ts's AccountSuspendedError - the credentials (and 2FA code,
+    // if enabled) were correct, but an admin has suspended this account.
+    if (result?.code === "AccountSuspended") {
+      setError("Your account has been suspended. Contact support.");
+      return;
+    }
+
     if (result?.error) {
       setError(needsCode ? "That code doesn't match." : "That email and password don't match an account.");
       return;

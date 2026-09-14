@@ -49,6 +49,7 @@ import { computeRatingBreakdown } from "@/lib/reviews";
 import { computeHostResponseStats, isGreatHost } from "@/lib/hostStats";
 import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
 import { formatPrice } from "@/lib/format";
+import { isSuspended } from "@/lib/suspension";
 
 const getListing = cache(async (id: string) => {
   return prisma.listing.findUnique({
@@ -81,7 +82,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const listing = await getListing(id);
-  if (!listing || !listing.published) return {};
+  // A suspended listing gets no metadata/indexing, the same as an
+  // unpublished one - it may still 200 for its own host below, but that's
+  // not a page search engines (or link previews) should ever surface.
+  if (!listing || !listing.published || isSuspended(listing)) return {};
 
   const title = withCity(listing.title, listing.city);
   const description = `${PROPERTY_TYPE_LABEL[listing.propertyType]} in ${listing.city}, ${listing.country} - ${listing.bedrooms} bedroom${listing.bedrooms === 1 ? "" : "s"}, sleeps ${listing.maxGuests}, from ${formatPrice(listing.pricePerNightCents)}/night. ${listing.description.slice(0, 110)}`;
@@ -116,6 +120,27 @@ export default async function ListingDetailPage({
 
   if (!listing || !listing.published) {
     notFound();
+  }
+
+  // A suspended listing still 200s for its own host (so they can see why)
+  // and for an admin, but a guest gets a simple "no longer available"
+  // state instead of the full bookable page - see Listing.suspendedAt's
+  // own schema comment. Checked before the heavier stats queries below so
+  // a suspended listing's page never pays for work only the full view needs.
+  const canViewSuspendedListing =
+    session?.user?.id === listing.hostId || session?.user?.role === "ADMIN";
+  if (isSuspended(listing) && !canViewSuspendedListing) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-3 px-6 py-24 text-center">
+        <h1 className="text-xl font-semibold text-foreground">This listing is no longer available</h1>
+        <p className="text-stone-600">
+          It&apos;s been taken down and can&apos;t be booked. Have a look at other stays instead.
+        </p>
+        <Link href="/search" className="mt-2 font-medium text-brand-700 hover:underline">
+          Browse other stays
+        </Link>
+      </div>
+    );
   }
 
   const [isSaved, hostReviewStats, hostConversations, hostCompletedBookings] = await Promise.all([

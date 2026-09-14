@@ -3,6 +3,8 @@ import { cn } from "@/lib/cn";
 
 const ADMIN_LINKS = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/bookings", label: "Bookings" },
+  { href: "/admin/users", label: "Users" },
   { href: "/admin/promo-codes", label: "Promo codes" },
   { href: "/admin/extras", label: "Trip extras" },
   { href: "/admin/disputes", label: "Disputes" },

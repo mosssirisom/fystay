@@ -146,6 +146,13 @@ export type CancellationPreview = CancellationRefund & {
  * shape both the pre-cancellation preview (shown before a guest confirms)
  * and the actual cancel endpoint need, so they can never disagree with each
  * other about what a cancellation is going to cost.
+ *
+ * refundPercentOverride lets a caller (only the admin manual-cancel route,
+ * today - see src/lib/bookingCancellation.ts) bypass the listing's own
+ * policy tiers entirely and apply one flat percentage instead, for a
+ * goodwill or otherwise manual refund decision. It still goes through
+ * computeCancellationRefund like every other path, so the actual cents math
+ * (rounding, capping at amountPaidCents) is never duplicated.
  */
 export function previewCancellation(params: {
   listing: {
@@ -158,10 +165,19 @@ export function previewCancellation(params: {
   totalPriceCents: number;
   checkIn: Date;
   now?: Date;
+  refundPercentOverride?: number;
 }): CancellationPreview {
-  const { listing, wasPaid, totalPriceCents, checkIn, now } = params;
+  const { listing, wasPaid, totalPriceCents, checkIn, now, refundPercentOverride } = params;
   const amountPaidCents = wasPaid ? totalPriceCents : 0;
-  const policy = resolveCancellationPolicy(listing);
+  const policy: CancellationPolicy =
+    refundPercentOverride === undefined
+      ? resolveCancellationPolicy(listing)
+      : {
+          kind: "CUSTOM",
+          label: "Manual override",
+          description: `Support set the refund to ${refundPercentOverride}%, overriding the listing's own cancellation policy.`,
+          tiers: [{ minDaysBeforeCheckIn: 0, refundPercent: refundPercentOverride }],
+        };
   const refund = computeCancellationRefund({ policy, amountPaidCents, checkIn, now });
   return { policyLabel: policy.label, policyDescription: policy.description, amountPaidCents, ...refund };
 }

@@ -19,6 +19,7 @@ import { computeCreditToApply } from "@/lib/referral";
 import { computePromoDiscount, normalizePromoCode, validatePromoCode } from "@/lib/promoCode";
 import { sendBookingRequestReceivedEmail } from "@/lib/notificationEmails";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
+import { isSuspended } from "@/lib/suspension";
 
 // Exactly one of listingId (every non-hotel booking, unchanged) or
 // roomTypeId (a HOTEL listing's room type, with roomsBooked defaulting to
@@ -297,6 +298,9 @@ async function createListingBooking(
   if (!listing || !listing.published) {
     throw new BookingRequestError(404, "Listing not found");
   }
+  if (isSuspended(listing)) {
+    throw new BookingRequestError(403, "This listing is currently unavailable.");
+  }
   if (guests > listing.maxGuests) {
     throw new BookingRequestError(400, `This listing sleeps up to ${listing.maxGuests} guests`);
   }
@@ -417,6 +421,9 @@ async function createRoomTypeBooking(
     throw new BookingRequestError(404, "Room type not found");
   }
   const { listing } = roomType;
+  if (isSuspended(listing)) {
+    throw new BookingRequestError(403, "This listing is currently unavailable.");
+  }
   if (guests > roomType.maxGuests * roomsBooked) {
     throw new BookingRequestError(
       400,

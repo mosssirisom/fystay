@@ -225,11 +225,41 @@ async function main() {
     },
   });
 
+  // Trip extras (see docs/trip-extras-roadmap.md): EV Exec is FYStay's own
+  // transfer business and the first extras provider. The notification
+  // email is read from an env var (with a placeholder fallback for local
+  // dev) rather than hardcoded, since a real deployment needs booking
+  // requests actually landing in EV Exec's real inbox, not a seeded
+  // placeholder.
+  const evExec = await prisma.extraProvider.upsert({
+    where: { name: "EV Exec" },
+    update: {},
+    create: {
+      name: "EV Exec",
+      category: "AIRPORT_TRANSFER",
+      notificationEmail: process.env.EV_EXEC_NOTIFICATION_EMAIL ?? "bookings@evexec.example",
+      bookingFormUrl: process.env.EV_EXEC_BOOKING_FORM_URL ?? null,
+    },
+  });
+  await prisma.extraOffering.upsert({
+    where: { providerId_name: { providerId: evExec.id, name: "Return airport transfer" } },
+    update: {},
+    create: {
+      providerId: evExec.id,
+      name: "Return airport transfer",
+      description:
+        "Door-to-door executive transfer between the airport and your stay, both ways - booked and confirmed by EV Exec.",
+      category: "AIRPORT_TRANSFER",
+      priceCents: 4500,
+    },
+  });
+
   console.log("Seeded database:");
   console.log(`  host  -> ${host.email} / hostpass123`);
   console.log(`  guest -> ${guest.email} / guestpass123`);
   console.log(`  ${LISTINGS.length} listings created`);
   console.log(`  1 completed stay + review created`);
+  console.log(`  1 trip-extras provider (EV Exec) + 1 offering created`);
 }
 
 main()

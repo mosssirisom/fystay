@@ -20,6 +20,7 @@ import { ChangeRequestStatus } from "@/components/ChangeRequestStatus";
 import { previewCancellation } from "@/lib/cancellationPolicy";
 import { needsDepositAuthorization } from "@/lib/securityDeposit";
 import { DepositStatusCard } from "@/components/DepositStatusCard";
+import { TripExtrasCard } from "@/components/TripExtrasCard";
 import type { BadgeProps } from "@/components/ui/Badge";
 
 export const metadata: Metadata = { title: "Booking details", robots: { index: false } };
@@ -94,6 +95,24 @@ export default async function BookingDetailPage({
     booking.paymentStatus === "PAID" ||
     booking.paymentStatus === "PARTIALLY_REFUNDED" ||
     booking.paymentStatus === "REFUNDED";
+
+  // Trip extras (see docs/trip-extras-roadmap.md) - only worth querying at
+  // all once this is a real, paid stay (same gate as canSeeStayDetails), so
+  // a still-pending or never-paid booking never even shows the "Complete
+  // your trip" card.
+  const [extraOfferings, paidBookingExtras] = canSeeStayDetails
+    ? await Promise.all([
+        prisma.extraOffering.findMany({
+          where: { active: true, provider: { active: true } },
+          include: { provider: { select: { name: true } } },
+          orderBy: { createdAt: "asc" },
+        }),
+        prisma.bookingExtra.findMany({
+          where: { bookingId: booking.id, status: "PAID" },
+          select: { offeringId: true },
+        }),
+      ])
+    : [[], []];
   const canModify = canRequestBookingChange(booking, hasPendingChangeRequest);
   const canCancel = canCancelBooking(booking);
   const canRebook =
@@ -196,6 +215,22 @@ export default async function BookingDetailPage({
           depositCapturedCents={booking.depositCapturedCents}
           canAuthorizeNow={needsDepositAuthorization(booking)}
         />
+      )}
+
+      {extraOfferings.length > 0 && (
+        <div className="mt-4">
+          <TripExtrasCard
+            bookingId={booking.id}
+            offerings={extraOfferings.map((offering) => ({
+              id: offering.id,
+              name: offering.name,
+              description: offering.description,
+              priceCents: offering.priceCents,
+              providerName: offering.provider.name,
+            }))}
+            paidOfferingIds={paidBookingExtras.map((extra) => extra.offeringId)}
+          />
+        </div>
       )}
 
       <PhotoGallery photos={booking.listing.photos} title={booking.listing.title} />

@@ -627,6 +627,13 @@ model Booking {
   // directly) is never a Booking row at all - see AvailabilityBlockSource.PMS_IMPORT.
   pmsReservationLink PmsReservationLink?
 
+  // Paid add-ons purchased against this stay (airport transfer, attraction
+  // tickets, car hire, ...) - see docs/trip-extras-roadmap.md and
+  // BookingExtra's own comment. Empty on every booking until a guest buys
+  // one; never affects totalPriceCents or this booking's own paymentStatus,
+  // since each is its own separate charge.
+  extras BookingExtra[]
+
   @@index([listingId])
   @@index([guestId])
   @@index([roomTypeId, checkIn, checkOut])
@@ -1310,4 +1317,125 @@ model PmsWebhookEvent {
 
   @@unique([provider, externalEventId])
   @@index([connectionId])
+}
+
+// --- Trip extras (see docs/trip-extras-roadmap.md) ---
+//
+// FYStay-sold add-ons alongside a stay - airport transfers, attraction
+// tickets, car hire - rather than a plain accommodation-only marketplace.
+// Each is its own separate Stripe charge to FYStay's own platform account
+// (never Stripe Connect: this is FYStay's own product, not a host's
+// nightly rate), fulfilled in this first phase by emailing the provider a
+// booking request rather than a real system-to-system API - see
+// ExtraProvider and BookingExtra's own comments for why.
+
+enum ExtraCategory {
+  AIRPORT_TRANSFER
+  ATTRACTION_TICKET
+  CAR_HIRE
+}
+
+enum BookingExtraStatus {
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+// A business FYStay resells add-ons for - EV Exec (airport transfers) is
+// the first. Deliberately not a User: these are FYStay's own commercial
+// partners, not accounts that log in to the platform, at least in this
+// phase - see the roadmap's Phase 3 for real provider-API integrations,
+// which may eventually give a provider its own portal.
+model ExtraProvider {
+  id   String @id @default(cuid())
+  // Unique so the seed script (and any future admin "add provider" form)
+  // can upsert by name instead of risking duplicate rows for the same real
+  // business.
+  name String @unique
+  // Every offering under a provider is technically free to have its own
+  // category, but in practice one provider (EV Exec, a car-hire company, a
+  // ticketing partner) sells one kind of thing - denormalized here mainly
+  // so admin listing/filtering doesn't need a join.
+  category ExtraCategory
+  // Where a paid BookingExtra's job is actually sent today (see
+  // src/lib/notificationEmails.ts) - the only field Phase 1 fulfillment
+  // reads. bookingFormUrl is the provider's own existing booking page
+  // (EV Exec already has one), kept for reference/fallback even though
+  // nothing yet links a guest to it directly.
+  notificationEmail String
+  bookingFormUrl    String?
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  offerings ExtraOffering[]
+}
+
+// One bookable, priced thing a provider sells through FYStay (e.g. "Return
+// airport transfer"). priceCents is what FYStay charges the guest for it -
+// see BookingExtra's own comment on why the actual charge is snapshotted
+// separately rather than always read live from here.
+model ExtraOffering {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  category    ExtraCategory
+  priceCents  Int
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  providerId String
+  provider   ExtraProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  bookingExtras BookingExtra[]
+
+  // Unique per provider (not globally) so the seed script can upsert by
+  // (provider, name) - two different providers are free to each sell
+  // something called e.g. "Standard package".
+  @@unique([providerId, name])
+  @@index([providerId])
+}
+
+// One purchased add-on against a Booking. priceCents is snapshotted at
+// purchase time - the same principle as every price field on Booking
+// itself - so a later change to the offering's price never rewrites what a
+// guest already agreed to pay. onDelete: Restrict on offeringId, like
+// RoomType's own FK from Booking, so a provider's offering can never be
+// deleted out from under a real purchase.
+model BookingExtra {
+  id         String             @id @default(cuid())
+  priceCents Int
+  status     BookingExtraStatus @default(PENDING_PAYMENT)
+
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  paidAt                DateTime?
+
+  // Freeform details the guest gives at purchase time that the provider
+  // actually needs (flight number/arrival time, pickup/drop-off address,
+  // ...) - deliberately not structured per-category columns, since each
+  // ExtraCategory needs different details and Phase 1 fulfillment is a
+  // human-read email, not a machine-read payload (see the roadmap's Phase 3
+  // for when a real API might warrant structured fields instead).
+  guestNotes String?
+
+  // Set once the provider notification email actually sends (see
+  // src/lib/notificationEmails.ts's sendTripExtraProviderEmail) -
+  // independent of status, since payment succeeding and the email actually
+  // going out are two different things worth tracking separately.
+  sentToProviderAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  offeringId String
+  offering   ExtraOffering @relation(fields: [offeringId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId])
+  @@index([offeringId])
 }

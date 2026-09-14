@@ -7,6 +7,7 @@ import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
 import { awardReferralBonusIfEligible } from "@/lib/referral";
 import { depositClaimDeadline } from "@/lib/securityDeposit";
 import { pushBookingReservation } from "@/lib/pms/sync";
+import { notifyTripExtraPaid } from "@/app/api/bookings/[id]/extras/route";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -37,7 +38,29 @@ export async function POST(request: Request) {
     const checkoutSession = event.data.object;
     const bookingId = checkoutSession.metadata?.bookingId;
     const changeRequestId = checkoutSession.metadata?.changeRequestId;
-    if (checkoutSession.metadata?.purpose === "deposit" && bookingId) {
+    if (checkoutSession.metadata?.purpose === "trip_extra") {
+      // A Trip Extra purchase (see docs/trip-extras-roadmap.md) completing -
+      // scoped to PENDING_PAYMENT, the same redelivery-safety reasoning as
+      // every other branch here, so a redelivered event never re-sends the
+      // provider/guest emails for an extra that's already been marked paid.
+      const bookingExtraId = checkoutSession.metadata?.bookingExtraId;
+      if (bookingExtraId) {
+        const { count } = await prisma.bookingExtra.updateMany({
+          where: { id: bookingExtraId, status: "PENDING_PAYMENT" },
+          data: {
+            status: "PAID",
+            paidAt: new Date(),
+            stripePaymentIntentId:
+              typeof checkoutSession.payment_intent === "string"
+                ? checkoutSession.payment_intent
+                : undefined,
+          },
+        });
+        if (count > 0) {
+          await notifyTripExtraPaid(bookingExtraId);
+        }
+      }
+    } else if (checkoutSession.metadata?.purpose === "deposit" && bookingId) {
       // A security-deposit hold session (see createDepositCheckoutSession)
       // completing - this is the moment the card actually gets the
       // authorization hold placed on it. Scoped to AWAITING_AUTHORIZATION

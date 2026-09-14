@@ -30,8 +30,12 @@ export type BookingEmailContext = {
   bookingUrl: string;
 };
 
+function dateRange(checkIn: Date, checkOut: Date): string {
+  return `${dateFormatter.format(checkIn)} – ${dateFormatter.format(checkOut)}`;
+}
+
 function stayLine(ctx: BookingEmailContext): string {
-  return `${dateFormatter.format(ctx.checkIn)} – ${dateFormatter.format(ctx.checkOut)} (${ctx.nights} night${ctx.nights === 1 ? "" : "s"}, ${ctx.guests} guest${ctx.guests === 1 ? "" : "s"})`;
+  return `${dateRange(ctx.checkIn, ctx.checkOut)} (${ctx.nights} night${ctx.nights === 1 ? "" : "s"}, ${ctx.guests} guest${ctx.guests === 1 ? "" : "s"})`;
 }
 
 /**
@@ -350,6 +354,79 @@ export async function sendDepositResolvedEmail(
       <p>${bodyLine}</p>
       <p><strong>${ctx.listingTitle}</strong><br>
       ${stayLine(ctx)}</p>
+      <p><a href="${ctx.bookingUrl}">View your booking</a></p>
+    `,
+  });
+}
+
+/**
+ * Everything a Trip Extra purchase (see docs/trip-extras-roadmap.md) needs
+ * to notify both sides - gathered once by the caller (the Stripe webhook)
+ * rather than queried here, the same convention as BookingEmailContext.
+ */
+export type TripExtraEmailContext = {
+  guestName: string | null;
+  guestEmail: string | null;
+  guestNotes: string | null;
+  listingTitle: string;
+  checkIn: Date;
+  checkOut: Date;
+  offeringName: string;
+  priceCents: number;
+  providerName: string;
+  providerEmail: string;
+  bookingUrl: string;
+};
+
+/**
+ * Phase 1 fulfillment (see the roadmap's "Fulfillment" section): rather
+ * than a real provider API, the provider gets a plain email with everything
+ * their own booking form would have asked for. Never thrown on failure -
+ * same reasoning as every other notification email here: a send failing
+ * must never undo or block a payment that already succeeded.
+ */
+export async function sendTripExtraProviderEmail(ctx: TripExtraEmailContext): Promise<boolean> {
+  const resend = getResendClient();
+  if (!resend) return false;
+
+  const { data, error } = await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.providerEmail,
+    subject: `New booking request: ${ctx.offeringName}`,
+    html: `
+      <p>Hi ${ctx.providerName},</p>
+      <p>FYStay has a new paid booking request for <strong>${ctx.offeringName}</strong>
+      (${formatPrice(ctx.priceCents)}, already paid).</p>
+      <p><strong>Guest:</strong> ${ctx.guestName ?? "Not given"}<br>
+      <strong>Contact:</strong> ${ctx.guestEmail ?? "Not given"}<br>
+      <strong>Stay:</strong> ${ctx.listingTitle}, ${dateRange(ctx.checkIn, ctx.checkOut)}</p>
+      ${ctx.guestNotes ? `<p><strong>Guest notes:</strong> ${ctx.guestNotes}</p>` : ""}
+      <p>Please confirm this directly with the guest.</p>
+    `,
+  });
+
+  return !error && Boolean(data);
+}
+
+/**
+ * The guest's own receipt for a Trip Extra purchase - separate from
+ * sendBookingConfirmedEmails since this is its own, later purchase against
+ * an already-confirmed booking, not part of the original confirmation.
+ */
+export async function sendTripExtraGuestConfirmationEmail(ctx: TripExtraEmailContext): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject: `You're all set: ${ctx.offeringName}`,
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>Your <strong>${ctx.offeringName}</strong> (${formatPrice(ctx.priceCents)}) is booked and paid for
+      as part of your trip to <strong>${ctx.listingTitle}</strong>.</p>
+      <p>${ctx.providerName} has been sent your booking request and will be in touch directly to confirm
+      the details with you.</p>
       <p><a href="${ctx.bookingUrl}">View your booking</a></p>
     `,
   });

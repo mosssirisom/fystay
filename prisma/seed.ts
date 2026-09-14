@@ -34,7 +34,7 @@ function hashCode(input: string): number {
 // Line-art glyphs (24x24 viewBox, same stroke language as the lucide icons
 // used everywhere else in the app) standing in for a property's photos.
 // "house" reuses the brand mark itself for city apartments/lofts.
-type PlaceholderIcon = "house" | "lighthouse" | "waves";
+type PlaceholderIcon = "house" | "lighthouse" | "waves" | "star";
 
 const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
   house: [
@@ -49,6 +49,12 @@ const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
   waves: [
     "M2 9c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
     "M2 15c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
+  ],
+  // The one premium listing (see LISTINGS below) - a distinct glyph so it
+  // reads as a different tier at a glance rather than just a higher price
+  // tag on an otherwise identical card.
+  star: [
+    "M12 3l2.6 5.8 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 20l1.4-6.3-4.8-4.3 6.4-.6z",
   ],
 };
 
@@ -130,6 +136,33 @@ const LISTINGS = [
     cancellationPolicy: "CUSTOM" as const,
     customCancellationCutoffDays: 10,
     customCancellationRefundPercent: 75,
+  },
+  {
+    title: "Premium sea-view penthouse on Blackpool promenade",
+    description:
+      "A top-floor penthouse with floor-to-ceiling sea views the entire length of Blackpool's promenade. Private hot tub terrace, hotel-grade linens and finishes throughout, and a five-minute walk to the Tower. The most complete stay FYStay currently lists in Blackpool.",
+    city: "Blackpool",
+    country: "England",
+    propertyType: "APARTMENT" as const,
+    pricePerNightCents: 32000,
+    cleaningFeeCents: 6000,
+    maxGuests: 6,
+    bedrooms: 3,
+    beds: 3,
+    bathrooms: 2,
+    amenities: [
+      "Wifi",
+      "Sea view",
+      "Hot tub",
+      "Free parking",
+      "Air conditioning",
+      "Kitchen",
+      "Washer",
+      "Balcony",
+      "Elevator access",
+    ],
+    placeholderIcon: "star" as const,
+    cancellationPolicy: "MODERATE" as const,
   },
 ];
 
@@ -225,6 +258,56 @@ async function main() {
     },
   });
 
+  // A second completed stay + review, specifically for the premium listing
+  // above - without one it would show no rating at all, which reads as
+  // "unproven" rather than "premium" everywhere ratings are surfaced
+  // (search sort, the homepage carousels, its own detail page).
+  const premiumListing = createdListings.find((l) => l.title.startsWith("Premium sea-view penthouse"))!;
+  const premiumCheckIn = new Date(Date.now() - 12 * 24 * 60 * 60 * 1000);
+  const premiumCheckOut = new Date(Date.now() - 9 * 24 * 60 * 60 * 1000);
+  const premiumNights = nightsBetween(premiumCheckIn, premiumCheckOut);
+  const premiumPricing = computeBookingPricing({
+    nights: premiumNights,
+    pricePerNightCents: premiumListing.pricePerNightCents,
+    cleaningFeeCents: premiumListing.cleaningFeeCents,
+  });
+  const premiumBooking = await prisma.booking.create({
+    data: {
+      reference: generateBookingReference(),
+      listingId: premiumListing.id,
+      guestId: guest.id,
+      checkIn: premiumCheckIn,
+      checkOut: premiumCheckOut,
+      guests: 4,
+      nights: premiumNights,
+      nightlyPriceCents: premiumListing.pricePerNightCents,
+      cleaningFeeCents: premiumPricing.cleaningFeeCents,
+      serviceFeeCents: premiumPricing.serviceFeeCents,
+      taxCents: premiumPricing.taxCents,
+      totalPriceCents: premiumPricing.totalPriceCents,
+      status: "COMPLETED",
+      paymentStatus: "PAID",
+      paidAt: premiumCheckIn,
+      guestName: guest.name,
+      guestEmail: guest.email,
+    },
+  });
+  await prisma.review.create({
+    data: {
+      bookingId: premiumBooking.id,
+      listingId: premiumListing.id,
+      authorId: guest.id,
+      rating: 5,
+      cleanlinessRating: 5,
+      accuracyRating: 5,
+      communicationRating: 5,
+      locationRating: 5,
+      valueRating: 5,
+      comment:
+        "Genuinely the best stay we've had on the Fylde Coast - the hot tub terrace at sunset looking over the sea was unreal, and everything felt hotel-grade. Worth every penny.",
+    },
+  });
+
   // Trip extras (see docs/trip-extras-roadmap.md): EV Exec is FYStay's own
   // transfer business and the first extras provider. The notification
   // email is read from an env var (with a placeholder fallback for local
@@ -315,7 +398,7 @@ async function main() {
   console.log(`  host  -> ${host.email} / hostpass123`);
   console.log(`  guest -> ${guest.email} / guestpass123`);
   console.log(`  ${LISTINGS.length} listings created`);
-  console.log(`  1 completed stay + review created`);
+  console.log(`  2 completed stays + reviews created`);
   console.log(`  3 trip-extras providers (EV Exec + 2 placeholders) + 3 offerings created`);
 }
 

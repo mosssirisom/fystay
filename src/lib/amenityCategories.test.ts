@@ -20,6 +20,11 @@ describe("AMENITY_CATEGORIES", () => {
     const petFriendly = AMENITY_CATEGORIES.find((c) => c.key === "pet_friendly")!;
     expect(petFriendly.test(["Pet friendly"])).toBe(true);
     expect(petFriendly.test(["Kitchen"])).toBe(false);
+
+    const seaView = AMENITY_CATEGORIES.find((c) => c.key === "sea_view")!;
+    expect(seaView.test(["Sea view"])).toBe(true);
+    expect(seaView.test(["Ocean view"])).toBe(true);
+    expect(seaView.test(["Garden"])).toBe(false);
   });
 
   it("treats each accessibility feature as its own filter, not one blanket toggle", () => {

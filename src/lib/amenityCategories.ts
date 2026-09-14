@@ -1,4 +1,4 @@
-import { Accessibility, ParkingCircle, PawPrint, Snowflake, UtensilsCrossed, Wifi } from "lucide-react";
+import { Accessibility, ParkingCircle, PawPrint, Snowflake, UtensilsCrossed, Waves, Wifi } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { isPetFriendly } from "@/lib/search";
 
@@ -51,6 +51,16 @@ export const AMENITY_CATEGORIES: AmenityCategory[] = [
     label: "Pet friendly",
     icon: PawPrint,
     test: (a) => isPetFriendly(a),
+  },
+  // Backs the homepage's "Seaside Escape" trip-type tile with a real
+  // filter rather than a decorative link - only ever offered once a
+  // published listing actually has this amenity (see
+  // availableAmenityCategories below), same as every other category here.
+  {
+    key: "sea_view",
+    label: "Sea view",
+    icon: Waves,
+    test: (a) => a.some((x) => /sea view|sea-view|seaview|ocean view/i.test(x)),
   },
   // Five specific, independently-checkable features rather than one catch-
   // all "Accessible" toggle - a guest who actually needs, say, a roll-in

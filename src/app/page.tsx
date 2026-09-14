@@ -16,6 +16,8 @@ import {
   ExploreDestinations,
   ExploreDestinationsSkeleton,
 } from "@/components/ExploreDestinations";
+import { TripTypeCategories } from "@/components/TripTypeCategories";
+import { AirportTransferPromo } from "@/components/AirportTransferPromo";
 import { Reveal } from "@/components/Reveal";
 import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
@@ -201,23 +203,38 @@ export default async function Home() {
           container below so it spans the entire viewport width. Falls back
           to the generated illustration only when there's nothing real to
           feature yet (a brand-new, empty catalog), or for the brief moment
-          before the real one has loaded. Deliberately carries no marketing
-          headline of its own any more - just the photo and its own
-          featured-listing caption (see FeaturedListingHero), so nothing
-          competes with the photo for attention. */}
+          before the real one has loaded. */}
       <section className="relative h-[420px] w-full overflow-hidden sm:h-[500px] lg:h-[580px]">
-        {/* No dark vignette over the photo here any more: it dates back to
-            when this section carried its own marketing headline and
-            needed contrast across the whole image, but that headline is
-            gone now (see the "Home" component below) and every remaining
+        {/* No page-wide dark vignette over the photo: the headline below
+            carries its own per-line drop-shadow instead, and every other
             text layer already carries its own contrast where it actually
             sits - the pagination dots' own top scrim and the caption
             strip's solid background, both inside FeaturedListingHero. A
-            page-wide tint on top of that just darkened every photo for no
-            reason. */}
+            page-wide tint on top of that would just darken every photo for
+            no reason. */}
         <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
           <FeaturedHero />
         </Suspense>
+
+        {/* A marketing headline sits above the rotating spotlight, but
+            pointer-events-none the whole way down so it never steals a
+            click meant for the featured listing underneath (photo,
+            caption, prev/next arrows) - the one thing the earlier
+            headline-free version of this hero was protecting (see
+            FeaturedListingHero's own doc comment). Each line carries its
+            own drop-shadow for contrast rather than a page-wide vignette,
+            for the same reason: nothing here should dim the photo itself. */}
+        <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-start p-6 sm:p-10">
+          <p className="max-w-md text-xs font-semibold uppercase tracking-[0.2em] text-brand-200 [text-shadow:0_1px_8px_rgba(0,0,0,0.65)] sm:text-sm">
+            The Fylde Coast awaits
+          </p>
+          <h1 className="mt-2 max-w-lg font-[family-name:var(--font-serif)] text-3xl font-normal leading-[1.05] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.65)] sm:max-w-xl sm:text-5xl lg:text-6xl">
+            Your stay starts <em className="text-brand-300 not-italic">here.</em>
+          </h1>
+          <p className="mt-3 max-w-sm text-sm text-white/90 [text-shadow:0_1px_8px_rgba(0,0,0,0.6)] sm:text-base">
+            Local stays. Local knowledge. Door-to-door transfers.
+          </p>
+        </div>
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
@@ -276,9 +293,7 @@ export default async function Home() {
         </div>
 
         <div className="mt-10">
-          <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-            Popular stays on the Fylde Coast
-          </h2>
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Hand-picked stays</h2>
           <p className="mt-1 text-sm text-stone-500">
             Hand-picked local places to stay, ready to book today.
           </p>
@@ -286,6 +301,20 @@ export default async function Home() {
             <Suspense fallback={<ListingsCarouselSkeleton />}>
               <ListingsGrid searchParams={{}} showResultsView={false} />
             </Suspense>
+          </div>
+        </div>
+
+        <Suspense fallback={null}>
+          <AirportTransferPromo />
+        </Suspense>
+
+        <div className="mt-14">
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Find your perfect stay</h2>
+          <p className="mt-1 text-sm text-stone-500">
+            Browse by what you&apos;re after, not just where you&apos;re going.
+          </p>
+          <div className="mt-6">
+            <TripTypeCategories />
           </div>
         </div>
 

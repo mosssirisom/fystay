@@ -5,6 +5,7 @@ import { getStripeClient } from "@/lib/stripe";
 import { canCancelBooking } from "@/lib/changeRequests";
 import { previewCancellation } from "@/lib/cancellationPolicy";
 import { sendBookingCancelledEmails } from "@/lib/notificationEmails";
+import { pushBookingCancellation } from "@/lib/pms/sync";
 
 /**
  * Cancels a booking and, if it was paid for, refunds it per the listing's
@@ -86,7 +87,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   // Only when the booking was already CONFIRMED - a still-PENDING one was
   // never paid for or announced to the host in the first place (no
   // confirmation email ever went out for it), so a cancellation notice
-  // would reference a booking neither side has actually seen yet.
+  // would reference a booking neither side has actually seen yet. A
+  // still-PENDING booking was also never pushed to a PMS (only the
+  // checkout.session.completed webhook does that), so there's nothing to
+  // cancel there either.
   if (booking.status === "CONFIRMED") {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
     await sendBookingCancelledEmails(
@@ -107,6 +111,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       },
       wasPaid ? refund.refundCents : 0,
     );
+    // Best-effort, same reasoning as pushBookingReservation in the Stripe
+    // webhook - never throws, resolves to "not_mapped" for a booking whose
+    // room was never PMS-mapped in the first place.
+    await pushBookingCancellation(prisma, booking.id);
   }
 
   return NextResponse.json({ booking: updated, refund });

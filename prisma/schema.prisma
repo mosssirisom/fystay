@@ -198,6 +198,12 @@ model User {
   guestConversations  Conversation[]       @relation("GuestConversations")
   hostConversations   Conversation[]       @relation("HostConversations")
   sentMessages        Message[]
+
+  // PMS/channel-manager connections this host has set up (see the Pms*
+  // models below) - a host, not a listing, owns a connection, since one
+  // Cloudbeds/SiteMinder/SuperControl account on the provider's side
+  // typically covers all of a host's properties at once.
+  pmsConnections PmsConnection[]
 }
 
 // A single-use, time-limited token for the "forgot password" flow. Only a
@@ -326,6 +332,7 @@ model Listing {
   availabilityBlocks AvailabilityBlock[]
   conversations      Conversation[]
   roomTypes          RoomType[]
+  pmsRoomMappings    PmsRoomMapping[]
 
   @@index([city])
   @@index([hostId])
@@ -361,6 +368,7 @@ model RoomType {
 
   bookings           Booking[]
   availabilityBlocks AvailabilityBlock[]
+  pmsRoomMappings    PmsRoomMapping[]
 
   @@index([listingId])
 }
@@ -368,6 +376,15 @@ model RoomType {
 enum AvailabilityBlockSource {
   HOST
   ICAL_IMPORT
+  // A reservation pulled from a connected PMS/channel manager (Cloudbeds,
+  // SiteMinder, SuperControl - see the Pms* models below) that isn't a real
+  // FYStay Booking - a guest booked through the PMS or another channel, not
+  // through FYStay. Handled exactly like ICAL_IMPORT: externalUid holds the
+  // PMS's own reservation id, so a later sync can tell "still there, maybe
+  // moved" apart from "gone, delete the block" without ever touching a HOST
+  // block. A reservation made *through* FYStay is a real Booking instead
+  // (see PmsReservationLink), never one of these.
+  PMS_IMPORT
 }
 
 // A closure of a date range, independent of any guest Booking: either the
@@ -569,6 +586,13 @@ model Booking {
 
   review         Review?
   changeRequests BookingChangeRequest[]
+
+  // Set once this booking has been pushed to a connected PMS (see
+  // PmsReservationLink's own comment) - null for a booking on a listing
+  // with no PMS connection, or one not yet pushed. A reservation that
+  // exists only on the PMS side (a guest who booked through Cloudbeds
+  // directly) is never a Booking row at all - see AvailabilityBlockSource.PMS_IMPORT.
+  pmsReservationLink PmsReservationLink?
 
   @@index([listingId])
   @@index([guestId])
@@ -998,4 +1022,252 @@ model ApiSyncLog {
   finishedAt   DateTime
 
   @@index([source, startedAt])
+}
+
+// ============================================================================
+// PMS / channel-manager integrations (Cloudbeds, SiteMinder, SuperControl) -
+// a provider-agnostic layer so a host's existing property-management system
+// stays the source of truth for inventory/rates while FYStay syncs against
+// it, rather than every host having to manage two separate calendars by
+// hand. See src/lib/pms/types.ts for the adapter interface every provider
+// implements, and src/lib/pms/sync.ts for the actual sync logic that reads
+// and writes the models below - deliberately reusing this codebase's own
+// existing patterns rather than inventing parallel ones:
+//   - an imported PMS reservation becomes an AvailabilityBlock (source
+//     PMS_IMPORT), exactly like an iCal import - it's an external booking
+//     blocking a date range, not a FYStay Booking with a guest account and
+//     a Stripe payment.
+//   - sync history is a running log (PmsSyncLog), the same shape as
+//     ApiSyncLog above, for the same reason: a string of recent failures
+//     stays visible on the host's integrations page instead of being
+//     masked by the next success.
+//   - authorization on every route touching these models follows this
+//     codebase's own established convention (a NextAuth session + an
+//     explicit hostId/ownership check in the route handler, the same as
+//     every Listing/Booking/RoomType route) rather than Postgres RLS -
+//     this app's database access already goes entirely through Prisma
+//     with a single server-side connection, not per-user Postgres roles or
+//     PostgREST, so there is no request-scoped DB identity for an RLS
+//     policy to key off. Application-layer tenancy checks are how this
+//     entire codebase enforces "a host can only touch their own data"
+//     everywhere else, and these new tables follow the same rule.
+// ============================================================================
+
+enum PmsProvider {
+  CLOUDBEDS
+  SITEMINDER
+  SUPERCONTROL
+}
+
+// DISCONNECTED: never connected, or the host disconnected it - credentials
+// are cleared. CONNECTED: authenticated and syncing normally. ERROR: was
+// connected but the last authenticated call failed in a way that needs the
+// host's attention (an expired/revoked token, a provider-side account
+// issue) - distinct from a single failed sync (see PmsSyncLog), which
+// doesn't necessarily mean the connection itself is broken.
+enum PmsConnectionStatus {
+  DISCONNECTED
+  CONNECTED
+  ERROR
+}
+
+enum PmsSyncKind {
+  AVAILABILITY
+  RATES
+  RESTRICTIONS
+  RESERVATIONS_IMPORT
+  RESERVATION_PUSH
+  CANCELLATION_PUSH
+  // A full pull of availability + rates + restrictions + reservations in
+  // one pass - what "Sync now" and the nightly reconciliation cron both
+  // run, as opposed to the narrower kinds above (mostly useful for
+  // per-resource retries and for reading the log by what actually changed).
+  FULL_RECONCILE
+}
+
+// One PMS/channel-manager account per host per provider - a host connects
+// their existing Cloudbeds/SiteMinder/SuperControl account once, and it
+// covers every property that account manages, not one connection per
+// FYStay listing (see PmsRoomMapping for the per-listing/room-type detail).
+model PmsConnection {
+  id       String              @id @default(cuid())
+  provider PmsProvider
+  status   PmsConnectionStatus @default(DISCONNECTED)
+
+  // The provider's own identifiers for the connected property, once known
+  // (populated after the host picks which property to import from, for a
+  // provider account that manages more than one). Purely descriptive -
+  // never used to authorize anything - the encrypted credentials below are
+  // what every actual API call authenticates with.
+  externalPropertyId   String?
+  externalPropertyName String?
+
+  // Provider credentials (OAuth tokens, or an API key/secret pair,
+  // depending on the provider), encrypted at rest with AES-256-GCM (see
+  // src/lib/pms/crypto.ts) using a server-only key (PMS_ENCRYPTION_KEY) -
+  // never stored in plaintext, and never sent to the browser. Stored as one
+  // opaque ciphertext blob (JSON-shaped once decrypted) rather than
+  // separate columns, since each provider's credential shape differs
+  // (Cloudbeds: OAuth access/refresh token pair; a provider without OAuth
+  // might just be an API key) and a shared column set would either force a
+  // common shape that doesn't fit every provider or need a schema change
+  // per provider added.
+  credentialsCiphertext String?
+  // Only meaningful for an OAuth-based provider's access token - null for
+  // a provider authenticated by a long-lived API key. Checked before each
+  // authenticated call so the adapter can refresh proactively rather than
+  // waiting for a 401.
+  tokenExpiresAt DateTime?
+
+  connectedAt    DateTime?
+  disconnectedAt DateTime?
+
+  // Denormalized from the most recent PmsSyncLog row for this connection,
+  // so the integrations dashboard can show "Last sync: 2 minutes ago"
+  // without a join/aggregate on every page load - the full history is
+  // still in PmsSyncLog for the "view errors" detail.
+  lastSyncedAt     DateTime?
+  lastSyncStatus   SyncStatus?
+  lastSyncError    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostId String
+  host   User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  roomMappings      PmsRoomMapping[]
+  reservationLinks  PmsReservationLink[]
+  syncLogs          PmsSyncLog[]
+  webhookEvents     PmsWebhookEvent[]
+
+  @@unique([hostId, provider])
+  @@index([hostId])
+}
+
+// Maps one PMS room/rate-plan to one FYStay Listing (or, for a HOTEL
+// listing, one specific RoomType within it) - what lets availability/rates
+// sync know which FYStay record a given PMS room's numbers belong to.
+// listingId is always set (a mapping always targets a specific FYStay
+// listing); roomTypeId is set only when that listing is a HOTEL with
+// multiple room types and this mapping is for one of them - the same
+// "listing always, room type only for hotels" shape Booking itself uses.
+model PmsRoomMapping {
+  id String @id @default(cuid())
+
+  externalRoomId   String
+  externalRoomName String?
+
+  connectionId String
+  connection   PmsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  roomTypeId String?
+  roomType   RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  lastSyncedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([connectionId, externalRoomId])
+  @@index([listingId])
+  @@index([roomTypeId])
+}
+
+// Links one real FYStay Booking (a guest who booked and paid through
+// FYStay) to the reservation it was pushed to on the connected PMS - the
+// idempotency record that stops a booking being pushed twice (see
+// src/lib/pms/sync.ts's pushReservation, which always checks for an
+// existing row here first) and what a cancellation push updates rather
+// than creating a second record. A PMS-side reservation that did *not*
+// originate as a FYStay Booking (a guest who booked through the PMS or
+// another channel) is never represented here - see
+// AvailabilityBlockSource.PMS_IMPORT for that direction instead.
+model PmsReservationLink {
+  id String @id @default(cuid())
+
+  connectionId String
+  connection   PmsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  // Null until the push has actually succeeded at least once.
+  externalReservationId String?
+
+  pushStatus   SyncStatus?
+  pushError    String?
+  pushAttempts Int         @default(0)
+  pushedAt     DateTime?
+
+  // Set once this booking's cancellation has been pushed to the PMS -
+  // independent of pushStatus, since a booking can only be cancelled on
+  // the PMS after it was successfully created there.
+  cancelPushStatus   SyncStatus?
+  cancelPushError    String?
+  cancelPushAttempts Int         @default(0)
+  cancelPushedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // externalReservationId is only unique per connection once populated;
+  // left un-indexed as a compound unique since it's null on every row that
+  // hasn't pushed successfully yet, and Postgres treats each NULL as
+  // distinct under a unique index, which is exactly the behavior wanted
+  // here (many not-yet-pushed rows can coexist).
+  @@unique([connectionId, externalReservationId])
+  @@index([connectionId])
+}
+
+// One row per sync attempt, same shape and reasoning as ApiSyncLog: a
+// running log rather than a single "last sync" row, so a string of recent
+// failures stays visible on the host's integrations page instead of being
+// masked by the next success. PmsConnection.lastSyncedAt/lastSyncStatus is
+// the denormalized "latest" view for the dashboard's summary card; this
+// table is the "view errors" detail behind it.
+model PmsSyncLog {
+  id           String      @id @default(cuid())
+  kind         PmsSyncKind
+  status       SyncStatus
+  recordCount  Int         @default(0)
+  errorMessage String?
+  startedAt    DateTime
+  finishedAt   DateTime
+
+  connectionId String
+  connection   PmsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId, startedAt])
+}
+
+// Idempotency record for an inbound webhook delivery - a provider's own
+// event id, deduplicated per provider so a redelivered webhook (every
+// provider's own retry policy assumes at-least-once delivery) is processed
+// at most once. Mirrors how the Stripe webhook route already guards
+// against a redelivered checkout.session.completed event, applied to PMS
+// webhooks the same way.
+model PmsWebhookEvent {
+  id              String      @id @default(cuid())
+  provider        PmsProvider
+  externalEventId String
+  eventType       String
+  payload         Json
+
+  processedAt  DateTime?
+  status       SyncStatus?
+  errorMessage String?
+  receivedAt   DateTime    @default(now())
+
+  // Nullable: a webhook can arrive for a connection that's since been
+  // disconnected (or, in principle, before FYStay can resolve which
+  // connection it belongs to) - kept for the audit trail either way rather
+  // than rejected outright.
+  connectionId String?
+  connection   PmsConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, externalEventId])
+  @@index([connectionId])
 }

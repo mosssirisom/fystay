@@ -41,7 +41,7 @@ type BlockRow = {
   startDate: Date;
   endDate: Date;
   reason: string | null;
-  source: "HOST" | "ICAL_IMPORT";
+  source: "HOST" | "ICAL_IMPORT" | "PMS_IMPORT";
 };
 
 const LEGEND = [
@@ -362,7 +362,7 @@ export function AvailabilityCalendar({
                   <div>
                     <p className="flex items-center gap-2 text-sm font-medium text-foreground">
                       {dateFormatter.format(block.startDate)} – {dateFormatter.format(block.endDate)}
-                      {block.source === "ICAL_IMPORT" && (
+                      {(block.source === "ICAL_IMPORT" || block.source === "PMS_IMPORT") && (
                         <Badge variant="neutral" className="text-[11px]">
                           Synced
                         </Badge>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarCheck2, CreditCard, Home, PlusCircle, Star, Wallet } from "lucide-react";
+import { CalendarCheck2, CreditCard, Home, Plug, PlusCircle, Star, Wallet } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { averageRating } from "@/lib/reviews";
@@ -159,6 +159,10 @@ export default async function HostDashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link href="/host/integrations" className={cn(buttonVariants({ variant: "outline" }))}>
+            <Plug className="h-4 w-4" />
+            Integrations
+          </Link>
           <Link href="/host/payouts" className={cn(buttonVariants({ variant: "outline" }))}>
             <CreditCard className="h-4 w-4" />
             Payouts

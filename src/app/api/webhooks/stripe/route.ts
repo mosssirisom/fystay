@@ -6,6 +6,7 @@ import { connectFlagsFromAccount } from "@/lib/stripeConnect";
 import { sendBookingConfirmedEmails } from "@/lib/notificationEmails";
 import { awardReferralBonusIfEligible } from "@/lib/referral";
 import { depositClaimDeadline } from "@/lib/securityDeposit";
+import { pushBookingReservation } from "@/lib/pms/sync";
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -103,6 +104,12 @@ export async function POST(request: Request) {
           bookingUrl: `${baseUrl}/bookings/${booking.id}`,
         });
         await awardReferralBonusIfEligible(prisma, booking.guestId);
+        // Best-effort: pushBookingReservation never throws (it catches and
+        // records every failure on the PmsReservationLink row itself), so
+        // awaiting it here can't fail this webhook or delay Stripe's retry
+        // logic - a booking with no PMS-mapped room/listing just resolves to
+        // "not_mapped" immediately.
+        await pushBookingReservation(prisma, bookingId);
       }
     } else if (changeRequestId) {
       await applyApprovedChange(changeRequestId);

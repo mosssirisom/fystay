@@ -80,7 +80,11 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-heading);
-  --font-logo: var(--font-heading);
+  /* The wordmark's own font, kept independent from --font-heading (used for
+     every h1/h2 on the site) so retyping the logo never touches page
+     typography elsewhere - see the dmSerifDisplay font loader in
+     app/layout.tsx. */
+  --font-logo: var(--font-logo-serif);
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 8px rgb(0 0 0 / 0.06);
   --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 4px rgb(0 0 0 / 0.06);

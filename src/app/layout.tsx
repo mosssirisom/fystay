@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Lora } from "next/font/google";
+import { Geist, Geist_Mono, Lora, DM_Serif_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -29,6 +29,19 @@ const lora = Lora({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["600", "700"],
+  style: ["normal"],
+});
+
+// The wordmark gets its own, separate font from every other heading on the
+// site (see --font-logo's own mapping in globals.css) - DM Serif Display's
+// softer, more rounded terminals read as warmer and more approachable than
+// Lora at logotype scale, which is exactly the "premium travel brand, not a
+// traditional hotel/estate-agent" feel the mark is going for. It only ships
+// one weight (400), which keeps the mark from ever reading as heavy-handed.
+const dmSerifDisplay = DM_Serif_Display({
+  variable: "--font-logo-serif",
+  subsets: ["latin"],
+  weight: "400",
   style: ["normal"],
 });
 
@@ -71,7 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <a

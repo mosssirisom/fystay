@@ -24,7 +24,15 @@ export function Logo({
   return (
     <span className={cn("inline-flex flex-col", className)}>
       <span
-        className={cn("font-[family-name:var(--font-logo)] leading-none", sizeClasses[size])}
+        className={cn(
+          // tracking-tight pulls DM Serif Display's fairly generous default
+          // spacing in so "FY" and "Stay" read as one fused wordmark rather
+          // than two adjacent words - font-normal guards against the
+          // browser synthesizing a bolder weight than the single 400 the
+          // font actually ships.
+          "font-[family-name:var(--font-logo)] font-normal leading-none tracking-tight",
+          sizeClasses[size],
+        )}
       >
         <span className="text-brand-600">FY</span>
         <span className="text-[var(--color-ink)]">Stay</span>

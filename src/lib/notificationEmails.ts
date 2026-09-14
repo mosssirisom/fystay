@@ -246,6 +246,78 @@ export async function sendDepositAuthorizationRequestEmail(
 }
 
 /**
+ * Sent to the guest a few days before check-in (see
+ * ARRIVAL_REMINDER_WINDOW_DAYS in src/app/api/cron/booking-lifecycle-
+ * emails/route.ts) - the address and check-in details a guest actually
+ * needs to plan their arrival, surfaced proactively rather than only ever
+ * available if they think to go back to their booking page. address/
+ * checkInTime/checkInInstructions/wifi are each optional independently -
+ * a host may have filled in some but not others.
+ */
+export async function sendArrivalReminderEmail(
+  ctx: BookingEmailContext,
+  details: {
+    address: string | null;
+    checkInTime: string | null;
+    checkInInstructions: string | null;
+    wifiNetwork: string | null;
+    wifiPassword: string | null;
+  },
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  const detailLines = [
+    details.address && `<strong>Address:</strong> ${details.address}`,
+    details.checkInTime && `<strong>Check-in:</strong> ${details.checkInTime}`,
+    details.checkInInstructions && `<strong>Getting in:</strong> ${details.checkInInstructions}`,
+    details.wifiNetwork &&
+      `<strong>Wifi:</strong> ${details.wifiNetwork}${details.wifiPassword ? ` / ${details.wifiPassword}` : ""}`,
+  ].filter(Boolean);
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject: `Your stay at ${ctx.listingTitle} is coming up`,
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>Just a heads-up that your stay at <strong>${ctx.listingTitle}</strong> is coming up.</p>
+      <p>${stayLine(ctx)}<br>
+      Booking reference: ${ctx.reference}</p>
+      ${detailLines.length > 0 ? `<p>${detailLines.join("<br>")}</p>` : ""}
+      <p><a href="${ctx.bookingUrl}">View your booking</a></p>
+    `,
+  });
+}
+
+/**
+ * Sent to the guest once a stay has ended, inviting them to leave a review
+ * (see REVIEW_REQUEST_DELAY_DAYS in src/app/api/cron/booking-lifecycle-
+ * emails/route.ts) - the same review form already reachable from "My
+ * trips", just surfaced proactively instead of relying on the guest to
+ * come back and remember. reviewUrl points straight at that booking's card
+ * on the trips page.
+ */
+export async function sendReviewRequestEmail(ctx: BookingEmailContext, reviewUrl: string): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject: `How was your stay at ${ctx.listingTitle}?`,
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>We hope you had a great time at <strong>${ctx.listingTitle}</strong>. Other guests find your
+      review genuinely useful when deciding where to stay - it only takes a minute.</p>
+      <p>${stayLine(ctx)}<br>
+      Booking reference: ${ctx.reference}</p>
+      <p><a href="${reviewUrl}">Leave a review</a></p>
+    `,
+  });
+}
+
+/**
  * Sent to the guest once a host has resolved an AUTHORIZED deposit hold -
  * either released (nothing claimed) or captured (a real charge for
  * something the host says went wrong, so the guest gets the reason, not

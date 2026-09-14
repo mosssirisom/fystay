@@ -129,6 +129,16 @@ model User {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
+  // Set once by self-service account deletion (POST /api/account, see
+  // src/lib/accountDeletion.ts) - anonymize-in-place, not a real row
+  // delete, since a real DELETE would cascade through every Booking,
+  // Review, and Message this account ever touched (most of those
+  // relations are onDelete: Cascade), destroying another party's own
+  // booking/financial history along with it. A non-null deletedAt means
+  // name/email/phone/image have been scrubbed and passwordHash cleared
+  // (blocking login); every other row this account created stays exactly
+  // as it was.
+  deletedAt    DateTime?
   // Null for an account created via an OAuth provider (e.g. Google) that
   // has never also set a password - there's nothing to compare against on
   // a Credentials login, so authorize() must treat null as "deny" rather
@@ -557,6 +567,15 @@ model Booking {
   // totalPriceCents (partial refund) or 0 (no refund) - never assume a
   // cancelled, previously-paid booking was refunded in full.
   refundedAmountCents   Int?
+
+  // Idempotency for the two automated lifecycle emails in
+  // src/app/api/cron/booking-lifecycle-emails/route.ts - each is sent at
+  // most once per booking, so the cron can run daily without re-notifying
+  // a guest it already reached. Null means "not sent yet", not "N/A" -
+  // both are meaningful on every booking, including a cancelled one that
+  // never reaches either window.
+  arrivalReminderSentAt DateTime?
+  reviewRequestSentAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -8,6 +8,7 @@ import { isPhoneVerificationConfigured } from "@/lib/phoneVerification";
 import { Card, CardContent } from "@/components/ui/Card";
 import { IdentityVerificationCard } from "@/components/IdentityVerificationCard";
 import { PhoneVerificationCard } from "@/components/PhoneVerificationCard";
+import { PrivacyDataCard } from "@/components/PrivacyDataCard";
 
 export const metadata: Metadata = { title: "Account", robots: { index: false } };
 
@@ -56,6 +57,7 @@ export default async function AccountPage() {
           verifiedPhone={user.phoneVerifiedAt ? user.phone : null}
           configured={isPhoneVerificationConfigured()}
         />
+        <PrivacyDataCard />
       </div>
     </div>
   );

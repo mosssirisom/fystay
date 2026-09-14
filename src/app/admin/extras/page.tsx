@@ -1,0 +1,143 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { Building2, Ticket } from "lucide-react";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { SectionHeading } from "@/components/SectionHeading";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { ExtraProviderForm } from "@/components/admin/ExtraProviderForm";
+import { ExtraOfferingForm } from "@/components/admin/ExtraOfferingForm";
+import { ToggleExtraActiveButton } from "@/components/admin/ToggleExtraActiveButton";
+import { AdminNav } from "@/components/admin/AdminNav";
+import { formatPrice } from "@/lib/format";
+
+export const metadata: Metadata = { title: "Trip extras", robots: { index: false } };
+
+const CATEGORY_LABELS: Record<string, string> = {
+  AIRPORT_TRANSFER: "Airport transfer",
+  ATTRACTION_TICKET: "Attraction ticket",
+  CAR_HIRE: "Car hire",
+};
+
+/**
+ * Manages Trip Extras providers/offerings (see docs/trip-extras-roadmap.md)
+ * - the infrastructure Phase 2 of that roadmap called for, so onboarding
+ * the next provider (attraction tickets, car hire, ...) is a form here
+ * rather than hand-editing prisma/seed.ts the way EV Exec had to be in
+ * Phase 1.
+ */
+export default async function AdminExtrasPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login?callbackUrl=/admin/extras");
+  if (session.user.role !== "ADMIN") redirect("/");
+
+  const providers = await prisma.extraProvider.findMany({
+    include: { offerings: { orderBy: { createdAt: "asc" } } },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return (
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
+      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Trip extras</h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
+        Providers and offerings shown as add-ons on a guest&apos;s confirmed booking - see{" "}
+        <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">
+          docs/trip-extras-roadmap.md
+        </code>{" "}
+        for the plan behind this.
+      </p>
+
+      <div className="mt-6">
+        <AdminNav active="/admin/extras" />
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4">
+        <ExtraProviderForm />
+        <ExtraOfferingForm
+          providers={providers.map((provider) => ({
+            id: provider.id,
+            name: provider.name,
+            category: provider.category as "AIRPORT_TRANSFER" | "ATTRACTION_TICKET" | "CAR_HIRE",
+          }))}
+        />
+      </div>
+
+      <div className="mt-8">
+        <SectionHeading icon={Building2}>Providers</SectionHeading>
+        {providers.length === 0 ? (
+          <p className="mt-3 text-sm text-stone-500">No providers yet.</p>
+        ) : (
+          <div className="mt-3 flex flex-col gap-4">
+            {providers.map((provider) => (
+              <Card key={provider.id}>
+                <CardContent className="flex flex-col gap-4 p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground">{provider.name}</p>
+                        <Badge variant="brand">{CATEGORY_LABELS[provider.category] ?? provider.category}</Badge>
+                        {!provider.active && <Badge variant="neutral">Deactivated</Badge>}
+                      </div>
+                      <p className="mt-1 text-sm text-stone-500">{provider.notificationEmail}</p>
+                      {provider.bookingFormUrl && (
+                        <a
+                          href={provider.bookingFormUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-brand-700 hover:underline"
+                        >
+                          Their booking page
+                        </a>
+                      )}
+                    </div>
+                    <ToggleExtraActiveButton
+                      endpoint={`/api/admin/extras/providers/${provider.id}`}
+                      active={provider.active}
+                      noun="Provider"
+                    />
+                  </div>
+
+                  {provider.offerings.length > 0 && (
+                    <div className="border-t border-border-subtle pt-3">
+                      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-stone-500">
+                        <Ticket className="h-3.5 w-3.5" aria-hidden />
+                        Offerings
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {provider.offerings.map((offering) => (
+                          <div
+                            key={offering.id}
+                            className="flex items-center justify-between gap-3 rounded-lg bg-surface-muted px-3 py-2"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{offering.name}</p>
+                              {offering.description && (
+                                <p className="text-xs text-stone-500">{offering.description}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <p className="text-sm font-semibold tabular-nums text-foreground">
+                                {formatPrice(offering.priceCents)}
+                              </p>
+                              {!offering.active && <Badge variant="neutral">Off</Badge>}
+                              <ToggleExtraActiveButton
+                                endpoint={`/api/admin/extras/offerings/${offering.id}`}
+                                active={offering.active}
+                                noun="Offering"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

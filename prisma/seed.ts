@@ -254,12 +254,69 @@ async function main() {
     },
   });
 
+  // Phase 2 of the roadmap (docs/trip-extras-roadmap.md) - broadening past
+  // EV Exec into the other categories the user named (attraction tickets,
+  // car hire). Deliberately seeded under generic placeholder business
+  // names rather than a real named local company (e.g. the real Blackpool
+  // Pleasure Beach the user mentioned as an example) - FYStay has no
+  // confirmed commercial partnership or booking arrangement with any real
+  // attraction/car-hire company yet, and seeding one under a real
+  // company's name would misrepresent an affiliation that doesn't exist.
+  // Once a real partner is signed, rename/replace these via /admin/extras
+  // rather than the seed script.
+  const attractionsProvider = await prisma.extraProvider.upsert({
+    where: { name: "Fylde Coast Attractions (placeholder)" },
+    update: {},
+    create: {
+      name: "Fylde Coast Attractions (placeholder)",
+      category: "ATTRACTION_TICKET",
+      notificationEmail: "placeholder-attractions@fystay.invalid",
+    },
+  });
+  await prisma.extraOffering.upsert({
+    where: {
+      providerId_name: {
+        providerId: attractionsProvider.id,
+        name: "Blackpool day attraction pass",
+      },
+    },
+    update: {},
+    create: {
+      providerId: attractionsProvider.id,
+      name: "Blackpool day attraction pass",
+      description: "One day's entry to a local Blackpool-area attraction - confirmed after booking.",
+      category: "ATTRACTION_TICKET",
+      priceCents: 3500,
+    },
+  });
+
+  const carHireProvider = await prisma.extraProvider.upsert({
+    where: { name: "Fylde Coast Car Hire (placeholder)" },
+    update: {},
+    create: {
+      name: "Fylde Coast Car Hire (placeholder)",
+      category: "CAR_HIRE",
+      notificationEmail: "placeholder-carhire@fystay.invalid",
+    },
+  });
+  await prisma.extraOffering.upsert({
+    where: { providerId_name: { providerId: carHireProvider.id, name: "3-day car hire" } },
+    update: {},
+    create: {
+      providerId: carHireProvider.id,
+      name: "3-day car hire",
+      description: "A compact hire car for the length of your stay, collected locally.",
+      category: "CAR_HIRE",
+      priceCents: 9000,
+    },
+  });
+
   console.log("Seeded database:");
   console.log(`  host  -> ${host.email} / hostpass123`);
   console.log(`  guest -> ${guest.email} / guestpass123`);
   console.log(`  ${LISTINGS.length} listings created`);
   console.log(`  1 completed stay + review created`);
-  console.log(`  1 trip-extras provider (EV Exec) + 1 offering created`);
+  console.log(`  3 trip-extras providers (EV Exec + 2 placeholders) + 3 offerings created`);
 }
 
 main()

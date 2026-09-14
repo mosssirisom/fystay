@@ -1,5 +1,9 @@
 # Trip Extras / all-inclusive packages roadmap
 
+See `docs/product-strategy.md` for the project-wide build sequencing
+(infrastructure first, real API credentials second) that governs how this
+feature's own phases below get prioritized against everything else.
+
 ## Origin
 
 This document exists because the user asked for their original (dictated,
@@ -136,15 +140,25 @@ automate in Phase 1.
 
 ### Phase 2 - broaden the catalogue
 
-- Add the next add-on categories (attraction tickets - Pleasure Beach
-  named explicitly by the user - and car hire), each as new
-  `ExtraProvider`/`ExtraOffering` rows, no schema changes needed.
-- Move "Complete your trip" earlier in the funnel (e.g. during checkout
-  itself, not only after payment) once there's more than one offering worth
-  showing together - closer to the Virgin Holidays cross-sell moment the
-  user pointed to.
-- Give hosts/admins a simple way to manage offerings (an admin page,
-  reusing the existing `/admin` area) instead of hand-seeding them.
+- Added an ADMIN-only `/admin/extras` page + CRUD API
+  (`/api/admin/extras/providers`, `/api/admin/extras/offerings`) so
+  onboarding the next provider is a form, not a hand-edit of
+  `prisma/seed.ts` the way EV Exec had to be in Phase 1.
+- Added the next two categories (attraction tickets, car hire) as new
+  `ExtraProvider`/`ExtraOffering` rows - no schema changes needed, exactly
+  as planned. **Naming choice:** the user's own example was Pleasure Beach
+  by name, but that's a real, independent company FYStay has no confirmed
+  commercial partnership with - seeding a provider row under their actual
+  name (even with a placeholder email) would misrepresent an affiliation
+  that doesn't exist yet. Seeded as generic placeholders instead ("Fylde
+  Coast Attractions (placeholder)", "Fylde Coast Car Hire (placeholder)")
+  - rename or replace via `/admin/extras` once a real partner is signed.
+- Deferred to a later pass, per `docs/product-strategy.md`'s
+  infrastructure-before-polish ordering: moving "Complete your trip"
+  earlier into the checkout funnel (closer to the Virgin Holidays
+  cross-sell moment the user pointed to) is a conversion-UX improvement,
+  not infrastructure - the booking-detail-page placement already proves
+  the backend end to end.
 
 ### Phase 3 - real provider integrations
 

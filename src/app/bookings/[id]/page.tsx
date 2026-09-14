@@ -227,6 +227,7 @@ export default async function BookingDetailPage({
               description: offering.description,
               priceCents: offering.priceCents,
               providerName: offering.provider.name,
+              category: offering.category,
             }))}
             paidOfferingIds={paidBookingExtras.map((extra) => extra.offeringId)}
           />

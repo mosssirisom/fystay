@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CarFront } from "lucide-react";
+import { CarFront, KeyRound, Ticket as TicketIcon, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -26,6 +26,13 @@ export type TripExtraOffering = {
   description: string | null;
   priceCents: number;
   providerName: string;
+  category: "AIRPORT_TRANSFER" | "ATTRACTION_TICKET" | "CAR_HIRE";
+};
+
+const CATEGORY_ICONS: Record<TripExtraOffering["category"], LucideIcon> = {
+  AIRPORT_TRANSFER: CarFront,
+  ATTRACTION_TICKET: TicketIcon,
+  CAR_HIRE: KeyRound,
 };
 
 /**
@@ -88,13 +95,14 @@ export function TripExtrasCard({
         </p>
         {offerings.map((offering) => {
           const alreadyPaid = paid.has(offering.id);
+          const CategoryIcon = CATEGORY_ICONS[offering.category];
           return (
             <div
               key={offering.id}
               className="flex items-start justify-between gap-4 rounded-xl border border-border-subtle p-4"
             >
               <div className="flex gap-3">
-                <CarFront className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" aria-hidden />
+                <CategoryIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" aria-hidden />
                 <div>
                   <p className="font-medium text-foreground">{offering.name}</p>
                   {offering.description && (

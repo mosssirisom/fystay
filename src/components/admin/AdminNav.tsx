@@ -5,6 +5,7 @@ const ADMIN_LINKS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/promo-codes", label: "Promo codes" },
   { href: "/admin/extras", label: "Trip extras" },
+  { href: "/admin/disputes", label: "Disputes" },
   { href: "/admin/local-data", label: "Local data" },
 ] as const;
 

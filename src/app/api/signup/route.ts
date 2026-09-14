@@ -15,6 +15,10 @@ const signupSchema = z.object({
     .max(72, "Password is too long."),
   role: z.enum(["GUEST", "HOST"]).default("GUEST"),
   referralCode: z.string().trim().max(20).optional(),
+  // Enforced here too, not just as a disabled submit button client-side -
+  // otherwise anyone hitting this endpoint directly could create an account
+  // with no recorded consent at all.
+  termsAccepted: z.literal(true, "You must agree to the Terms and Privacy Policy."),
 });
 
 export async function POST(request: Request) {
@@ -77,6 +81,7 @@ export async function POST(request: Request) {
           referralCode: generateReferralCode(),
           referredByUserId: referrer?.id,
           creditBalanceCents: referrer ? REFERRAL_CREDIT_CENTS : 0,
+          termsAcceptedAt: new Date(),
         },
         select: { id: true, name: true, email: true, role: true },
       });

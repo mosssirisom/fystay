@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { otherParticipant, previewMessage } from "@/lib/messaging";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 
 /**
  * Creates a Message and bumps its Conversation's updatedAt in one
@@ -40,6 +41,17 @@ export async function POST(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Shares one counter with the reply endpoint (same key prefix, same
+  // limit) - see that route's own comment. Starting a new conversation and
+  // replying to one both send a Message, so both should count against the
+  // same budget rather than doubling the effective cap.
+  const rateLimit = await checkRateLimit({
+    key: `messages:send:${session.user.id}`,
+    limit: 30,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
 
   const parsed = startConversationSchema.safeParse(await request.json());
   if (!parsed.success) {

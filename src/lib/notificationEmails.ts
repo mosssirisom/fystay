@@ -1,5 +1,6 @@
 import { getResendClient, EMAIL_FROM } from "@/lib/email";
 import { formatPrice } from "@/lib/format";
+import { SUPPORT_EMAIL } from "@/lib/seo";
 
 const dateFormatter = new Intl.DateTimeFormat("en-GB", {
   weekday: "short",
@@ -428,6 +429,48 @@ export async function sendTripExtraGuestConfirmationEmail(ctx: TripExtraEmailCon
       <p>${ctx.providerName} has been sent your booking request and will be in touch directly to confirm
       the details with you.</p>
       <p><a href="${ctx.bookingUrl}">View your booking</a></p>
+    `,
+  });
+}
+
+/**
+ * Alerts whoever handles disputes that a bank-initiated chargeback just
+ * came in (see PaymentDispute's own schema comment). Sent once per dispute
+ * creation, from the Stripe webhook - never on every status update, since
+ * a missed evidence deadline is what actually costs money and that only
+ * happens once, at the start. DISPUTE_ALERT_EMAIL falls back to the same
+ * public SUPPORT_EMAIL shown on /contact if a dedicated ops inbox hasn't
+ * been configured yet - see docs/product-strategy.md on why this app
+ * ships with a working fallback rather than waiting on a real credential.
+ */
+export async function sendDisputeAlertEmail(details: {
+  amountCents: number;
+  reason: string;
+  evidenceDueBy: Date | null;
+  bookingReference: string | null;
+  disputeUrl: string;
+}): Promise<void> {
+  const resend = getResendClient();
+  if (!resend) return;
+
+  const alertEmail = process.env.DISPUTE_ALERT_EMAIL || SUPPORT_EMAIL;
+  const deadlineLine = details.evidenceDueBy
+    ? `Evidence is due by <strong>${details.evidenceDueBy.toUTCString()}</strong> - after that, this dispute is an automatic loss.`
+    : "Stripe has not given a response window for this dispute.";
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: alertEmail,
+    subject: `New chargeback: ${formatPrice(details.amountCents)}${details.bookingReference ? ` (booking ${details.bookingReference})` : ""}`,
+    html: `
+      <p>A guest's bank has opened a dispute against a payment FYStay took.</p>
+      <p><strong>Amount:</strong> ${formatPrice(details.amountCents)}<br>
+      <strong>Reason given:</strong> ${details.reason}<br>
+      ${details.bookingReference ? `<strong>Booking:</strong> ${details.bookingReference}<br>` : ""}</p>
+      <p>${deadlineLine}</p>
+      <p>Respond in the <a href="https://dashboard.stripe.com/disputes">Stripe dashboard</a> - this app
+      doesn't submit evidence automatically. See it in FYStay's own admin panel:
+      <a href="${details.disputeUrl}">${details.disputeUrl}</a></p>
     `,
   });
 }

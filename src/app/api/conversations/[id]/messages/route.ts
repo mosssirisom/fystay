@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { isConversationParticipant } from "@/lib/messaging";
 import { createMessage } from "@/app/api/conversations/route";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 
 const replySchema = z.object({
   body: z.string().trim().min(1, "Write a message first.").max(4000, "Message is too long."),
@@ -16,6 +17,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Keyed by sender, not conversation: nothing stops the same account from
+  // opening this against many different conversations, so limiting per
+  // thread wouldn't actually cap a spam run.
+  const rateLimit = await checkRateLimit({
+    key: `messages:send:${session.user.id}`,
+    limit: 30,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
 
   const parsed = replySchema.safeParse(await request.json());
   if (!parsed.success) {

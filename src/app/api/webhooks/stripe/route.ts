@@ -8,6 +8,71 @@ import { awardReferralBonusIfEligible } from "@/lib/referral";
 import { depositClaimDeadline } from "@/lib/securityDeposit";
 import { pushBookingReservation } from "@/lib/pms/sync";
 import { notifyTripExtraPaid } from "@/app/api/bookings/[id]/extras/route";
+import { sendDisputeAlertEmail } from "@/lib/notificationEmails";
+import { evidenceDueByDate, mapStripeDisputeStatus } from "@/lib/paymentDisputes";
+import type Stripe from "stripe";
+
+/**
+ * Records a Stripe chargeback (see PaymentDispute's own schema comment) and
+ * alerts an admin the first time this dispute is ever seen. Shared by all
+ * three dispute event types below since they all carry the full current
+ * Dispute object and should all leave the stored row in sync with it -
+ * only whether this is the very first time this stripeDisputeId has been
+ * seen (not which event type fired) decides whether the alert email sends,
+ * so a redelivered charge.dispute.created can never double-alert.
+ */
+async function upsertPaymentDispute(dispute: Stripe.Dispute): Promise<void> {
+  const chargeId = typeof dispute.charge === "string" ? dispute.charge : dispute.charge.id;
+  const paymentIntentId =
+    typeof dispute.payment_intent === "string"
+      ? dispute.payment_intent
+      : (dispute.payment_intent?.id ?? null);
+
+  const existing = await prisma.paymentDispute.findUnique({
+    where: { stripeDisputeId: dispute.id },
+  });
+
+  // Best-effort resolution back to the actual purchase this charge paid
+  // for - the dispute payload itself never carries FYStay's own booking
+  // id, only the PaymentIntent id already stamped onto Booking/
+  // BookingExtra at checkout time.
+  const [booking, bookingExtra] = paymentIntentId
+    ? await Promise.all([
+        prisma.booking.findFirst({ where: { stripePaymentIntentId: paymentIntentId } }),
+        prisma.bookingExtra.findFirst({ where: { stripePaymentIntentId: paymentIntentId } }),
+      ])
+    : [null, null];
+
+  const status = mapStripeDisputeStatus(dispute.status);
+  const evidenceDueBy = evidenceDueByDate(dispute.evidence_details?.due_by ?? null);
+
+  await prisma.paymentDispute.upsert({
+    where: { stripeDisputeId: dispute.id },
+    update: { status, evidenceDueBy, amountCents: dispute.amount, reason: dispute.reason },
+    create: {
+      stripeDisputeId: dispute.id,
+      stripeChargeId: chargeId,
+      stripePaymentIntentId: paymentIntentId,
+      amountCents: dispute.amount,
+      reason: dispute.reason,
+      status,
+      evidenceDueBy,
+      bookingId: booking?.id,
+      bookingExtraId: bookingExtra?.id,
+    },
+  });
+
+  if (!existing) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+    await sendDisputeAlertEmail({
+      amountCents: dispute.amount,
+      reason: dispute.reason,
+      evidenceDueBy,
+      bookingReference: booking?.reference ?? null,
+      disputeUrl: `${baseUrl}/admin/disputes`,
+    });
+  }
+}
 
 export async function POST(request: Request) {
   const stripe = getStripeClient();
@@ -199,6 +264,12 @@ export async function POST(request: Request) {
           // event) - nothing to update, and not worth failing the webhook.
         });
     }
+  } else if (
+    event.type === "charge.dispute.created" ||
+    event.type === "charge.dispute.updated" ||
+    event.type === "charge.dispute.closed"
+  ) {
+    await upsertPaymentDispute(event.data.object);
   }
 
   return NextResponse.json({ received: true });

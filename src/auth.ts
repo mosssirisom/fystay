@@ -171,7 +171,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Google sign-in has no form step to carry a ?ref= code through,
         // so this account never gets a welcome credit that way - it still
         // needs its own shareable referralCode, though, to refer others.
-        create: { email, name: user.name ?? email, image: user.image, referralCode: generateReferralCode() },
+        // termsAcceptedAt is set here, not on update: this is the one
+        // moment the account is actually created, and GoogleSignInButton
+        // shows the Terms/Privacy disclosure right by the button that
+        // triggers this exact flow.
+        create: {
+          email,
+          name: user.name ?? email,
+          image: user.image,
+          referralCode: generateReferralCode(),
+          termsAcceptedAt: new Date(),
+        },
       });
       return true;
     },

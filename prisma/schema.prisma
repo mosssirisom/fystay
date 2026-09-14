@@ -149,6 +149,20 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // When this account's owner actually agreed to the Terms and Privacy
+  // Policy - set once, at account creation, never updated on a later
+  // policy change (re-consent on a materially changed policy is a real
+  // future gap, not solved here). Nullable rather than defaulted to
+  // "now" on migration: an account created before this field existed
+  // genuinely has no recorded consent, and defaulting it to the
+  // migration's own run time would be a fabricated record, not a fix.
+  // Credentials signup requires the checkbox this backs
+  // (src/app/api/signup/route.ts); a Google sign-in has no separate
+  // consent step, so it's set the moment that account is first created,
+  // on the same page (/login or /register) that shows the Terms/Privacy
+  // links right by the "Continue with Google" button.
+  termsAcceptedAt DateTime?
+
   // A host's Stripe Express connected account, used to pay them out
   // directly via destination charges (see src/lib/stripeConnect.ts) rather
   // than FYStay holding every guest payment in its own Stripe balance.
@@ -633,6 +647,14 @@ model Booking {
   // one; never affects totalPriceCents or this booking's own paymentStatus,
   // since each is its own separate charge.
   extras BookingExtra[]
+
+  // A bank-initiated chargeback against this booking's own payment - see
+  // PaymentDispute's own comment for why this is a separate audit record
+  // rather than a new PaymentStatus value. Almost always empty; a real
+  // stay can have more than one disputed charge in principle (e.g. a
+  // change-request payment disputed separately from the original), so
+  // this is a list, not a nullable single relation.
+  disputes PaymentDispute[]
 
   @@index([listingId])
   @@index([guestId])
@@ -1436,6 +1458,71 @@ model BookingExtra {
   offeringId String
   offering   ExtraOffering @relation(fields: [offeringId], references: [id], onDelete: Restrict)
 
+  disputes PaymentDispute[]
+
   @@index([bookingId])
   @@index([offeringId])
+}
+
+// A bank-initiated chargeback (Stripe's own "dispute" object) against a
+// payment this app took. Deliberately its own record rather than a new
+// Booking.paymentStatus value: a dispute has its own lifecycle (opened ->
+// under review -> won/lost, with an evidence deadline in between) that's
+// orthogonal to the booking's own status/refund state, and a booking can
+// still be CONFIRMED/PAID while a dispute against it is actively being
+// fought. Nothing in this app automates a response - Stripe's own
+// dashboard is where evidence actually gets submitted - this table exists
+// so a dispute is never something only visible by happening to check
+// Stripe's dashboard, and so /admin/disputes can surface the evidence
+// deadline before it's missed (a missed deadline is an automatic loss).
+enum DisputeStatus {
+  WARNING_NEEDS_RESPONSE
+  WARNING_UNDER_REVIEW
+  WARNING_CLOSED
+  NEEDS_RESPONSE
+  UNDER_REVIEW
+  WON
+  LOST
+  // Stripe/network-level dispute prevention (e.g. Visa/Mastercard programs
+  // that intercept a would-be chargeback before it's charged against the
+  // merchant) - included for completeness since Stripe's API can send it,
+  // not something this app's own logic branches on specially.
+  PREVENTED
+}
+
+model PaymentDispute {
+  id                    String        @id @default(cuid())
+  stripeDisputeId       String        @unique
+  stripeChargeId        String
+  stripePaymentIntentId String?
+  amountCents           Int
+  // Stripe's own reason code (e.g. "fraudulent", "product_not_received") -
+  // stored as-is rather than mapped to an enum, since Stripe documents
+  // more values than are worth modeling here and may add more over time;
+  // this is a display/triage field, not something this app branches on.
+  reason String
+  status DisputeStatus
+  // Null when Stripe reports no response window for this particular
+  // dispute (evidence_details.due_by can be 0/absent) - never treated as
+  // "no deadline" by the admin UI, which is why it's nullable rather than
+  // defaulted to some far-future date.
+  evidenceDueBy DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Both nullable and independent (not exactly one of the two): resolving
+  // the disputed charge back to a specific Booking or BookingExtra is a
+  // best-effort lookup by payment intent id at webhook time, and this
+  // remains a useful audit record even on the rare event neither lookup
+  // succeeds.
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  bookingExtraId String?
+  bookingExtra   BookingExtra? @relation(fields: [bookingExtraId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+  @@index([bookingExtraId])
+  @@index([status])
 }

@@ -18,6 +18,7 @@ import { completePastBookings, expireStaleBookingRequests } from "@/lib/bookingL
 import { computeCreditToApply } from "@/lib/referral";
 import { computePromoDiscount, normalizePromoCode, validatePromoCode } from "@/lib/promoCode";
 import { sendBookingRequestReceivedEmail } from "@/lib/notificationEmails";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 
 // Exactly one of listingId (every non-hotel booking, unchanged) or
 // roomTypeId (a HOTEL listing's room type, with roomsBooked defaulting to
@@ -59,6 +60,19 @@ export async function POST(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Keyed by guest, not IP: a PENDING booking briefly holds real dates
+  // (see PENDING_BOOKING_HOLD_MINUTES in availability.ts), so a single
+  // compromised or malicious account spamming this endpoint across many
+  // listings could lock out real guests even without ever paying - this
+  // caps that before it costs anyone else their booking, without limiting
+  // how many *different* guests can book at once.
+  const rateLimit = await checkRateLimit({
+    key: `bookings:create:${session.user.id}`,
+    limit: 20,
+    windowMs: 5 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
 
   const body = await request.json();
   const parsed = createBookingSchema.safeParse(body);

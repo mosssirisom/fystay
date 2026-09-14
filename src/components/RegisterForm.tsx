@@ -39,6 +39,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const [role, setRole] = useState<"GUEST" | "HOST">(() =>
     searchParams.get("role")?.toUpperCase() === "HOST" ? "HOST" : "GUEST",
   );
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -59,13 +60,17 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
       setError("Password must be at least 8 characters.");
       return;
     }
+    if (!termsAccepted) {
+      setError("You must agree to the Terms and Privacy Policy.");
+      return;
+    }
 
     setLoading(true);
 
     const res = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role, referralCode }),
+      body: JSON.stringify({ name, email, password, role, referralCode, termsAccepted }),
     });
 
     if (!res.ok) {
@@ -188,20 +193,30 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
 
             {/* Both pages already exist and are linked from the footer,
                 but a footer link is easy to never see - tying the same
-                links to the action that actually creates the account is
-                what makes this a real consent, not just a page that
-                happens to exist somewhere on the site. */}
-            <p className="text-xs text-stone-500">
-              By signing up, you agree to {SITE_NAME}&apos;s{" "}
-              <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
-                Terms and Conditions
-              </Link>{" "}
-              and{" "}
-              <Link href="/legal/privacy" className="font-medium text-brand-700 hover:underline">
-                Privacy Policy
-              </Link>
-              .
-            </p>
+                links to the action that actually creates the account, via
+                a checkbox someone has to actively tick, is what makes this
+                a real recorded consent (termsAcceptedAt) rather than just a
+                page that happens to exist somewhere on the site. */}
+            <label className="flex items-start gap-2 text-xs text-stone-500">
+              <input
+                type="checkbox"
+                required
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="focus-ring mt-0.5 h-4 w-4 shrink-0 rounded border-border-subtle text-brand-700"
+              />
+              <span>
+                I agree to {SITE_NAME}&apos;s{" "}
+                <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
+                  Terms and Conditions
+                </Link>{" "}
+                and{" "}
+                <Link href="/legal/privacy" className="font-medium text-brand-700 hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            </label>
 
             <Button type="submit" loading={loading} className="w-full">
               Sign up

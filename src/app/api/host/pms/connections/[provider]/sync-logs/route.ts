@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 
 /** The "view errors" detail behind the integrations page's summary card - the last 20 sync attempts for this connection, most recent first. */
@@ -12,15 +12,19 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pro
   const provider = parseProvider(providerParam);
   if (!provider) return NextResponse.json({ error: "Unknown provider" }, { status: 400 });
 
-  const connection = await prisma.pmsConnection.findUnique({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
-  });
-  if (!connection) return NextResponse.json({ error: "Not connected" }, { status: 404 });
+  const logs = await withHostScope(session.user.id, async (tx) => {
+    const connection = await tx.pmsConnection.findUnique({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+    });
+    if (!connection) return null;
 
-  const logs = await prisma.pmsSyncLog.findMany({
-    where: { connectionId: connection.id },
-    orderBy: { startedAt: "desc" },
-    take: 20,
+    return tx.pmsSyncLog.findMany({
+      where: { connectionId: connection.id },
+      orderBy: { startedAt: "desc" },
+      take: 20,
+    });
   });
+
+  if (!logs) return NextResponse.json({ error: "Not connected" }, { status: 404 });
   return NextResponse.json({ logs });
 }

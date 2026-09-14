@@ -321,6 +321,24 @@ one, and free/open sources cover every field the Local Guide needs today.
   does - a distinguishable response would itself tell an attacker their guessing was noticed.
   Signup is capped per IP (5/hour); password-reset requests are capped both per email (3/15 min)
   and per IP (20/15 min).
+- **PMS integrations get real Postgres Row Level Security** (`prisma/migrations/
+  20260914070000_add_pms_row_level_security`), on top of the application-layer ownership checks
+  every other route in this app relies on - the five PMS tables (`PmsConnection`,
+  `PmsRoomMapping`, `PmsReservationLink`, `PmsSyncLog`, `PmsWebhookEvent`) hold another party's
+  credentials and sync history, so a host session reads/writes them through a second, restricted
+  database role (`fystay_pms_host_scoped`) whose RLS policies key off the calling host's id. This
+  is additive and optional - the app works identically without it, relying on ownership checks
+  alone, exactly as every other feature does. To turn it on against a real database:
+  1. Run the migration (`prisma migrate deploy` picks it up automatically).
+  2. Set a real password for the role it creates - never put this in source control:
+     `ALTER ROLE fystay_pms_host_scoped WITH PASSWORD '<a-real-generated-secret>';`
+  3. Set `PMS_HOST_SCOPED_DATABASE_URL` to that role's connection string (same host/port/database
+     as `DATABASE_URL`, different user/password) in your production environment.
+
+  Leave it unset and nothing breaks - see `src/lib/pms/hostScopedPrisma.ts` and the migration
+  file's own header comment for exactly how the fallback works and why `FORCE ROW LEVEL SECURITY`
+  is deliberately *not* used (it would also block the nightly reconciliation cron and the inbound
+  webhook receiver, which legitimately need to see every host's connections).
 
 ## Project structure
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { LIVE_PMS_PROVIDERS, PMS_PROVIDER_LABEL } from "@/lib/pms/registry";
 import { IntegrationCard, type IntegrationSummary } from "@/components/host/pms/IntegrationCard";
 import { IntegrationBanner } from "@/components/host/pms/IntegrationBanner";
@@ -20,10 +20,12 @@ export default async function HostIntegrationsPage({
   if (!session?.user) redirect("/login?callbackUrl=/host/integrations");
   if (session.user.role !== "HOST") redirect("/");
 
-  const connections = await prisma.pmsConnection.findMany({
-    where: { hostId: session.user.id },
-    include: { roomMappings: true },
-  });
+  const connections = await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.findMany({
+      where: { hostId: session.user.id },
+      include: { roomMappings: true },
+    }),
+  );
   const byProvider = new Map(connections.map((c) => [c.provider, c]));
 
   const summaries: IntegrationSummary[] = (

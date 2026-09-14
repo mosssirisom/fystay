@@ -2,16 +2,24 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { getPmsAdapter } from "@/lib/pms/registry";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 import { getValidCredentials } from "@/lib/pms/sync";
 import { PmsAdapterError } from "@/lib/pms/types";
 
+// The RLS-scoped read that proves a connection belongs to this host - every
+// following step (credential refresh, the actual adapter call) uses the
+// plain client scoped to connection.id, not withHostScope, since those can
+// involve a slow outbound network call that shouldn't hold a Postgres
+// transaction open.
 async function loadConnectedConnection(hostId: string, providerParam: string) {
   const provider = parseProvider(providerParam);
   if (!provider) return { error: NextResponse.json({ error: "Unknown provider" }, { status: 400 }) } as const;
 
-  const connection = await prisma.pmsConnection.findUnique({ where: { hostId_provider: { hostId, provider } } });
+  const connection = await withHostScope(hostId, (tx) =>
+    tx.pmsConnection.findUnique({ where: { hostId_provider: { hostId, provider } } }),
+  );
   if (!connection || !connection.credentialsCiphertext) {
     return { error: NextResponse.json({ error: "Not connected" }, { status: 404 }) } as const;
   }
@@ -61,10 +69,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
   }
 
-  await prisma.pmsConnection.update({
-    where: { id: connection.id },
-    data: { externalPropertyId: parsed.data.externalPropertyId, externalPropertyName: parsed.data.name },
-  });
+  await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.update({
+      where: { id: connection.id },
+      data: { externalPropertyId: parsed.data.externalPropertyId, externalPropertyName: parsed.data.name },
+    }),
+  );
 
   return NextResponse.json({ selected: true });
 }

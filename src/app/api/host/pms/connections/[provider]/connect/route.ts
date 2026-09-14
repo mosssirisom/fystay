@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { getPmsAdapter } from "@/lib/pms/registry";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 import { encryptPmsCredentials } from "@/lib/pms/crypto";
@@ -37,15 +37,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
       return NextResponse.json({ error: `${provider} does not support OAuth connect` }, { status: 400 });
     }
     const state = randomBytes(24).toString("hex");
-    await prisma.pmsConnection.upsert({
-      where: { hostId_provider: { hostId: session.user.id, provider } },
-      create: { hostId: session.user.id, provider, status: "DISCONNECTED", externalPropertyId: state },
-      // Stashing `state` in externalPropertyId briefly, before a real
-      // property is chosen post-callback, is a deliberate reuse of an
-      // existing nullable column rather than a dedicated one used only
-      // for the few seconds of an OAuth round trip.
-      update: { externalPropertyId: state },
-    });
+    await withHostScope(session.user.id, (tx) =>
+      tx.pmsConnection.upsert({
+        where: { hostId_provider: { hostId: session.user.id, provider } },
+        create: { hostId: session.user.id, provider, status: "DISCONNECTED", externalPropertyId: state },
+        // Stashing `state` in externalPropertyId briefly, before a real
+        // property is chosen post-callback, is a deliberate reuse of an
+        // existing nullable column rather than a dedicated one used only
+        // for the few seconds of an OAuth round trip.
+        update: { externalPropertyId: state },
+      }),
+    );
     let authorizationUrl: string;
     try {
       authorizationUrl = adapter.getAuthorizationUrl({ state, redirectUri: callbackUrl(provider) });
@@ -76,22 +78,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
     return NextResponse.json({ error: verification.error }, { status: 400 });
   }
 
-  await prisma.pmsConnection.upsert({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
-    create: {
-      hostId: session.user.id,
-      provider,
-      status: "CONNECTED",
-      credentialsCiphertext: encryptPmsCredentials(body),
-      connectedAt: new Date(),
-    },
-    update: {
-      status: "CONNECTED",
-      credentialsCiphertext: encryptPmsCredentials(body),
-      connectedAt: new Date(),
-      disconnectedAt: null,
-    },
-  });
+  await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.upsert({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+      create: {
+        hostId: session.user.id,
+        provider,
+        status: "CONNECTED",
+        credentialsCiphertext: encryptPmsCredentials(body),
+        connectedAt: new Date(),
+      },
+      update: {
+        status: "CONNECTED",
+        credentialsCiphertext: encryptPmsCredentials(body),
+        connectedAt: new Date(),
+        disconnectedAt: null,
+      },
+    }),
+  );
 
   return NextResponse.json({ connected: true });
 }

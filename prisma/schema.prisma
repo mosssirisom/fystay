@@ -1041,16 +1041,23 @@ model ApiSyncLog {
 //     ApiSyncLog above, for the same reason: a string of recent failures
 //     stays visible on the host's integrations page instead of being
 //     masked by the next success.
-//   - authorization on every route touching these models follows this
+//   - authorization on every route touching these models starts with this
 //     codebase's own established convention (a NextAuth session + an
 //     explicit hostId/ownership check in the route handler, the same as
-//     every Listing/Booking/RoomType route) rather than Postgres RLS -
-//     this app's database access already goes entirely through Prisma
-//     with a single server-side connection, not per-user Postgres roles or
-//     PostgREST, so there is no request-scoped DB identity for an RLS
-//     policy to key off. Application-layer tenancy checks are how this
-//     entire codebase enforces "a host can only touch their own data"
-//     everywhere else, and these new tables follow the same rule.
+//     every Listing/Booking/RoomType route) - this app's database access
+//     otherwise goes entirely through Prisma with a single server-side
+//     connection, not per-user Postgres roles or PostgREST, so there is no
+//     request-scoped DB identity for RLS to key off anywhere else in this
+//     schema. These five tables are the exception: they carry another
+//     party's credentials and sync history, so they also get real Postgres
+//     Row Level Security as defense-in-depth on top of the application
+//     check, via a second, restricted DB role scoped to app.current_host_id
+//     for the duration of one request - see the
+//     20260914070000_add_pms_row_level_security migration and
+//     src/lib/pms/hostScopedPrisma.ts for exactly how. The nightly
+//     reconciliation cron and the inbound webhook receiver are trusted
+//     system jobs that must see every host's connections, so they
+//     intentionally keep using the plain, unscoped Prisma client.
 // ============================================================================
 
 enum PmsProvider {

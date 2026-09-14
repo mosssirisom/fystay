@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 
 const upsertMappingSchema = z.object({
@@ -21,11 +21,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
   const provider = parseProvider(providerParam);
   if (!provider) return NextResponse.json({ error: "Unknown provider" }, { status: 400 });
 
-  const connection = await prisma.pmsConnection.findUnique({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
-  });
-  if (!connection) return NextResponse.json({ error: "Not connected" }, { status: 404 });
-
   const body = await request.json().catch(() => null);
   const parsed = upsertMappingSchema.safeParse(body);
   if (!parsed.success) {
@@ -33,40 +28,49 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
   }
   const { externalRoomId, externalRoomName, listingId, roomTypeId } = parsed.data;
 
-  // Ownership check: the listing (and, if given, the room type under it)
-  // must belong to this host - the same "never trust a client-supplied id
-  // without an ownership check" pattern every other host-scoped route in
-  // this codebase follows.
-  const listing = await prisma.listing.findUnique({
-    where: { id: listingId },
-    select: { id: true, hostId: true, propertyType: true },
-  });
-  if (!listing || listing.hostId !== session.user.id) {
-    return NextResponse.json({ error: "Listing not found" }, { status: 404 });
-  }
-  if (roomTypeId) {
-    const roomType = await prisma.roomType.findUnique({ where: { id: roomTypeId }, select: { listingId: true } });
-    if (!roomType || roomType.listingId !== listingId) {
-      return NextResponse.json({ error: "Room type does not belong to that listing" }, { status: 400 });
+  const result = await withHostScope(session.user.id, async (tx) => {
+    const connection = await tx.pmsConnection.findUnique({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+    });
+    if (!connection) return { error: "Not connected", status: 404 } as const;
+
+    // Ownership check: the listing (and, if given, the room type under it)
+    // must belong to this host - the same "never trust a client-supplied id
+    // without an ownership check" pattern every other host-scoped route in
+    // this codebase follows.
+    const listing = await tx.listing.findUnique({
+      where: { id: listingId },
+      select: { id: true, hostId: true, propertyType: true },
+    });
+    if (!listing || listing.hostId !== session.user.id) {
+      return { error: "Listing not found", status: 404 } as const;
     }
-  } else if (listing.propertyType === "HOTEL") {
-    return NextResponse.json(
-      { error: "A HOTEL listing needs a specific room type to map to, not the listing itself" },
-      { status: 400 },
-    );
-  }
+    if (roomTypeId) {
+      const roomType = await tx.roomType.findUnique({ where: { id: roomTypeId }, select: { listingId: true } });
+      if (!roomType || roomType.listingId !== listingId) {
+        return { error: "Room type does not belong to that listing", status: 400 } as const;
+      }
+    } else if (listing.propertyType === "HOTEL") {
+      return {
+        error: "A HOTEL listing needs a specific room type to map to, not the listing itself",
+        status: 400,
+      } as const;
+    }
 
-  const mapping = await prisma.pmsRoomMapping.upsert({
-    where: { connectionId_externalRoomId: { connectionId: connection.id, externalRoomId } },
-    create: {
-      connectionId: connection.id,
-      externalRoomId,
-      externalRoomName: externalRoomName ?? null,
-      listingId,
-      roomTypeId: roomTypeId ?? null,
-    },
-    update: { externalRoomName: externalRoomName ?? null, listingId, roomTypeId: roomTypeId ?? null },
+    const mapping = await tx.pmsRoomMapping.upsert({
+      where: { connectionId_externalRoomId: { connectionId: connection.id, externalRoomId } },
+      create: {
+        connectionId: connection.id,
+        externalRoomId,
+        externalRoomName: externalRoomName ?? null,
+        listingId,
+        roomTypeId: roomTypeId ?? null,
+      },
+      update: { externalRoomName: externalRoomName ?? null, listingId, roomTypeId: roomTypeId ?? null },
+    });
+    return { mapping } as const;
   });
 
-  return NextResponse.json({ mapping }, { status: 201 });
+  if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
+  return NextResponse.json({ mapping: result.mapping }, { status: 201 });
 }

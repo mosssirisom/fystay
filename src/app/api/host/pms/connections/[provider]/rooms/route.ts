@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { getPmsAdapter } from "@/lib/pms/registry";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 import { getValidCredentials } from "@/lib/pms/sync";
@@ -15,10 +16,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pro
   const provider = parseProvider(providerParam);
   if (!provider) return NextResponse.json({ error: "Unknown provider" }, { status: 400 });
 
-  const connection = await prisma.pmsConnection.findUnique({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
-    include: { roomMappings: { include: { listing: { select: { id: true, title: true } }, roomType: { select: { id: true, name: true } } } } },
-  });
+  const connection = await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.findUnique({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+      include: { roomMappings: { include: { listing: { select: { id: true, title: true } }, roomType: { select: { id: true, name: true } } } } },
+    }),
+  );
   if (!connection || !connection.credentialsCiphertext || !connection.externalPropertyId) {
     return NextResponse.json({ error: "No property selected yet" }, { status: 404 });
   }

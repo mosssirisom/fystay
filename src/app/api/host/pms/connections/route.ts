@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { LIVE_PMS_PROVIDERS, PMS_PROVIDER_LABEL } from "@/lib/pms/registry";
 
 export type PmsConnectionSummary = {
@@ -33,10 +33,12 @@ export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const connections = await prisma.pmsConnection.findMany({
-    where: { hostId: session.user.id },
-    include: { roomMappings: true },
-  });
+  const connections = await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.findMany({
+      where: { hostId: session.user.id },
+      include: { roomMappings: true },
+    }),
+  );
   const byProvider = new Map(connections.map((c) => [c.provider, c]));
 
   const summaries: PmsConnectionSummary[] = (Object.keys(PMS_PROVIDER_LABEL) as (keyof typeof PMS_PROVIDER_LABEL)[]).map(

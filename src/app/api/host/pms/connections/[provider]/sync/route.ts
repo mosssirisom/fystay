@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 import { runConnectionSync } from "@/lib/pms/sync";
 
@@ -20,11 +21,17 @@ export async function POST(_request: Request, { params }: { params: Promise<{ pr
   const provider = parseProvider(providerParam);
   if (!provider) return NextResponse.json({ error: "Unknown provider" }, { status: 400 });
 
-  const connection = await prisma.pmsConnection.findUnique({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
-  });
+  const connection = await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.findUnique({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+    }),
+  );
   if (!connection) return NextResponse.json({ error: "Not connected" }, { status: 404 });
 
+  // Plain client, not withHostScope: runConnectionSync makes real outbound
+  // calls to the PMS per mapped room and can run for tens of seconds - see
+  // withHostScope's own comment for why that must never happen inside its
+  // transaction. connection.id was already authorized above.
   const summary = await runConnectionSync(prisma, connection.id);
   return NextResponse.json({ summary });
 }

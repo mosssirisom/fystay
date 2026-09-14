@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { PMS_PROVIDER_LABEL } from "@/lib/pms/registry";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -28,28 +28,33 @@ export default async function ManageIntegrationPage({
   const provider = parseProvider(providerParam);
   if (!provider) notFound();
 
-  const connection = await prisma.pmsConnection.findUnique({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
+  const data = await withHostScope(session.user.id, async (tx) => {
+    const connection = await tx.pmsConnection.findUnique({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+    });
+    if (!connection || connection.status !== "CONNECTED") return null;
+
+    const [listings, syncLogs] = await Promise.all([
+      tx.listing.findMany({
+        where: { hostId: session.user.id },
+        select: { id: true, title: true, propertyType: true, roomTypes: { select: { id: true, name: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      tx.pmsSyncLog.findMany({
+        where: { connectionId: connection.id },
+        orderBy: { startedAt: "desc" },
+        take: 10,
+      }),
+    ]);
+
+    return { connection, listings, syncLogs };
   });
-  if (!connection || connection.status !== "CONNECTED") {
-    redirect("/host/integrations");
-  }
+
+  if (!data) redirect("/host/integrations");
+  const { connection, listings, syncLogs } = data;
 
   const label = PMS_PROVIDER_LABEL[provider];
   const providerPath = provider.toLowerCase();
-
-  const [listings, syncLogs] = await Promise.all([
-    prisma.listing.findMany({
-      where: { hostId: session.user.id },
-      select: { id: true, title: true, propertyType: true, roomTypes: { select: { id: true, name: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.pmsSyncLog.findMany({
-      where: { connectionId: connection.id },
-      orderBy: { startedAt: "desc" },
-      take: 10,
-    }),
-  ]);
 
   const mappableListings: MappableListing[] = listings;
 

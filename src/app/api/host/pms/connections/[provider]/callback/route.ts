@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withHostScope } from "@/lib/pms/hostScopedPrisma";
 import { getPmsAdapter } from "@/lib/pms/registry";
 import { parseProvider } from "@/lib/pms/routeHelpers";
 import { encryptPmsCredentials } from "@/lib/pms/crypto";
@@ -45,9 +46,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
     return NextResponse.redirect(redirectTarget);
   }
 
-  const connection = await prisma.pmsConnection.findUnique({
-    where: { hostId_provider: { hostId: session.user.id, provider } },
-  });
+  const connection = await withHostScope(session.user.id, (tx) =>
+    tx.pmsConnection.findUnique({
+      where: { hostId_provider: { hostId: session.user.id, provider } },
+    }),
+  );
   if (!connection || connection.externalPropertyId !== state) {
     redirectTarget.searchParams.set("pms_error", "invalid_state");
     return NextResponse.redirect(redirectTarget);
@@ -62,6 +65,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
   try {
     const redirectUri = `${SITE_URL}/api/host/pms/connections/${provider.toLowerCase()}/callback`;
     const { credentials, expiresAt } = await adapter.exchangeCodeForCredentials({ code, redirectUri });
+    // Plain client, not withHostScope: connection.id was already resolved
+    // and authorized above via the RLS-scoped read - this write never runs
+    // on a client-supplied id, only one we just proved belongs to this
+    // host. Keeping it off withHostScope means the network call above
+    // never holds a Postgres transaction open.
     await prisma.pmsConnection.update({
       where: { id: connection.id },
       data: {

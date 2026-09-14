@@ -198,6 +198,20 @@ model User {
   stripeIdentitySessionId    String?                     @unique
   identityVerifiedAt         DateTime?
 
+  // Optional TOTP two-factor login (see src/lib/twoFactor.ts). The secret
+  // is encrypted at rest (never stored or returned in plaintext once
+  // enrollment is confirmed) and, like every other "verified" flag in this
+  // schema, only counts as active once actually proven: twoFactorSecretCiphertext
+  // is set the moment a QR code is generated, but twoFactorEnabledAt stays
+  // null - and login is NOT gated - until the user enters one real code
+  // back, so a host who scans the QR and never completes setup is never
+  // locked out by a secret they don't actually have working. Backup codes
+  // are stored hashed (bcrypt, same as passwordHash) - one-time use, each
+  // removed from the array the moment it's redeemed.
+  twoFactorSecretCiphertext String?
+  twoFactorEnabledAt        DateTime?
+  twoFactorBackupCodeHashes String[]  @default([])
+
   listings            Listing[]
   bookings            Booking[]
   reviews             Review[]

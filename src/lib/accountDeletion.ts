@@ -55,6 +55,9 @@ export async function anonymizeAccount(prisma: PrismaClient, userId: string): Pr
       phone: null,
       phoneVerifiedAt: null,
       image: null,
+      twoFactorSecretCiphertext: null,
+      twoFactorEnabledAt: null,
+      twoFactorBackupCodeHashes: [],
       deletedAt: new Date(),
     },
   });

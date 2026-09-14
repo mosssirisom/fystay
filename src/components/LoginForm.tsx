@@ -20,6 +20,8 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [needsCode, setNeedsCode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,13 +33,23 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
     const result = await signIn("credentials", {
       email,
       password,
+      ...(needsCode ? { code } : {}),
       redirect: false,
     });
 
     setLoading(false);
 
+    // See auth.ts's TwoFactorRequiredError - the password was right, but
+    // this account needs a second-factor code that hasn't been submitted
+    // yet, so show that step instead of telling the guest their password
+    // was wrong.
+    if (result?.code === "TwoFactorRequired") {
+      setNeedsCode(true);
+      return;
+    }
+
     if (result?.error) {
-      setError("That email and password don't match an account.");
+      setError(needsCode ? "That code doesn't match." : "That email and password don't match an account.");
       return;
     }
 
@@ -66,45 +78,78 @@ function LoginFormInner({ googleEnabled }: { googleEnabled: boolean }) {
             </>
           )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-            <Field>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                invalid={Boolean(error)}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Field>
-            <Field>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="mb-0">
-                  Password
-                </Label>
-                <Link
-                  href="/forgot-password"
-                  className="mb-1.5 text-sm font-medium text-brand-700 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                invalid={Boolean(error)}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <FieldError>{error}</FieldError>
-            </Field>
+            {needsCode ? (
+              <Field>
+                <Label htmlFor="code">Two-factor code</Label>
+                <Input
+                  id="code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  required
+                  invalid={Boolean(error)}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="font-mono"
+                />
+                <FieldError>{error}</FieldError>
+              </Field>
+            ) : (
+              <>
+                <Field>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    invalid={Boolean(error)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="mb-0">
+                      Password
+                    </Label>
+                    <Link
+                      href="/forgot-password"
+                      className="mb-1.5 text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    invalid={Boolean(error)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <FieldError>{error}</FieldError>
+                </Field>
+              </>
+            )}
 
-            <Button type="submit" loading={loading} className="mt-2 w-full">
-              Log in
+            <Button type="submit" loading={loading} className="w-full">
+              {needsCode ? "Verify" : "Log in"}
             </Button>
+            {needsCode && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNeedsCode(false);
+                  setCode("");
+                  setError(null);
+                }}
+                className="focus-ring -mt-2 self-center text-sm font-medium text-stone-500 hover:text-foreground"
+              >
+                Back
+              </button>
+            )}
           </form>
         </CardContent>
       </Card>

@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { IdentityVerificationCard } from "@/components/IdentityVerificationCard";
 import { PhoneVerificationCard } from "@/components/PhoneVerificationCard";
 import { PrivacyDataCard } from "@/components/PrivacyDataCard";
+import { TwoFactorCard } from "@/components/TwoFactorCard";
 
 export const metadata: Metadata = { title: "Account", robots: { index: false } };
 
@@ -26,8 +27,18 @@ export default async function AccountPage() {
       phone: true,
       phoneVerifiedAt: true,
       identityVerificationStatus: true,
+      passwordHash: true,
+      twoFactorEnabledAt: true,
     },
   });
+  // Google-only accounts never go through the password/code check in
+  // src/auth.ts's authorize() at all, so 2FA has nothing to actually gate
+  // for them - offering the toggle would promise a protection it can't
+  // deliver, so it's simply not shown until the account also has a
+  // password (see the "Set a password" flow this app doesn't yet have for
+  // Google accounts - a separate, real gap, not silently worked around
+  // here).
+  const hasPassword = Boolean(user.passwordHash);
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-8">
@@ -57,6 +68,7 @@ export default async function AccountPage() {
           verifiedPhone={user.phoneVerifiedAt ? user.phone : null}
           configured={isPhoneVerificationConfigured()}
         />
+        {hasPassword && <TwoFactorCard initialEnabled={Boolean(user.twoFactorEnabledAt)} />}
         <PrivacyDataCard />
       </div>
     </div>

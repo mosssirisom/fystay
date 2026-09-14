@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
@@ -6,6 +6,25 @@ import { prisma } from "@/lib/prisma";
 import { googleSignInEnabled } from "@/lib/authProviders";
 import { peekRateLimit, recordFailedAttempt, resetRateLimit } from "@/lib/rateLimit";
 import { generateReferralCode } from "@/lib/referral";
+import { decryptTwoFactorSecret } from "@/lib/twoFactorCrypto";
+import { verifyAndConsumeBackupCode, verifyTotpCode } from "@/lib/twoFactor";
+
+/**
+ * Thrown instead of returning null when a password is correct but the
+ * account has 2FA enabled and no code (or an already-consumed/invalid one)
+ * was submitted. next-auth's own CredentialsSignin.type is always fixed at
+ * "CredentialsSignin" for every subclass, but `code` is the one field it
+ * documents as configurable per-instance and does pass through to the
+ * client's signIn() result (as `result.code`) - LoginForm.tsx checks for
+ * exactly this string to know when to show the code-entry step, as opposed
+ * to a genuinely wrong password.
+ */
+class TwoFactorRequiredError extends CredentialsSignin {
+  constructor() {
+    super();
+    this.code = "TwoFactorRequired";
+  }
+}
 
 // Keyed by the attempted email, not the caller's IP - authorize() here has
 // no access to the request, and a per-account cap on guesses is the actual
@@ -33,6 +52,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        // Only ever sent once the client already knows 2FA is required for
+        // this account (see the TwoFactorRequiredError thrown below) -
+        // absent on every ordinary login attempt.
+        code: { label: "Two-factor code", type: "text" },
       },
       authorize: async (credentials) => {
         const email = credentials?.email;
@@ -67,6 +90,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           await recordFailedAttempt({ key: rateLimitKey, windowMs: LOGIN_RATE_LIMIT.windowMs });
           return null;
         }
+
+        if (user.twoFactorEnabledAt && user.twoFactorSecretCiphertext) {
+          const code = typeof credentials?.code === "string" ? credentials.code.trim() : "";
+          // No code submitted yet: the password was right, but this isn't
+          // failed credentials - it's an incomplete attempt. Not recorded
+          // against the rate limit (nothing was actually guessed) and the
+          // limit isn't reset either (a real login hasn't succeeded yet).
+          if (!code) throw new TwoFactorRequiredError();
+
+          const secret = decryptTwoFactorSecret(user.twoFactorSecretCiphertext);
+          let codeValid = verifyTotpCode(secret, code);
+          if (!codeValid) {
+            const { valid, remainingHashes } = await verifyAndConsumeBackupCode(
+              user.twoFactorBackupCodeHashes,
+              code,
+            );
+            codeValid = valid;
+            if (valid) {
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { twoFactorBackupCodeHashes: remainingHashes },
+              });
+            }
+          }
+
+          if (!codeValid) {
+            await recordFailedAttempt({ key: rateLimitKey, windowMs: LOGIN_RATE_LIMIT.windowMs });
+            return null;
+          }
+        }
+
         await resetRateLimit(rateLimitKey);
 
         return {

@@ -3,6 +3,7 @@ import { Anchor, Compass, FerrisWheel, Flower2, Waves, Wind, type LucideIcon } f
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
+import { DESTINATION_PHOTOS } from "@/lib/destinationPhotos";
 
 export const DESTINATION_ART: Record<string, { icon: LucideIcon; gradient: string }> = {
   blackpool: { icon: FerrisWheel, gradient: "from-brand-600 via-brand-700 to-brand-900" },
@@ -41,12 +42,15 @@ function DestinationTile({
   icon: Icon,
   gradient,
   subtitle,
+  photoSrc,
 }: {
   name: string;
   href: string;
   icon: LucideIcon;
   gradient: string;
   subtitle: string;
+  /** Real, licensed photography for this town, if any - see DESTINATION_PHOTOS. */
+  photoSrc?: string;
 }) {
   return (
     <Link
@@ -56,10 +60,22 @@ function DestinationTile({
         gradient,
       )}
     >
-      <Icon
-        className="absolute -right-3 -top-3 h-24 w-24 text-white/15 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-        aria-hidden
-      />
+      {photoSrc ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photoSrc}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        </>
+      ) : (
+        <Icon
+          className="absolute -right-3 -top-3 h-24 w-24 text-white/15 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+          aria-hidden
+        />
+      )}
       <div className="relative">
         <p className="text-base font-bold text-white sm:text-lg">{name}</p>
         <p className="mt-0.5 text-xs text-white/80">{subtitle}</p>
@@ -99,6 +115,7 @@ export async function ExploreDestinations() {
             icon={art.icon}
             gradient={art.gradient}
             subtitle={count > 0 ? `${count} stay${count === 1 ? "" : "s"} to explore` : "Coming soon"}
+            photoSrc={DESTINATION_PHOTOS[destination.slug]?.tile}
           />
         );
       })}

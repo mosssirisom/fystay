@@ -1,16 +1,18 @@
 import { cn } from "@/lib/cn";
+import { DESTINATION_PHOTOS } from "@/lib/destinationPhotos";
 
 /**
- * A generated, on-brand coastal scene per town - the same reasoning as
- * HeroBanner.tsx (this codebase's homepage hero): never a hotlinked stock
- * photo, since the app has no real, licensed town photography and a
- * fabricated "photo" of a place would be dishonest in exactly the way this
- * codebase's own seed data and homepage hero already deliberately avoid.
- * Each town gets a distinct, recognisable silhouette (Blackpool Tower and
+ * A generated, on-brand coastal scene per town, used as the hero backdrop
+ * for any town FYStay hasn't been supplied real photography of yet - the
+ * same reasoning as HeroBanner.tsx (this codebase's homepage hero): never a
+ * hotlinked or unlicensed stock photo standing in for a real place. Each
+ * town gets a distinct, recognisable silhouette (Blackpool Tower and
  * illuminations, Lytham's windmill, Fleetwood's lighthouse, Cleveleys' open
  * coast, Bispham's clifftop) drawn as a golden-hour scene in the same warm
  * terracotta/sand palette as the rest of the site (globals.css), rather
  * than a daytime teal sea, so every town's page still reads as one brand.
+ * A town with real, licensed photography (see DESTINATION_PHOTOS) uses that
+ * instead - see the early return below.
  */
 
 const SKY_TOP: Record<string, string> = {
@@ -224,6 +226,14 @@ const SCENES: Record<string, () => React.ReactNode> = {
 
 export function TownHeroArt({ slug, className }: { slug: string; className?: string }) {
   const Scene = SCENES[slug] ?? BlackpoolScene;
+
+  const photo = DESTINATION_PHOTOS[slug]?.hero;
+  if (photo) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={photo} alt="" className={cn("h-full w-full object-cover", className)} />
+    );
+  }
 
   return (
     <svg

@@ -149,16 +149,22 @@ export function SearchBar({
             // one instance of SearchBar that floats directly over the hero
             // video, so it needs to read as "part of the video" - see-
             // through - rather than a full-size opaque control sitting on
-            // top of it. backdrop-blur keeps the text legible over busy
-            // footage despite the low opacity. A genuinely floating card -
-            // rounded on every corner, with margin on every side (the
-            // wrapper's own padding in page.tsx, not just its position) -
-            // so no edge or corner ever touches the video's own frame.
-            // Wide (up to the same max-w-4xl the default variant below
-            // uses) rather than the narrow box this replaced - a short,
-            // horizontal bar reads as "search bar", a small square box
-            // over the video didn't.
-            "w-full gap-0.5 rounded-2xl border-white/40 bg-white/35 p-1 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md sm:max-w-4xl sm:p-1"
+            // top of it. A heavier blur (xl, not md) turns the footage
+            // behind it into a soft wash of its own colour rather than a
+            // legible miniature of the video, which is what actually makes
+            // it feel cut from the same material as the scene instead of a
+            // sheet of glass laid over a photo. Lower bg/border opacity
+            // and a softer, closer shadow (than the default variant's
+            // harder drop shadow) keep it looking like it's resting in the
+            // scene rather than floating above it.  A genuinely floating
+            // card - rounded on every corner, with margin on every side
+            // (the wrapper's own padding in page.tsx, not just its
+            // position) - so no edge or corner ever touches the video's
+            // own frame. Wide (up to the same max-w-4xl the default
+            // variant below uses) rather than the narrow box this
+            // replaced - a short, horizontal bar reads as "search bar", a
+            // small square box over the video didn't.
+            "w-full gap-0.5 rounded-2xl border-white/25 bg-white/20 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >

@@ -186,46 +186,35 @@ export function SearchBar({
           triggerClassName={isHero ? "px-2 py-1.5" : undefined}
         />
 
-        {isHero ? (
-          // On the hero variant, Check-in/Check-out and Guests always share
-          // one row - even on a stacked mobile phone width - rather than
-          // each getting its own full-width row like the default variant
-          // below. Two rows total (Where; then this one) reads as a short,
-          // wide bar rather than a tall stack of near-square fields.
-          <div className="flex min-w-0 divide-x divide-border-subtle sm:flex-[2.6]">
-            <SearchDateRangeField
-              range={range}
-              onChange={setRange}
-              className="flex-[1.6]"
-              triggerClassName="px-2 py-1.5"
-            />
-            <GuestCategoryPicker
-              value={guestCounts}
-              onChange={setGuestCounts}
-              requireDoneToConfirm
-              className="flex-1"
-              triggerClassName="[&>svg]:text-brand-600 px-2 py-1.5"
-            />
-          </div>
-        ) : (
-          <>
-            {/* Wider than the other segments: it holds two labelled
-                sub-fields (Check-in/Check-out) rather than one. */}
-            <SearchDateRangeField range={range} onChange={setRange} className="sm:flex-[1.6]" />
-            <GuestCategoryPicker
-              value={guestCounts}
-              onChange={setGuestCounts}
-              requireDoneToConfirm
-              className="flex-1"
-              // [&>svg]: recolors just this trigger's own icon to match the
-              // teal used by the Where/Check-in fields, without touching
-              // GuestCategoryPicker's markup - it's also used, unstyled, by
-              // the listing page's booking widget, which this change
-              // shouldn't affect at all.
-              triggerClassName="[&>svg]:text-brand-600 px-3 py-2.5 sm:py-1.5"
-            />
-          </>
-        )}
+        {/* Wider than the other segments: it holds two labelled sub-fields
+            (Check-in/Check-out) rather than one. Each of these keeps its
+            own full-width row on a stacked mobile layout, deliberately -
+            both fields' popovers position themselves relative to their
+            own trigger's width, so squeezing them into a narrower shared
+            row (tried in an earlier pass) pushed the calendar and guest
+            panels partly off-screen on a phone. */}
+        <SearchDateRangeField
+          range={range}
+          onChange={setRange}
+          className="sm:flex-[1.6]"
+          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
+        />
+
+        <GuestCategoryPicker
+          value={guestCounts}
+          onChange={setGuestCounts}
+          requireDoneToConfirm
+          className="flex-1"
+          // [&>svg]: recolors just this trigger's own icon to match the
+          // teal used by the Where/Check-in fields, without touching
+          // GuestCategoryPicker's markup - it's also used, unstyled, by the
+          // listing page's booking widget, which this change shouldn't
+          // affect at all.
+          triggerClassName={cn(
+            "[&>svg]:text-brand-600",
+            isHero ? "px-2 py-1.5" : "px-3 py-2.5 sm:py-1.5",
+          )}
+        />
       </div>
 
       <button

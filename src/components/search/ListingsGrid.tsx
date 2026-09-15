@@ -19,13 +19,31 @@ import { MapViewPlaceholder } from "@/components/MapViewPlaceholder";
 import { ListingsMap } from "@/components/ListingsMap";
 import {
   applyListingFilters,
+  LISTINGS_PAGE_SIZE,
+  paginateListings,
   parseListingFiltersFromParams,
+  parsePageParam,
   parseSortParam,
   parseViewParam,
   sortListings,
 } from "@/lib/listingSearch";
 import { availableAmenityCategories } from "@/lib/amenityCategories";
 import { PROPERTY_TYPES } from "@/lib/propertyType";
+import { Pagination } from "@/components/Pagination";
+
+// Every candidate that could plausibly match a search, fetched once and
+// then filtered/sorted in memory (see the rest of this file) - Postgres
+// itself can't apply the date-availability, pet, and room-type checks
+// below, so there's no way to push pagination down to the query without
+// losing correctness. This cap is the safety net against that unbounded
+// fetch growing without limit as the number of listings scales well past
+// what a single page of hand-picked Fylde Coast stays needs today; raise
+// it (or replace this whole approach with a real search index) long
+// before the platform's real listing count gets anywhere near it.
+const MAX_CANDIDATE_LISTINGS = 500;
+// The homepage's "Popular stays" carousel isn't paginated - it's a taster,
+// not the results page - so it just shows the first handful.
+const HOMEPAGE_CAROUSEL_SIZE = 12;
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -99,6 +117,7 @@ export async function ListingsGrid({
         },
       },
       orderBy: { createdAt: "desc" },
+      take: MAX_CANDIDATE_LISTINGS,
     }),
   ]);
 
@@ -162,7 +181,7 @@ export async function ListingsGrid({
 
     return (
       <ListingsCarousel
-        listings={petFiltered}
+        listings={petFiltered.slice(0, HOMEPAGE_CAROUSEL_SIZE)}
         savedListingIds={savedListingIds}
         isLoggedIn={Boolean(session?.user)}
       />
@@ -188,6 +207,8 @@ export async function ListingsGrid({
   const view = parseViewParam(searchParams.view);
 
   const results = sortListings(applyListingFilters(petFiltered, filters), sort, { near: landmark });
+  const page = parsePageParam(searchParams.page);
+  const paginated = paginateListings(results, page, LISTINGS_PAGE_SIZE);
 
   const cityCounts = new Map<string, number>();
   for (const listing of results) {
@@ -252,18 +273,21 @@ export async function ListingsGrid({
         // full-width card per row is the same shape guests already get in
         // the homepage carousel. Tablet/desktop breakpoints (sm/lg) are
         // unchanged from before.
-        <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4">
-          {results.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              isSaved={savedListingIds.has(listing.id)}
-              isLoggedIn={Boolean(session?.user)}
-              nights={nights}
-              nearLandmark={landmark}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4">
+            {paginated.items.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isSaved={savedListingIds.has(listing.id)}
+                isLoggedIn={Boolean(session?.user)}
+                nights={nights}
+                nearLandmark={landmark}
+              />
+            ))}
+          </div>
+          <Pagination page={paginated.page} totalPages={paginated.totalPages} />
+        </>
       )}
     </div>
   );

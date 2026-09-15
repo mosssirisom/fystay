@@ -10,6 +10,9 @@ import {
 } from "@/lib/availability";
 import { httpUrlSchema } from "@/lib/validation";
 import { geocodeListing } from "@/lib/geocoding";
+import { paginateListings, parsePageParam } from "@/lib/listingSearch";
+
+const LISTINGS_API_PAGE_SIZE = 24;
 
 // One category of room within a HOTEL listing (see prisma/schema.prisma's
 // RoomType model). Every non-hotel property type has zero of these and
@@ -115,6 +118,7 @@ export async function GET(request: Request) {
   const maxPrice = searchParams.get("maxPrice");
   const checkInParam = searchParams.get("checkIn");
   const checkOutParam = searchParams.get("checkOut");
+  const page = parsePageParam(searchParams.get("page") ?? undefined);
 
   const listings = await prisma.listing.findMany({
     where: {
@@ -158,6 +162,11 @@ export async function GET(request: Request) {
       },
     },
     orderBy: { createdAt: "desc" },
+    // Same reasoning as ListingsGrid.tsx's own copy of this cap: the date/
+    // room-type availability filter below runs in memory after the fetch,
+    // so real pagination can't be pushed down to the query without losing
+    // correctness. This bounds the worst case instead.
+    take: 500,
   });
 
   const checkIn = checkInParam ? new Date(checkInParam) : null;
@@ -188,7 +197,13 @@ export async function GET(request: Request) {
         )
       : listings;
 
-  return NextResponse.json({ listings: filtered });
+  const paginated = paginateListings(filtered, page, LISTINGS_API_PAGE_SIZE);
+  return NextResponse.json({
+    listings: paginated.items,
+    page: paginated.page,
+    totalPages: paginated.totalPages,
+    totalCount: paginated.totalCount,
+  });
 }
 
 export async function POST(request: Request) {

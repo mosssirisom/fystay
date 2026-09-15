@@ -26,6 +26,22 @@ function parseDateParam(value: string | null): Date | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
+// Every param key SearchBar itself owns - used both to build a fresh query
+// from scratch (an explicit Search submission) and, in the live-update
+// effect below, to detect which of the *current* URL's params actually
+// changed without disturbing anything SearchBar doesn't know about (sort,
+// view, filters, page - see that effect's own comment).
+const SEARCHBAR_OWNED_PARAMS = [
+  "city",
+  "near",
+  "checkIn",
+  "checkOut",
+  "adults",
+  "children",
+  "infants",
+  "pets",
+] as const;
+
 function buildSearchQuery(
   city: string,
   range: DateRange | undefined,
@@ -98,8 +114,28 @@ export function SearchBar({
   useEffect(() => {
     if (!liveUpdate || selectedListingId) return;
 
-    const nextQuery = buildSearchQuery(city, range, guestCounts, nearLandmark);
-    if (nextQuery === searchParams.toString()) return;
+    // Merge into the *current* URL's params rather than building a fresh
+    // one from just SearchBar's own fields - the results page also carries
+    // ?sort=/&view=/&page=/filter params SearchBar knows nothing about, and
+    // an earlier version of this effect silently dropped all of them a few
+    // hundred ms after every /search load (any of those existing was
+    // already enough to make this effect's from-scratch query differ from
+    // the real one). Only reset ?page= when a field SearchBar actually owns
+    // changed - a genuinely new search invalidates whatever page of the
+    // old result set the guest was on; sort/view/filters carry over
+    // untouched either way.
+    const params = new URLSearchParams(searchParams.toString());
+    const ownedQuery = new URLSearchParams(buildSearchQuery(city, range, guestCounts, nearLandmark));
+    let ownedChanged = false;
+    for (const key of SEARCHBAR_OWNED_PARAMS) {
+      const nextValue = ownedQuery.get(key);
+      if (nextValue !== params.get(key)) ownedChanged = true;
+      if (nextValue === null) params.delete(key);
+      else params.set(key, nextValue);
+    }
+    if (!ownedChanged) return;
+    params.delete("page");
+    const nextQuery = params.toString();
 
     const timeout = setTimeout(() => {
       startTransition(() => {

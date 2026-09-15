@@ -199,22 +199,6 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      {/* The headline now lives on the page's own background, above the
-          video/photo, rather than overlaid on top of it - plain dark text
-          needs no drop-shadow or scrim to stay legible, and the hero media
-          below is free to be purely visual. */}
-      <div className="mx-auto w-full max-w-6xl px-6 pt-8 sm:pt-10">
-        <p className="max-w-md text-xs font-semibold uppercase tracking-[0.2em] text-brand-600 sm:text-sm">
-          The Fylde Coast awaits
-        </p>
-        <h1 className="mt-2 max-w-lg font-[family-name:var(--font-serif)] text-3xl font-normal leading-[1.05] text-foreground sm:max-w-xl sm:text-5xl lg:text-6xl">
-          Your stay starts <em className="text-brand-700 not-italic">here.</em>
-        </h1>
-        <p className="mt-3 max-w-sm text-sm text-stone-600 sm:text-base">
-          Local stays. Local knowledge. Door-to-door transfers.
-        </p>
-      </div>
-
       {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
           container so it spans the entire viewport width. Falls back to the
           generated illustration only when there's nothing real to feature
@@ -224,6 +208,26 @@ export default async function Home() {
         <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
           <FeaturedHero />
         </Suspense>
+
+        {/* One scrim for the whole hero, over whichever backdrop is
+            showing - darkens only the sky band (behind the headline) and
+            the sand band (behind the search bar), left fully clear through
+            the middle third on purpose so the Tower, pier and beach (or a
+            real listing's own photo) read at full strength. pointer-events
+            stays off so it never blocks FeaturedListingHero's own
+            arrows/dots underneath. */}
+        <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.5)_0%,rgba(12,9,7,0)_28%,rgba(12,9,7,0)_64%,rgba(12,9,7,0.55)_100%)]" />
+
+        {/* The headline: one line, up in the open sky at the top of the
+            frame - not a left-aligned block over the water, and not a
+            multi-line pitch. The eyebrow label and descriptive line that
+            used to sit here now live below the fold entirely (see the
+            strip right after this section), off the footage. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center px-6 pt-7 sm:pt-9">
+          <h1 className="max-w-[15ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white sm:text-4xl lg:text-5xl">
+            Your stay starts <em className="italic">here.</em>
+          </h1>
+        </div>
 
         {/* The search bar floats low over the video - down near the sand,
             clear of the Tower/pier the footage leads with up top - as a
@@ -243,6 +247,12 @@ export default async function Home() {
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
+        {/* The line that used to sit on the video, now back on the page's
+            own background directly below the search bar - a hero is just
+            the one line up top, this is where the rest of the pitch goes. */}
+        <p className="mx-auto max-w-lg pt-6 text-center text-sm text-stone-600 sm:pt-8 sm:text-base">
+          Local stays, chosen with care. Local knowledge, on arrival. Door-to-door transfers, sorted before you land.
+        </p>
         {/* A horizontally-scrollable strip on mobile (edge-fade masks, not
             clipped arrows) rather than the wrapped-badge row this replaces -
             reads more like an app's own category rail, and each pill now

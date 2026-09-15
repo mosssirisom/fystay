@@ -53,11 +53,11 @@ export function HeroBanner({ className }: { className?: string }) {
         <source src="/videos/hero-blackpool-pier-mobile.mp4" media="(max-width: 640px)" type="video/mp4" />
         <source src="/videos/hero-blackpool-pier.mp4" type="video/mp4" />
       </video>
-      {/* A light scrim over the top third only, where the headline sits -
-          the rest of the footage is left untouched so the video still
-          reads as the focal point, not something dimmed out from under
-          the text. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/35 to-transparent" />
+      {/* No scrim of its own: page.tsx layers one unified top-and-bottom
+          scrim over the whole hero section, on top of whichever backdrop
+          is showing (this video, or FeaturedListingHero's real photos) -
+          one system for both, rather than each backdrop darkening itself
+          its own slightly different way. */}
     </div>
   );
 }

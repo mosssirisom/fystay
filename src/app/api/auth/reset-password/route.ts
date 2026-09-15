@@ -36,7 +36,15 @@ export async function POST(request: Request) {
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
 
   await prisma.$transaction([
-    prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
+    // Resetting a password is itself a signal the old one may have been
+    // compromised - bumping sessionVersion here signs out every session
+    // that was established under it (see src/lib/sessionRevocation.ts),
+    // including on a device the real owner no longer has, not just this
+    // one's browser.
+    prisma.user.update({
+      where: { id: record.userId },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
+    }),
     prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
   ]);
 

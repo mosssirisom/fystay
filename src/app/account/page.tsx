@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { IdentityVerificationCard } from "@/components/IdentityVerificationCard";
 import { PhoneVerificationCard } from "@/components/PhoneVerificationCard";
 import { PrivacyDataCard } from "@/components/PrivacyDataCard";
+import { SecuritySessionsCard } from "@/components/SecuritySessionsCard";
 import { TwoFactorCard } from "@/components/TwoFactorCard";
 
 export const metadata: Metadata = { title: "Account", robots: { index: false } };
@@ -69,6 +70,7 @@ export default async function AccountPage() {
           configured={isPhoneVerificationConfigured()}
         />
         {hasPassword && <TwoFactorCard initialEnabled={Boolean(user.twoFactorEnabledAt)} />}
+        <SecuritySessionsCard />
         <PrivacyDataCard />
       </div>
     </div>

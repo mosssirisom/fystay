@@ -239,6 +239,17 @@ model User {
   suspendedAt     DateTime?
   suspendedReason String?
 
+  // Session revocation counter (see src/auth.ts's jwt callback). Every JWT
+  // is stamped with the value current at sign-in; on every later request
+  // that stamp is compared against this live column, and a mismatch signs
+  // the session out. Bumping this is how a password reset, account
+  // deletion, or an admin suspending this account actually invalidates an
+  // already-issued token instead of waiting up to 30 days (NextAuth's
+  // default JWT session length) for it to expire on its own - and it's
+  // also what a self-service "sign out of all devices" button
+  // (POST /api/account/sign-out-everywhere) does on demand.
+  sessionVersion Int @default(1)
+
   listings            Listing[]
   bookings            Booking[]
   reviews             Review[]

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -57,7 +58,7 @@ class AccountSuspendedError extends CredentialsSignin {
 // own account for doing nothing wrong.
 const LOGIN_RATE_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const { handlers, signIn, signOut, auth: uncachedAuth } = NextAuth({
   // Trust the Host header from the deployment platform's proxy (Vercel, etc.).
   // Without this, NextAuth v5 rejects every request in production mode
   // ("UntrustedHost") since it can't otherwise tell a real request apart
@@ -161,17 +162,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          sessionVersion: user.sessionVersion,
         };
       },
     }),
     ...(googleSignInEnabled
       ? [
           Google({
-            // The default profile() return has no `role` field, which this
-            // app's User type (src/types/next-auth.d.ts) requires - GUEST
-            // here is only ever a placeholder for the moment between
-            // sign-in and the jwt callback below, which always overwrites
-            // it with the real value from this account's own User row.
+            // The default profile() return has no `role` (or sessionVersion)
+            // field, which this app's User type (src/types/next-auth.d.ts)
+            // requires - both are only ever placeholders for the moment
+            // between sign-in and the jwt callback below, which always
+            // overwrites them with the real values from this account's own
+            // User row.
             profile(profile) {
               return {
                 id: profile.sub,
@@ -179,6 +182,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 email: profile.email,
                 image: profile.picture,
                 role: "GUEST",
+                sessionVersion: 1,
               };
             },
           }),
@@ -241,12 +245,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (dbUser) {
           token.id = dbUser.id;
           token.role = dbUser.role;
+          token.sessionVersion = dbUser.sessionVersion;
         }
+        // Freshly stamped from the row just read above - nothing further
+        // to validate this same call.
         return token;
       }
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.sessionVersion = user.sessionVersion;
+        // Same reasoning as the Google branch: authorize() just read this
+        // user fresh from the DB.
+        return token;
+      }
+
+      // Every later read of an *existing* session (no `user` on this call -
+      // see the two early returns above) re-validates against the live
+      // User row instead of trusting whatever the JWT already claims. This
+      // is what makes a password reset, an admin suspending this account,
+      // or self-service account deletion actually end an already-issued
+      // session instead of leaving it valid until NextAuth's own JWT
+      // expiry (30 days by default) - and what powers the self-service
+      // "sign out of all devices" action (see revokeAllSessions). auth()
+      // is wrapped in React's cache() below so this only runs once per
+      // request no matter how many places call it.
+      const current = await prisma.user.findUnique({
+        where: { id: token.id as string },
+        select: { sessionVersion: true, suspendedAt: true, deletedAt: true },
+      });
+      if (!current || current.deletedAt || isSuspended(current) || current.sessionVersion !== token.sessionVersion) {
+        return null;
       }
       return token;
     },
@@ -259,3 +288,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 });
+
+export { handlers, signIn, signOut };
+// React's cache() dedupes calls within a single request (server component
+// render, or a route handler's own execution) - without it, every one of
+// the ~40 call sites across this app that call auth() would each trigger
+// their own full internal NextAuth round trip, including the live
+// sessionVersion/suspendedAt/deletedAt lookup the jwt callback above now
+// does on every session read. One request should only pay for that once.
+export const auth = cache(uncachedAuth);

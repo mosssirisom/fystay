@@ -59,6 +59,13 @@ export async function anonymizeAccount(prisma: PrismaClient, userId: string): Pr
       twoFactorEnabledAt: null,
       twoFactorBackupCodeHashes: [],
       deletedAt: new Date(),
+      // Kills every other still-live session this account had (a second
+      // tab, another device) immediately, not just the one making this
+      // request - see src/lib/sessionRevocation.ts. deletedAt alone
+      // wouldn't do that: an already-issued JWT isn't re-checked against
+      // it without this bump, only clearing passwordHash, which blocks a
+      // *new* login, not an existing one.
+      sessionVersion: { increment: 1 },
     },
   });
 }

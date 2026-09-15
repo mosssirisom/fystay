@@ -56,7 +56,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const updated = await prisma.user.update({
     where: { id },
     data: parsed.data.suspended
-      ? { suspendedAt: new Date(), suspendedReason: parsed.data.reason || null }
+      ? {
+          suspendedAt: new Date(),
+          suspendedReason: parsed.data.reason || null,
+          // Kicks this account out of any live session immediately rather
+          // than merely blocking its *next* login attempt - see
+          // src/lib/sessionRevocation.ts. Not bumped on unsuspend: there's
+          // no live session to kill in that direction, only new logins to
+          // allow again.
+          sessionVersion: { increment: 1 },
+        }
       : { suspendedAt: null, suspendedReason: null },
   });
 

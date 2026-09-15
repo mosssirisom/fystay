@@ -3,10 +3,11 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
-export default function GlobalError({
+export default function RouteError({
   error,
   reset,
 }: {
@@ -15,6 +16,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (

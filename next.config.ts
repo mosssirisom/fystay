@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
   {
@@ -46,4 +47,20 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withSentryConfig wraps the build regardless of whether SENTRY_DSN is
+// set - it only affects build-time instrumentation (source map upload,
+// tunneling) and no-ops safely without SENTRY_AUTH_TOKEN/SENTRY_ORG/
+// SENTRY_PROJECT, matching the dev-mode-fallback pattern used everywhere
+// else in this codebase.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+  webpack: {
+    treeshake: { removeDebugLogging: true },
+  },
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+});

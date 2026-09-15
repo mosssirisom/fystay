@@ -197,7 +197,11 @@ export default async function Home() {
             card ever touches the video's own frame - rather than the
             earlier full-bleed band this replaced. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4">
-          <div className="pointer-events-auto">
+          {/* w-full max-w-4xl (not just letting the flex item shrink-wrap
+              its content) so the bar actually grows to fill the width
+              this row allows, rather than only ever rendering as wide as
+              its fields' own natural size. */}
+          <div className="pointer-events-auto w-full max-w-4xl">
             <Suspense>
               <SearchBar liveUpdate={false} variant="hero" />
             </Suspense>

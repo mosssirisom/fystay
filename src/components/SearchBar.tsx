@@ -147,18 +147,18 @@ export function SearchBar({
         isHero
           ? // Frosted glass rather than the solid card below: this is the
             // one instance of SearchBar that floats directly over the hero
-            // video, so it needs to read as "part of the video" - small
-            // and see-through - rather than a full-size opaque control
-            // sitting on top of it. backdrop-blur keeps the text legible
-            // over busy footage despite the low opacity. A genuinely
-            // floating card - rounded on every corner, with margin on
-            // every side (the wrapper's own padding in page.tsx, not just
-            // its position) - so no edge or corner ever touches the
-            // video's own frame, unlike the earlier full-bleed band this
-            // replaced. gap-0.5 and tighter field padding (see
-            // triggerClassName below) keep it compact without going back
-            // to covering most of the footage.
-            "w-full max-w-sm gap-0.5 rounded-2xl border-white/40 bg-white/35 p-1 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md sm:max-w-xl sm:p-1.5"
+            // video, so it needs to read as "part of the video" - see-
+            // through - rather than a full-size opaque control sitting on
+            // top of it. backdrop-blur keeps the text legible over busy
+            // footage despite the low opacity. A genuinely floating card -
+            // rounded on every corner, with margin on every side (the
+            // wrapper's own padding in page.tsx, not just its position) -
+            // so no edge or corner ever touches the video's own frame.
+            // Wide (up to the same max-w-4xl the default variant below
+            // uses) rather than the narrow box this replaced - a short,
+            // horizontal bar reads as "search bar", a small square box
+            // over the video didn't.
+            "w-full gap-0.5 rounded-2xl border-white/40 bg-white/35 p-1 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md sm:max-w-4xl sm:p-1.5"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
@@ -186,30 +186,46 @@ export function SearchBar({
           triggerClassName={isHero ? "px-2 py-1.5" : undefined}
         />
 
-        {/* Wider than the other segments: it holds two labelled sub-fields
-            (Check-in/Check-out) rather than one. */}
-        <SearchDateRangeField
-          range={range}
-          onChange={setRange}
-          className="sm:flex-[1.6]"
-          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
-        />
-
-        <GuestCategoryPicker
-          value={guestCounts}
-          onChange={setGuestCounts}
-          requireDoneToConfirm
-          className="flex-1"
-          // [&>svg]: recolors just this trigger's own icon to match the
-          // teal used by the Where/Check-in fields, without touching
-          // GuestCategoryPicker's markup - it's also used, unstyled, by the
-          // listing page's booking widget, which this change shouldn't
-          // affect at all.
-          triggerClassName={cn(
-            "[&>svg]:text-brand-600",
-            isHero ? "px-2 py-1.5" : "px-3 py-2.5 sm:py-1.5",
-          )}
-        />
+        {isHero ? (
+          // On the hero variant, Check-in/Check-out and Guests always share
+          // one row - even on a stacked mobile phone width - rather than
+          // each getting its own full-width row like the default variant
+          // below. Two rows total (Where; then this one) reads as a short,
+          // wide bar rather than a tall stack of near-square fields.
+          <div className="flex min-w-0 divide-x divide-border-subtle sm:flex-[2.6]">
+            <SearchDateRangeField
+              range={range}
+              onChange={setRange}
+              className="flex-[1.6]"
+              triggerClassName="px-2 py-1.5"
+            />
+            <GuestCategoryPicker
+              value={guestCounts}
+              onChange={setGuestCounts}
+              requireDoneToConfirm
+              className="flex-1"
+              triggerClassName="[&>svg]:text-brand-600 px-2 py-1.5"
+            />
+          </div>
+        ) : (
+          <>
+            {/* Wider than the other segments: it holds two labelled
+                sub-fields (Check-in/Check-out) rather than one. */}
+            <SearchDateRangeField range={range} onChange={setRange} className="sm:flex-[1.6]" />
+            <GuestCategoryPicker
+              value={guestCounts}
+              onChange={setGuestCounts}
+              requireDoneToConfirm
+              className="flex-1"
+              // [&>svg]: recolors just this trigger's own icon to match the
+              // teal used by the Where/Check-in fields, without touching
+              // GuestCategoryPicker's markup - it's also used, unstyled, by
+              // the listing page's booking widget, which this change
+              // shouldn't affect at all.
+              triggerClassName="[&>svg]:text-brand-600 px-3 py-2.5 sm:py-1.5"
+            />
+          </>
+        )}
       </div>
 
       <button

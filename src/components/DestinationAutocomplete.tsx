@@ -51,12 +51,15 @@ export function DestinationAutocomplete({
   onChange,
   onSelect,
   className,
+  triggerClassName,
 }: {
   id: string;
   value: string;
   onChange: (value: string) => void;
   onSelect: (payload: SelectPayload) => void;
   className?: string;
+  /** Overrides the trigger label's own padding/sizing - see GuestCategoryPicker's identical prop. */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -236,7 +239,10 @@ export function DestinationAutocomplete({
     <div ref={containerRef} className={cn("relative", className)}>
       <label
         htmlFor={id}
-        className="flex flex-1 cursor-text items-center gap-2.5 rounded-xl px-3 py-2.5 hover:bg-surface-muted sm:py-1.5"
+        className={cn(
+          "flex flex-1 cursor-text items-center gap-2.5 rounded-xl px-3 py-2.5 hover:bg-surface-muted sm:py-1.5",
+          triggerClassName,
+        )}
       >
         <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
         <span className="min-w-0 flex-1">
@@ -261,8 +267,12 @@ export function DestinationAutocomplete({
             placeholder="City, town or hotel name"
             // text-base below sm: see ui/Input.tsx - prevents iOS Safari's
             // auto-zoom-on-focus for any field with a computed font-size
-            // under 16px.
-            className="focus-ring w-full rounded-lg bg-transparent px-0 py-0 text-base text-foreground placeholder:text-stone-500 sm:text-sm"
+            // under 16px. truncate: this field's own width varies a lot
+            // (a full-size row here vs. the much narrower hero variant on
+            // the homepage - see SearchBar.tsx), so the placeholder needs a
+            // clean ellipsis rather than an abrupt hard clip when there
+            // isn't room for it in full.
+            className="focus-ring w-full truncate rounded-lg bg-transparent px-0 py-0 text-base text-foreground placeholder:text-stone-500 sm:text-sm"
           />
         </span>
       </label>

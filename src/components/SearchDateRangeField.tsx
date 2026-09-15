@@ -11,10 +11,13 @@ export function SearchDateRangeField({
   range,
   onChange,
   className,
+  triggerClassName,
 }: {
   range: DateRange | undefined;
   onChange: (range: DateRange | undefined) => void;
   className?: string;
+  /** Overrides both trigger buttons' own padding/sizing - see GuestCategoryPicker's identical prop. */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   // Picking dates only updates this local draft; the parent (and, on the
@@ -78,7 +81,10 @@ export function SearchDateRangeField({
         aria-expanded={open}
         aria-controls="date-range-panel"
         onClick={toggleOpen}
-        className="focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
+        className={cn(
+          "focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5",
+          triggerClassName,
+        )}
       >
         <CalendarDays className="h-4 w-4 shrink-0 text-brand-600" />
         <span className="min-w-0 flex-1">
@@ -102,7 +108,10 @@ export function SearchDateRangeField({
         aria-expanded={open}
         aria-controls="date-range-panel"
         onClick={toggleOpen}
-        className="focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5"
+        className={cn(
+          "focus-ring flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-surface-muted sm:py-1.5",
+          triggerClassName,
+        )}
       >
         <span className="min-w-0 flex-1">
           <span className="block text-[11px] font-semibold text-foreground">Check-out</span>

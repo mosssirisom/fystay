@@ -225,19 +225,18 @@ export default async function Home() {
           <FeaturedHero />
         </Suspense>
 
-        {/* The search bar now sits inside the hero itself, floating over
-            the bottom of the video/photo rather than as its own block
-            underneath - a raised, opaque card (SearchBar already carries
-            its own border/shadow - see SearchBar.tsx) reads clearly against
-            either backdrop without needing a scrim of its own. Positioned
-            with enough clearance from the very bottom edge that it never
-            overlaps FeaturedListingHero's own price/caption strip, which
-            stays flush at the bottom in both the video and the real-listing
+        {/* The search bar floats low over the video - down near the sand,
+            clear of the Tower/pier the footage leads with up top - as a
+            small, frosted-glass control (SearchBar's "hero" variant: see
+            SearchBar.tsx) rather than a full-size opaque card. Still
+            comfortably clickable, just no longer the thing covering most of
+            the video. Kept clear of FeaturedListingHero's own price/caption
+            strip, which stays flush at the very bottom in the real-listing
             state. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-28 z-40 px-4 sm:bottom-24 sm:px-8 lg:px-10">
-          <div className="pointer-events-auto mx-auto w-full max-w-4xl">
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-40 flex justify-center px-4">
+          <div className="pointer-events-auto">
             <Suspense>
-              <SearchBar liveUpdate={false} />
+              <SearchBar liveUpdate={false} variant="hero" />
             </Suspense>
           </div>
         </div>

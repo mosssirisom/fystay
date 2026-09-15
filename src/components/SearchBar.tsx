@@ -44,7 +44,19 @@ function buildSearchQuery(
   return params.toString();
 }
 
-export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) {
+export function SearchBar({
+  liveUpdate = true,
+  variant = "default",
+}: {
+  liveUpdate?: boolean;
+  /**
+   * "hero" is a smaller, translucent/frosted read of the exact same bar -
+   * used only floating over the homepage hero video, where a full-size
+   * opaque card would cover most of the footage behind it. "default" (the
+   * /search page's own copy) is completely unchanged.
+   */
+  variant?: "default" | "hero";
+} = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSearching, startTransition] = useTransition();
@@ -119,6 +131,8 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
     setNearLandmark(null);
   }
 
+  const isHero = variant === "hero";
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -129,7 +143,16 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
         // brand-teal focus ring when any field inside is focused - so the
         // whole bar reads as one cohesive, interactive surface rather than
         // four unrelated inputs sitting next to each other.
-        "mx-auto flex w-full max-w-4xl flex-col gap-1 rounded-[28px] border border-border-subtle bg-surface p-2 shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0 sm:rounded-full sm:p-2",
+        "mx-auto flex w-full flex-col gap-1 rounded-[28px] border shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0 sm:rounded-full",
+        isHero
+          ? // Frosted glass rather than the solid card below: this is the
+            // one instance of SearchBar that floats directly over the hero
+            // video/photo, so it needs to read as "part of the video" -
+            // small and see-through - rather than a full-size opaque
+            // control sitting on top of it. backdrop-blur keeps the text
+            // legible over busy footage despite the low opacity.
+            "max-w-xs border-white/40 bg-white/35 p-1 backdrop-blur-md sm:max-w-xl sm:p-1.5"
+          : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
       <div className="flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle">
@@ -153,11 +176,17 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
             }
           }}
           className="sm:flex-[1.15]"
+          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
         />
 
         {/* Wider than the other segments: it holds two labelled sub-fields
             (Check-in/Check-out) rather than one. */}
-        <SearchDateRangeField range={range} onChange={setRange} className="sm:flex-[1.6]" />
+        <SearchDateRangeField
+          range={range}
+          onChange={setRange}
+          className="sm:flex-[1.6]"
+          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
+        />
 
         <GuestCategoryPicker
           value={guestCounts}
@@ -169,7 +198,10 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
           // GuestCategoryPicker's markup - it's also used, unstyled, by the
           // listing page's booking widget, which this change shouldn't
           // affect at all.
-          triggerClassName="px-3 py-2.5 sm:py-1.5 [&>svg]:text-brand-600"
+          triggerClassName={cn(
+            "[&>svg]:text-brand-600",
+            isHero ? "px-2 py-1.5" : "px-3 py-2.5 sm:py-1.5",
+          )}
         />
       </div>
 
@@ -177,12 +209,17 @@ export function SearchBar({ liveUpdate = true }: { liveUpdate?: boolean } = {}) 
         type="submit"
         disabled={isSearching}
         aria-busy={isSearching}
-        className="focus-ring mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:mt-0 sm:ml-1 sm:w-auto sm:shrink-0 sm:py-3"
+        className={cn(
+          "focus-ring flex w-full items-center justify-center gap-2 rounded-full font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
+          isHero
+            ? "mt-0.5 bg-brand-700/90 px-4 py-2 text-xs sm:ml-1 sm:mt-0 sm:py-1.5"
+            : "mt-1 bg-brand-700 px-6 py-3.5 text-sm sm:ml-1 sm:mt-0 sm:py-3",
+        )}
       >
         {isSearching ? (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          <Loader2 className={cn("animate-spin", isHero ? "h-3.5 w-3.5" : "h-4 w-4")} aria-hidden />
         ) : (
-          <Search className="h-4 w-4" aria-hidden />
+          <Search className={cn(isHero ? "h-3.5 w-3.5" : "h-4 w-4")} aria-hidden />
         )}
         <span aria-live="polite">{isSearching ? "Searching…" : "Search"}</span>
       </button>

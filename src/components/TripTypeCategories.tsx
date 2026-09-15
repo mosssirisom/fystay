@@ -50,15 +50,15 @@ export function TripTypeCategories() {
           key={name}
           href={href}
           className={cn(
-            "focus-ring group flex flex-col items-start gap-4 rounded-3xl border border-border-subtle bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-[var(--shadow-card-hover)] sm:p-8",
+            "focus-ring group flex flex-col items-start gap-3 rounded-3xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-[var(--shadow-card-hover)] sm:p-6",
           )}
         >
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100 sm:h-16 sm:w-16">
-            <Icon className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100 sm:h-14 sm:w-14">
+            <Icon className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
           </span>
           <div>
-            <p className="text-lg font-bold text-foreground sm:text-xl">{name}</p>
-            <p className="mt-1 text-sm text-stone-500 sm:text-base">{description}</p>
+            <p className="text-sm font-semibold text-foreground sm:text-base">{name}</p>
+            <p className="mt-0.5 text-xs text-stone-500 sm:text-sm">{description}</p>
           </div>
         </Link>
       ))}

@@ -51,7 +51,7 @@ function DestinationTile({
     <Link
       href={href}
       className={cn(
-        "focus-ring group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-3xl bg-gradient-to-br p-5 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card-hover)] sm:aspect-[16/11] sm:p-7",
+        "focus-ring group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-3xl bg-gradient-to-br p-4 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card-hover)] sm:aspect-[16/11] sm:p-6",
         gradient,
       )}
     >
@@ -72,8 +72,8 @@ function DestinationTile({
         />
       )}
       <div className="relative">
-        <p className="text-xl font-bold text-white sm:text-3xl">{name}</p>
-        <p className="mt-1 text-sm text-white/85 sm:text-base">{subtitle}</p>
+        <p className="text-base font-bold text-white sm:text-xl">{name}</p>
+        <p className="mt-0.5 text-xs text-white/85 sm:text-sm">{subtitle}</p>
       </div>
     </Link>
   );

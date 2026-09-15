@@ -150,8 +150,11 @@ export function SearchBar({
             // video/photo, so it needs to read as "part of the video" -
             // small and see-through - rather than a full-size opaque
             // control sitting on top of it. backdrop-blur keeps the text
-            // legible over busy footage despite the low opacity.
-            "max-w-xs border-white/40 bg-white/35 p-1 backdrop-blur-md sm:max-w-xl sm:p-1.5"
+            // legible over busy footage despite the low opacity. A flatter
+            // rounded-2xl (not the pill/rounded-28px shape below) reads as
+            // a slim rectangular bar rather than a rounded blob, so it
+            // visually covers less of the video behind it.
+            "max-w-xs rounded-2xl border-white/40 bg-white/35 p-1 backdrop-blur-md sm:max-w-xl sm:rounded-2xl sm:p-1.5"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >

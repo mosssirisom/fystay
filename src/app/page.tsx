@@ -199,58 +199,51 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
+      {/* The headline now lives on the page's own background, above the
+          video/photo, rather than overlaid on top of it - plain dark text
+          needs no drop-shadow or scrim to stay legible, and the hero media
+          below is free to be purely visual. */}
+      <div className="mx-auto w-full max-w-6xl px-6 pt-8 sm:pt-10">
+        <p className="max-w-md text-xs font-semibold uppercase tracking-[0.2em] text-brand-600 sm:text-sm">
+          The Fylde Coast awaits
+        </p>
+        <h1 className="mt-2 max-w-lg font-[family-name:var(--font-serif)] text-3xl font-normal leading-[1.05] text-foreground sm:max-w-xl sm:text-5xl lg:text-6xl">
+          Your stay starts <em className="text-brand-700 not-italic">here.</em>
+        </h1>
+        <p className="mt-3 max-w-sm text-sm text-stone-600 sm:text-base">
+          Local stays. Local knowledge. Door-to-door transfers.
+        </p>
+      </div>
+
       {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
-          container below so it spans the entire viewport width. Falls back
-          to the generated illustration only when there's nothing real to
-          feature yet (a brand-new, empty catalog), or for the brief moment
-          before the real one has loaded. */}
-      <section className="relative h-[420px] w-full overflow-hidden sm:h-[500px] lg:h-[580px]">
-        {/* No page-wide dark vignette over the photo: the headline below
-            carries its own per-line drop-shadow instead, and every other
-            text layer already carries its own contrast where it actually
-            sits - the pagination dots' own top scrim and the caption
-            strip's solid background, both inside FeaturedListingHero. A
-            page-wide tint on top of that would just darken every photo for
-            no reason. */}
+          container so it spans the entire viewport width. Falls back to the
+          generated illustration only when there's nothing real to feature
+          yet (a brand-new, empty catalog), or for the brief moment before
+          the real one has loaded. */}
+      <section className="relative mt-6 h-[420px] w-full overflow-hidden sm:mt-8 sm:h-[500px] lg:h-[580px]">
         <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
           <FeaturedHero />
         </Suspense>
 
-        {/* A marketing headline sits above the rotating spotlight, but
-            pointer-events-none the whole way down so it never steals a
-            click meant for the featured listing underneath (photo,
-            caption, prev/next arrows) - the one thing the earlier
-            headline-free version of this hero was protecting (see
-            FeaturedListingHero's own doc comment). Each line carries its
-            own drop-shadow for contrast rather than a page-wide vignette,
-            for the same reason: nothing here should dim the photo itself. */}
-        <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-start p-6 sm:p-10">
-          <p className="max-w-md text-xs font-semibold uppercase tracking-[0.2em] text-brand-200 [text-shadow:0_1px_8px_rgba(0,0,0,0.65)] sm:text-sm">
-            The Fylde Coast awaits
-          </p>
-          <h1 className="mt-2 max-w-lg font-[family-name:var(--font-serif)] text-3xl font-normal leading-[1.05] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.65)] sm:max-w-xl sm:text-5xl lg:text-6xl">
-            Your stay starts <em className="text-brand-300 not-italic">here.</em>
-          </h1>
-          <p className="mt-3 max-w-sm text-sm text-white/90 [text-shadow:0_1px_8px_rgba(0,0,0,0.6)] sm:text-base">
-            Local stays. Local knowledge. Door-to-door transfers.
-          </p>
+        {/* The search bar now sits inside the hero itself, floating over
+            the bottom of the video/photo rather than as its own block
+            underneath - a raised, opaque card (SearchBar already carries
+            its own border/shadow - see SearchBar.tsx) reads clearly against
+            either backdrop without needing a scrim of its own. Positioned
+            with enough clearance from the very bottom edge that it never
+            overlaps FeaturedListingHero's own price/caption strip, which
+            stays flush at the bottom in both the video and the real-listing
+            state. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-28 z-40 px-4 sm:bottom-24 sm:px-8 lg:px-10">
+          <div className="pointer-events-auto mx-auto w-full max-w-4xl">
+            <Suspense>
+              <SearchBar liveUpdate={false} />
+            </Suspense>
+          </div>
         </div>
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
-        {/* Sits just below the hero photo instead of overlapping it - an
-            overlapping version was tried, but that always hid a slice of
-            whatever was behind it (the photo, and now the featured
-            listing's own bottom strip), however small. SearchBar already
-            carries its own premium styling (rounded pill on sm+, its own
-            border and shadow - see SearchBar.tsx), so it doesn't need a
-            second card wrapped around it here. */}
-        <div className="mt-6 sm:mt-8">
-          <Suspense>
-            <SearchBar liveUpdate={false} />
-          </Suspense>
-        </div>
-
         {/* A horizontally-scrollable strip on mobile (edge-fade masks, not
             clipped arrows) rather than the wrapped-badge row this replaces -
             reads more like an app's own category rail, and each pill now

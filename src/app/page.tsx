@@ -229,15 +229,15 @@ export default async function Home() {
           </h1>
         </div>
 
-        {/* The search bar floats low over the video - down near the sand,
-            clear of the Tower/pier the footage leads with up top - as a
-            small, frosted-glass control (SearchBar's "hero" variant: see
-            SearchBar.tsx) rather than a full-size opaque card. Still
-            comfortably clickable, just no longer the thing covering most of
-            the video. Kept clear of FeaturedListingHero's own price/caption
-            strip, which stays flush at the very bottom in the real-listing
+        {/* The search bar sits low over the video as a full-width band
+            (edge to edge, same shape as FeaturedListingHero's own bottom
+            caption strip below it - see SearchBar.tsx's "hero" variant),
+            rather than a smaller floating rounded card - a thin strip
+            covers noticeably less of the footage than a padded, all-round-
+            rounded card did. Kept clear of that caption strip itself,
+            which stays flush at the very bottom in the real-listing
             state. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-40 flex justify-center px-4">
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-40">
           <div className="pointer-events-auto">
             <Suspense>
               <SearchBar liveUpdate={false} variant="hero" />

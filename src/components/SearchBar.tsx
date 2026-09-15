@@ -150,11 +150,13 @@ export function SearchBar({
             // video/photo, so it needs to read as "part of the video" -
             // small and see-through - rather than a full-size opaque
             // control sitting on top of it. backdrop-blur keeps the text
-            // legible over busy footage despite the low opacity. A flatter
-            // rounded-2xl (not the pill/rounded-28px shape below) reads as
-            // a slim rectangular bar rather than a rounded blob, so it
-            // visually covers less of the video behind it.
-            "max-w-xs rounded-2xl border-white/40 bg-white/35 p-1 backdrop-blur-md sm:max-w-xl sm:rounded-2xl sm:p-1.5"
+            // legible over busy footage despite the low opacity. Full-width
+            // and flat - rounded only across the top edge, no side border/
+            // shadow - the same shape as FeaturedListingHero's own bottom
+            // caption strip, rather than a smaller floating rounded card,
+            // so it reads as one thin band low in the frame instead of a
+            // block sitting on top of the video.
+            "w-full rounded-none rounded-t-2xl border-x-0 border-b-0 border-t border-white/40 bg-white/35 p-1.5 shadow-none backdrop-blur-md sm:rounded-t-2xl sm:p-2"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >

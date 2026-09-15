@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import {
@@ -38,7 +39,7 @@ const createBookingSchema = z
     message: "Provide either a listing or a room type to book",
   });
 
-export async function GET() {
+async function getHandler() {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -56,7 +57,7 @@ export async function GET() {
   return NextResponse.json({ bookings });
 }
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -516,3 +517,6 @@ class BookingRequestError extends Error {
     super(message);
   }
 }
+
+export const GET = withApiErrorHandling(getHandler);
+export const POST = withApiErrorHandling(postHandler);

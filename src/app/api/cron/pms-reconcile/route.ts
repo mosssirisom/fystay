@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { runConnectionSync } from "@/lib/pms/sync";
 
@@ -37,7 +38,7 @@ type ConnectionSyncResult = {
  * and skipped, not fatal to every other host's sync in the same run -
  * same resilience pattern as sync-ical-imports.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -66,3 +67,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ syncedAt: new Date().toISOString(), connections: results });
 }
+
+export const GET = withApiErrorHandling(getHandler);

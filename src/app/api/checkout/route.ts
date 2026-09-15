@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getStripeClient } from "@/lib/stripe";
@@ -26,7 +27,7 @@ const checkoutSchema = z.object({
     .optional(),
 });
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -265,3 +266,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ url: checkoutSession.url });
 }
+
+export const POST = withApiErrorHandling(postHandler);

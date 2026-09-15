@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { getPmsAdapter } from "@/lib/pms/registry";
 import { parseProvider, pmsWebhookSecret } from "@/lib/pms/routeHelpers";
@@ -23,7 +24,7 @@ export const maxDuration = 60;
  * webhook this route can't verify or resolve to a known connection is
  * recorded but never trusted enough to act on.
  */
-export async function POST(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+async function postHandler(request: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider: providerParam } = await params;
   const provider = parseProvider(providerParam);
   if (!provider) {
@@ -125,3 +126,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
 
   return NextResponse.json({ received: true, events: results });
 }
+
+export const POST = withApiErrorHandling(postHandler);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import {
   ARRIVAL_REMINDER_WINDOW_DAYS,
@@ -35,7 +36,7 @@ function isAuthorizedCronRequest(request: Request): boolean {
  * booking failing to send is logged and skipped, never fatal to the rest
  * of the run.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -139,3 +140,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ ranAt: now.toISOString(), arrivalRemindersSent, reviewRequestsSent });
 }
+
+export const GET = withApiErrorHandling(getHandler);

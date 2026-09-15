@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 import {
@@ -33,7 +34,7 @@ function isAuthorizedCronRequest(request: Request): boolean {
  * One combined route rather than two, since both are cheap daily sweeps
  * over the same small set of bookings.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -131,3 +132,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ ranAt: new Date().toISOString(), authorizationsStarted, released });
 }
+
+export const GET = withApiErrorHandling(getHandler);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { expireStaleBookingRequests } from "@/lib/bookingLifecycle";
 import { sendBookingRequestRespondedEmail } from "@/lib/notificationEmails";
@@ -22,7 +23,7 @@ function isAuthorizedCronRequest(request: Request): boolean {
  * that deadline for this email if they never open their booking in the
  * meantime.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -57,3 +58,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ expiredAt: new Date().toISOString(), count: expired.length });
 }
+
+export const GET = withApiErrorHandling(getHandler);

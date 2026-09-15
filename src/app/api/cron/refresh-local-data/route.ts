@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { ensureTownsSeeded } from "@/lib/localData/seedTowns";
 import { getTownWeather } from "@/lib/localData/weather";
@@ -57,7 +58,7 @@ type TownRefreshResult = {
  * traffic - not because concurrent requests here would otherwise break
  * anything.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -82,3 +83,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ refreshedAt: new Date().toISOString(), towns: results });
 }
+
+export const GET = withApiErrorHandling(getHandler);

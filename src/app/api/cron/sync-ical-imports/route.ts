@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { syncListingIcalImport } from "@/lib/icalSync";
 
@@ -32,7 +33,7 @@ type ListingSyncResult = {
  * platform's export temporarily down) is logged and skipped, not fatal to
  * every other listing's sync in the same run.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -55,3 +56,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ syncedAt: new Date().toISOString(), listings: results });
 }
+
+export const GET = withApiErrorHandling(getHandler);

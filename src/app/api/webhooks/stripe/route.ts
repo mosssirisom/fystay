@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 import { applyApprovedChange } from "@/app/api/bookings/[id]/change-requests/[requestId]/pay/route";
@@ -74,7 +75,7 @@ async function upsertPaymentDispute(dispute: Stripe.Dispute): Promise<void> {
   }
 }
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   const stripe = getStripeClient();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -274,3 +275,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ received: true });
 }
+
+export const POST = withApiErrorHandling(postHandler);

@@ -170,8 +170,17 @@ export default async function Home() {
           moment - no rotating real-listing photo or caption here (that's
           what the search results and destination pages are for), so
           nothing on this section depends on the catalog having listings
-          in it. */}
-      <section className="relative mt-6 h-[420px] w-full overflow-hidden sm:mt-8 sm:h-[500px] lg:h-[580px]">
+          in it.
+
+          Deliberately no overflow-hidden here: the video itself is
+          already clipped to this box by its own object-cover (see
+          HeroBanner), so this section doesn't need to clip anything to
+          look right closed. But the search bar's date/guest popovers open
+          downward and are taller than the sliver of room left below the
+          bar - clipping the section would cut those panels off (confirmed
+          on a real phone) instead of letting them float over the page
+          content below, which is normal, expected dropdown behaviour. */}
+      <section className="relative mt-6 h-[420px] w-full sm:mt-8 sm:h-[500px] lg:h-[580px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens only the sky band (behind the

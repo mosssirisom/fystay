@@ -191,13 +191,12 @@ export default async function Home() {
           </h1>
         </div>
 
-        {/* The search bar sits flush at the very bottom as a full-width
-            band (edge to edge, curved only across its top edge - see
-            SearchBar.tsx's "hero" variant). This is purely a video moment
-            now - no rotating real-listing photo/caption strip to clear -
-            so the bar can sit right at the bottom edge instead of leaving
-            a gap above it, giving the video more room to show through. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40">
+        {/* The search bar floats low over the video - close to the bottom
+            edge, but with margin on every side (this wrapper's own
+            bottom offset and horizontal padding) so no corner of the
+            card ever touches the video's own frame - rather than the
+            earlier full-bleed band this replaced. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4">
           <div className="pointer-events-auto">
             <Suspense>
               <SearchBar liveUpdate={false} variant="hero" />

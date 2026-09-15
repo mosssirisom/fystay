@@ -150,14 +150,15 @@ export function SearchBar({
             // video, so it needs to read as "part of the video" - small
             // and see-through - rather than a full-size opaque control
             // sitting on top of it. backdrop-blur keeps the text legible
-            // over busy footage despite the low opacity. Full-width and
-            // flat - rounded only across the top edge, no side border/
-            // shadow - a thin band low in the frame rather than a block
-            // sitting on top of the video. gap-0.5 and tighter field
-            // padding (see triggerClassName below) keep its stacked-field
-            // mobile height as small as it can be while each row stays
-            // comfortably tappable.
-            "w-full gap-0.5 rounded-none rounded-t-2xl border-x-0 border-b-0 border-t border-white/40 bg-white/35 p-1 shadow-none backdrop-blur-md sm:rounded-t-2xl sm:p-1.5"
+            // over busy footage despite the low opacity. A genuinely
+            // floating card - rounded on every corner, with margin on
+            // every side (the wrapper's own padding in page.tsx, not just
+            // its position) - so no edge or corner ever touches the
+            // video's own frame, unlike the earlier full-bleed band this
+            // replaced. gap-0.5 and tighter field padding (see
+            // triggerClassName below) keep it compact without going back
+            // to covering most of the footage.
+            "w-full max-w-sm gap-0.5 rounded-2xl border-white/40 bg-white/35 p-1 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md sm:max-w-xl sm:p-1.5"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
@@ -182,7 +183,7 @@ export function SearchBar({
             }
           }}
           className="sm:flex-[1.15]"
-          triggerClassName={isHero ? "px-2 py-1" : undefined}
+          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
         />
 
         {/* Wider than the other segments: it holds two labelled sub-fields
@@ -191,7 +192,7 @@ export function SearchBar({
           range={range}
           onChange={setRange}
           className="sm:flex-[1.6]"
-          triggerClassName={isHero ? "px-2 py-1" : undefined}
+          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
         />
 
         <GuestCategoryPicker
@@ -206,7 +207,7 @@ export function SearchBar({
           // affect at all.
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
-            isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
+            isHero ? "px-2 py-1.5" : "px-3 py-2.5 sm:py-1.5",
           )}
         />
       </div>

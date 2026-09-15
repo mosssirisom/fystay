@@ -59,6 +59,17 @@ test.describe("reviews and ratings", () => {
     const guest = await prisma.user.findUniqueOrThrow({ where: { email: "guest@fystay.dev" } });
     hostId = host.id;
     guestId = guest.id;
+
+    // Every test below cleans up its own fixture listing in a `finally`
+    // block, but that can't run if a previous run's process was killed
+    // outright (a crash, a manually interrupted `npm run test:e2e`) rather
+    // than failing gracefully - confirmed happening at least once against
+    // this exact dev DB, leaving a fixture listing indistinguishable from
+    // real inventory sitting in live search/host dashboard results. A
+    // one-shot sweep at suite start is a much smaller footprint than
+    // teaching every test its own crash-recovery logic, and is safe since
+    // nothing legitimate is ever titled this way.
+    await prisma.listing.deleteMany({ where: { title: { startsWith: "E2E fixture: reviews listing " } } });
   });
 
   test.afterAll(async () => {

@@ -16,11 +16,24 @@ import { SecurityDeposits, type AuthorizedDeposit } from "@/components/host/Secu
 import { StatCard } from "@/components/host/StatCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { buttonVariants } from "@/components/ui/Button";
+import { Pagination } from "@/components/Pagination";
 import { cn } from "@/lib/cn";
+import { paginate, parsePageParam } from "@/lib/pagination";
 
 export const metadata: Metadata = { title: "Host dashboard", robots: { index: false } };
 
-export default async function HostDashboardPage() {
+// A row per listing, each with its own occupancy/rating/photo - keeps a
+// host with a large portfolio from rendering every one into a single,
+// ever-growing page (confirmed happening in practice: 20 seeded listings
+// already renders a ~5,200px-tall page with no way to jump around it).
+const LISTINGS_PAGE_SIZE = 10;
+
+export default async function HostDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
   const session = await auth();
   if (!session?.user) redirect("/login?callbackUrl=/host/dashboard");
   if (session.user.role !== "HOST") redirect("/");
@@ -138,6 +151,12 @@ export default async function HostDashboardPage() {
     include: { listing: { select: { id: true, title: true } } },
     orderBy: { depositClaimDeadline: "asc" },
   });
+  // Paginated only for rendering, at the very end - every stat/aggregate
+  // above (earnings, occupancy, rating, pending requests) is computed from
+  // the *complete* `listings` array first, since those numbers cover the
+  // host's whole portfolio regardless of which page of the list is shown.
+  const paginatedListings = paginate(listings, parsePageParam(pageParam), LISTINGS_PAGE_SIZE);
+
   const deposits: AuthorizedDeposit[] = authorizedDeposits.map((booking) => ({
     bookingId: booking.id,
     listingId: booking.listing.id,
@@ -211,7 +230,7 @@ export default async function HostDashboardPage() {
           <div className="mt-8">
             <SectionHeading icon={Home}>Your listings</SectionHeading>
             <ul className="mt-3 flex flex-col gap-4">
-              {listings.map((listing) => {
+              {paginatedListings.items.map((listing) => {
                 const revenue = summarizeEarnings(listing.bookings, now);
                 const listingOccupancy = computeOccupancyRate({
                   listings: [{ id: listing.id, published: listing.published }],
@@ -232,6 +251,7 @@ export default async function HostDashboardPage() {
                 );
               })}
             </ul>
+            <Pagination page={paginatedListings.page} totalPages={paginatedListings.totalPages} />
           </div>
         </>
       )}

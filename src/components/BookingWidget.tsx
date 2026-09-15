@@ -205,6 +205,12 @@ export function BookingWidget({
 
   async function handleContinueToCheckout() {
     setError(null);
+    // The "dates available" toast from the check above (sonner's default
+    // duration) would otherwise still be on-screen after this navigates
+    // away, rendering on top of the checkout page's own header for
+    // whatever's left of its timeout - confirmed happening for a guest who
+    // proceeds quickly after checking.
+    toast.dismiss();
 
     if (!range?.from || !range?.to) return;
 

@@ -190,30 +190,9 @@ export function parseViewParam(value: string | string[] | undefined): "list" | "
 /** How many results one page of the /search results grid shows. */
 export const LISTINGS_PAGE_SIZE = 24;
 
-export function parsePageParam(value: string | string[] | undefined): number {
-  const raw = typeof value === "string" ? Number(value) : NaN;
-  return Number.isInteger(raw) && raw > 0 ? raw : 1;
-}
-
-export type PaginatedListings<T> = {
-  items: T[];
-  page: number;
-  totalPages: number;
-  totalCount: number;
-};
-
-/**
- * Slices an already-filtered-and-sorted result array down to one page.
- * `page` is clamped into range rather than trusted as-is, so a stale or
- * hand-edited `?page=` past the end (e.g. after a filter narrows the
- * result set) falls back to the last real page instead of rendering
- * empty - the same "don't trust the client, don't crash on it either"
- * treatment every other search param on this page already gets.
- */
-export function paginateListings<T>(items: T[], page: number, pageSize: number): PaginatedListings<T> {
-  const totalCount = items.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const clampedPage = Math.min(Math.max(1, page), totalPages);
-  const start = (clampedPage - 1) * pageSize;
-  return { items: items.slice(start, start + pageSize), page: clampedPage, totalPages, totalCount };
-}
+// Pagination itself isn't listing-specific (see src/lib/pagination.ts,
+// which a guest's trips list and a host's own listings also use) -
+// re-exported under their original names here so this module's existing
+// callers (ListingsGrid.tsx, api/listings/route.ts) don't need to change
+// their imports.
+export { paginate as paginateListings, parsePageParam, type PaginatedResult as PaginatedListings } from "@/lib/pagination";

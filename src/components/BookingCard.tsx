@@ -10,6 +10,7 @@ import { canCancelBooking, canRequestBookingChange } from "@/lib/changeRequests"
 import { previewCancellation, type CancellationPolicyKind } from "@/lib/cancellationPolicy";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
+import { buttonVariants } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
 import { ReviewForm } from "@/components/ReviewForm";
 import { CancelBookingButton } from "@/components/CancelBookingButton";
@@ -33,7 +34,7 @@ const statusLabel: Record<string, string> = {
   REFUNDED: "Refunded",
 };
 
-type ChangeRequestData = {
+export type BookingCardChangeRequest = {
   id: string;
   status: "PENDING" | "APPROVED" | "DECLINED";
   requestedCheckIn: Date;
@@ -44,40 +45,43 @@ type ChangeRequestData = {
   paidAt: Date | null;
 };
 
+export type BookingCardBooking = {
+  id: string;
+  reference: string;
+  listingId: string;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
+  paymentStatus: "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
+  approvalStatus: "NONE" | "AWAITING" | "APPROVED" | "DECLINED" | "EXPIRED";
+  checkIn: Date;
+  checkOut: Date;
+  guests: number;
+  totalPriceCents: number;
+  review: { rating: number } | null;
+  listing: {
+    title: string;
+    city: string;
+    country: string;
+    photos: string[];
+    pricePerNightCents: number;
+    cleaningFeeCents: number;
+    weeklyDiscountPercent: number | null;
+    monthlyDiscountPercent: number | null;
+    minNights: number;
+    maxNights: number | null;
+    maxGuests: number;
+    cancellationPolicy: CancellationPolicyKind;
+    customCancellationCutoffDays: number | null;
+    customCancellationRefundPercent: number | null;
+    bookings: { id: string; checkIn: Date; checkOut: Date }[];
+  };
+};
+
 export function BookingCard({
   booking,
   latestChangeRequest,
 }: {
-  booking: {
-    id: string;
-    reference: string;
-    listingId: string;
-    status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REFUNDED";
-    paymentStatus: "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
-    checkIn: Date;
-    checkOut: Date;
-    guests: number;
-    totalPriceCents: number;
-    review: { rating: number } | null;
-    listing: {
-      title: string;
-      city: string;
-      country: string;
-      photos: string[];
-      pricePerNightCents: number;
-      cleaningFeeCents: number;
-      weeklyDiscountPercent: number | null;
-      monthlyDiscountPercent: number | null;
-      minNights: number;
-      maxNights: number | null;
-      maxGuests: number;
-      cancellationPolicy: CancellationPolicyKind;
-      customCancellationCutoffDays: number | null;
-      customCancellationRefundPercent: number | null;
-      bookings: { id: string; checkIn: Date; checkOut: Date }[];
-    };
-  };
-  latestChangeRequest: ChangeRequestData | undefined;
+  booking: BookingCardBooking;
+  latestChangeRequest: BookingCardChangeRequest | undefined;
 }) {
   // Optimistic overrides: reflect a guest action instantly, before the
   // background request (and the eventual router.refresh()) confirms it.
@@ -99,6 +103,14 @@ export function BookingCard({
   const showActions =
     canCancelBooking(effectiveBooking) ||
     canRequestBookingChange(effectiveBooking, hasPendingChangeRequest);
+  // A PENDING booking still awaiting a host's request-to-book decision has
+  // nothing to pay for yet (see approvalStatus's own schema comment) - this
+  // only fires once there either is no approval step at all (Instant Book)
+  // or the host has already approved it, the two cases where a guest can
+  // actually complete checkout right now. Without this, this card's only
+  // links were "View details" and (once available) "Cancel" - no way back
+  // to checkout for a reservation that's simply sitting unpaid.
+  const needsPayment = status === "PENDING" && effectiveBooking.approvalStatus !== "AWAITING";
 
   return (
     <Card className="flex flex-col gap-3 p-4">
@@ -174,13 +186,20 @@ export function BookingCard({
         />
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-1 border-t border-border-subtle pt-3">
-        <Link
-          href={`/bookings/${booking.id}`}
-          className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
-        >
-          View details
-        </Link>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle pt-3">
+        <div className="flex flex-wrap items-center gap-1">
+          <Link
+            href={`/bookings/${booking.id}`}
+            className="focus-ring rounded-lg px-2 py-1 text-sm font-medium text-stone-700 hover:bg-surface-muted"
+          >
+            View details
+          </Link>
+          {needsPayment && (
+            <Link href={`/checkout/${booking.id}`} className={buttonVariants({ size: "sm" })}>
+              Complete payment
+            </Link>
+          )}
+        </div>
 
         {showActions && (
           <div className="flex flex-wrap items-center gap-1">

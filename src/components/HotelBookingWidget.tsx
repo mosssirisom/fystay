@@ -313,6 +313,10 @@ function RoomTypeBookingCard({
 
   async function handleContinueToCheckout() {
     setError(null);
+    // See BookingWidget.tsx's own copy of this same fix: without it, the
+    // "this room type is available" toast from the check above can still
+    // be on-screen after navigating to checkout.
+    toast.dismiss();
     if (!range?.from || !range?.to) return;
 
     setReserving(true);

@@ -8,21 +8,12 @@ import { blockingBookingWhere } from "@/lib/availability";
 import { completePastBookings } from "@/lib/bookingLifecycle";
 import { Card } from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
-import { BookingCard } from "@/components/BookingCard";
 import { BookingsTabs } from "@/components/BookingsTabs";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "My trips", robots: { index: false } };
 
-function EmptySection({
-  message,
-  hint,
-  showCta,
-}: {
-  message: string;
-  hint: string;
-  showCta?: boolean;
-}) {
+function EmptySection({ message, hint, showCta }: { message: string; hint: string; showCta?: boolean }) {
   return (
     <Card className="flex flex-col items-center gap-3 p-12 text-center">
       <Luggage className="h-8 w-8 text-stone-300" />
@@ -90,49 +81,11 @@ export default async function BookingsPage() {
     .filter((b) => b.status === "CANCELLED" || b.status === "REFUNDED")
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
-  function renderSection(
-    list: typeof bookings,
-    emptyMessage: string,
-    emptyHint: string,
-    showCta?: boolean,
-  ) {
-    if (list.length === 0) {
-      return <EmptySection message={emptyMessage} hint={emptyHint} showCta={showCta} />;
-    }
-    return (
-      <ul className="flex flex-col gap-4">
-        {list.map((booking) => (
-          <li key={booking.id}>
-            <BookingCard booking={booking} latestChangeRequest={booking.changeRequests[0]} />
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
       <h1 className="text-2xl font-bold">My trips</h1>
 
-      <BookingsTabs
-        counts={{ upcoming: upcoming.length, past: past.length, cancelled: cancelled.length }}
-        upcoming={renderSection(
-          upcoming,
-          "No upcoming trips",
-          "Browse stays along the Fylde coast and book your next getaway.",
-          true,
-        )}
-        past={renderSection(
-          past,
-          "No past trips yet",
-          "Your completed stays will show up here once they're done.",
-        )}
-        cancelled={renderSection(
-          cancelled,
-          "No cancelled bookings",
-          "Any reservations you cancel will appear here.",
-        )}
-      />
+      <BookingsTabs upcoming={upcoming} past={past} cancelled={cancelled} />
     </div>
   );
 }

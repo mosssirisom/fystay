@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, DoorOpen, Hourglass, Wifi } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { blockingBookingWhere } from "@/lib/availability";
+import { blockingBookingWhere, PENDING_BOOKING_HOLD_MINUTES } from "@/lib/availability";
 import { completePastBookings, expireStaleBookingRequests } from "@/lib/bookingLifecycle";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
@@ -113,6 +113,23 @@ export default async function BookingDetailPage({
         }),
       ])
     : [[], []];
+  // Instant Book (approvalStatus stays "NONE" the whole time - there's no
+  // host-approval step to move it through) has no other surface anywhere
+  // in the app offering a way back to checkout for a still-unpaid
+  // reservation - without this, a guest who reserves and then closes the
+  // tab before paying is stuck with a permanently "Pending payment"
+  // booking and no visible next step. `blockingBookingWhere` already
+  // treats a PENDING hold older than this same window as freed up for
+  // other guests to book (see availability.ts) - once that's happened,
+  // sending this guest back to checkout would only run into the "hold
+  // expired" state that page already shows, so this mirrors that same
+  // cutoff rather than inventing a second one.
+  const isUnpaidInstantBooking = booking.status === "PENDING" && booking.approvalStatus === "NONE";
+  const now = new Date();
+  const instantBookingHoldExpired =
+    isUnpaidInstantBooking &&
+    booking.createdAt.getTime() + PENDING_BOOKING_HOLD_MINUTES * 60 * 1000 <= now.getTime();
+
   const canModify = canRequestBookingChange(booking, hasPendingChangeRequest);
   const canCancel = canCancelBooking(booking);
   const canRebook =
@@ -155,6 +172,43 @@ export default async function BookingDetailPage({
           {requestBadge?.label ?? statusLabel[booking.status] ?? booking.status}
         </Badge>
       </div>
+
+      {isUnpaidInstantBooking && (
+        <Card className="mt-4 flex flex-row items-start gap-3 border-brand-100 bg-brand-50 p-4">
+          <Hourglass className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
+          <div>
+            {instantBookingHoldExpired ? (
+              <>
+                <p className="font-medium text-brand-900">This reservation hold has expired</p>
+                <p className="text-sm text-brand-800">
+                  These dates were held for {PENDING_BOOKING_HOLD_MINUTES} minutes and have since
+                  been released. Book again to hold them once more.
+                </p>
+                <Link
+                  href={`/listings/${booking.listingId}`}
+                  className={cn(buttonVariants({ size: "sm" }), "mt-3")}
+                >
+                  Book again
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="font-medium text-brand-900">Payment still needed</p>
+                <p className="text-sm text-brand-800">
+                  Your dates are held for {PENDING_BOOKING_HOLD_MINUTES} minutes from when you
+                  reserved - complete payment to confirm this stay.
+                </p>
+                <Link
+                  href={`/checkout/${booking.id}`}
+                  className={cn(buttonVariants({ size: "sm" }), "mt-3")}
+                >
+                  Complete payment
+                </Link>
+              </>
+            )}
+          </div>
+        </Card>
+      )}
 
       {booking.approvalStatus !== "NONE" && (
         <Card className="mt-4 flex flex-row items-start gap-3 border-brand-100 bg-brand-50 p-4">

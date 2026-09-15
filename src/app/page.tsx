@@ -180,7 +180,15 @@ export default async function Home() {
           bar - clipping the section would cut those panels off (confirmed
           on a real phone) instead of letting them float over the page
           content below, which is normal, expected dropdown behaviour. */}
-      <section className="relative mt-6 h-[420px] w-full sm:mt-8 sm:h-[500px] lg:h-[580px]">
+      {/* lg:-mt-[74px] pulls this section up underneath the navbar - see
+          NavbarChrome's own comment on why that's a negative margin on
+          this sibling rather than making the nav position:absolute
+          (which would ignore the cookie consent banner's flow height and
+          overlap it). 74px matches that navbar's actual rendered height
+          at this breakpoint (measured directly, not a round-number
+          guess) - if the navbar's own padding/content ever changes
+          height, this needs to move with it. */}
+      <section className="relative mt-6 h-[420px] w-full sm:mt-8 sm:h-[500px] lg:-mt-[74px] lg:h-[700px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens the sky band (behind the
@@ -202,8 +210,13 @@ export default async function Home() {
             component competing with it - same reason there's no button
             or extra ornament here, just the two lines and then the
             video leading down to the bar. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-7 sm:pt-9">
-          <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:text-5xl">
+        {/* lg: this block switches from centered (mobile/tablet, unchanged)
+            to left-aligned within the same max-w-6xl/px-6 container the
+            navbar's own logo sits in, so the headline lines up with it -
+            matching the desktop hero design rather than staying centered
+            over the whole viewport. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-7 sm:pt-9 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-32">
+          <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
             Stay somewhere <em className="italic">worth staying.</em>
           </h1>
           {/* A soft text-shadow (here and on the headline above), not just
@@ -212,7 +225,7 @@ export default async function Home() {
               - the pier's own crossbeams sit right at this text's lower
               edge on wider screens, and no single scrim stop covers every
               breakpoint's exact line count/wrap perfectly. */}
-          <p className="mt-2 max-w-[32ch] text-balance text-center text-sm font-light leading-snug text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] sm:mt-3 sm:max-w-[38ch] sm:text-base">
+          <p className="mt-2 max-w-[32ch] text-balance text-center text-sm font-light leading-snug text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] sm:mt-3 sm:max-w-[38ch] sm:text-base lg:mt-16 lg:max-w-[34ch] lg:text-left lg:text-lg">
             Hand-picked places, local knowledge and a better way to book your next stay.
           </p>
         </div>
@@ -221,16 +234,51 @@ export default async function Home() {
             edge, but with margin on every side (this wrapper's own
             bottom offset and horizontal padding) so no corner of the
             card ever touches the video's own frame - rather than the
-            earlier full-bleed band this replaced. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4">
+            earlier full-bleed band this replaced.
+
+            lg: moves up from that bottom-hugging mobile/tablet position to
+            leave room below it for the "Now covering" row (in-hero at that
+            breakpoint - see below), and switches from centered-on-viewport
+            to left-aligned within the same max-w-6xl/px-6 container as the
+            headline and navbar above, rather than centered independently
+            of them. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4 lg:inset-x-0 lg:bottom-24 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
           {/* w-full max-w-4xl (not just letting the flex item shrink-wrap
               its content) so the bar actually grows to fill the width
               this row allows, rather than only ever rendering as wide as
               its fields' own natural size. */}
-          <div className="pointer-events-auto w-full max-w-4xl">
+          <div className="pointer-events-auto w-full max-w-4xl lg:max-w-none">
             <Suspense>
               <SearchBar liveUpdate={false} variant="hero" />
             </Suspense>
+          </div>
+        </div>
+
+        {/* Desktop-only: "Now covering" overlaps the hero's own bottom
+            edge here, matching the target design - the exact same list
+            stays in its original spot, in a plainer badge style, below the
+            hero at <lg (see the lg:hidden strip further down the page);
+            this isn't a duplicate content addition, just where the same
+            links render at each breakpoint. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 mx-auto hidden max-w-6xl px-6 lg:block">
+          <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+              Now covering
+            </span>
+            {FYLDE_COAST_DESTINATIONS.map((destination) => {
+              const art = DESTINATION_ART[destination.slug];
+              const Icon = art?.icon;
+              return (
+                <Link
+                  key={destination.slug}
+                  href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
+                  className="focus-ring flex items-center gap-1.5 rounded-full border border-white/40 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:border-white hover:bg-white/10"
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5 text-amber-400" aria-hidden />}
+                  {destination.name}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -242,7 +290,11 @@ export default async function Home() {
             carries the same per-town icon/gradient motif as the "Explore"
             tiles below, so a visitor sees the same visual language for a
             town twice, not two unrelated treatments of the same five names. */}
-        <div className="relative mt-8">
+        {/* lg:hidden: at that breakpoint this same list already renders
+            inside the hero itself, overlapping its bottom edge (see the
+            "Now covering" block in the hero <section> above) - matching
+            the target desktop design without showing the list twice. */}
+        <div className="relative mt-8 lg:hidden">
           <div
             className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none] [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)] [&::-webkit-scrollbar]:hidden"
           >

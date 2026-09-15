@@ -1,0 +1,39 @@
+"use client";
+
+import Link from "next/link";
+import { cn } from "@/lib/cn";
+import { useNavTone } from "@/components/NavTone";
+
+const LINKS = [
+  { href: "/search", label: "Stays" },
+  { href: "/destinations", label: "Destinations" },
+  { href: "/about", label: "About" },
+];
+
+/**
+ * Desktop-only (lg:) nav links, hidden below that breakpoint where the
+ * navbar keeps its current compact mobile layout. Split out as its own
+ * client component (rather than inline in the server-rendered Navbar) just
+ * to read NavTone - see NavbarChrome for why that has to be a route-aware
+ * client boundary.
+ */
+export function DesktopNavLinks() {
+  const isHero = useNavTone() === "hero";
+
+  return (
+    <nav className="relative z-10 hidden items-center gap-7 text-sm font-medium lg:flex">
+      {LINKS.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className={cn(
+            "focus-ring rounded-sm text-stone-600 transition-colors hover:text-brand-700",
+            isHero && "text-white/90 hover:text-white",
+          )}
+        >
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}

@@ -26,6 +26,7 @@ export function GuestCategoryPicker({
   requireDoneToConfirm = false,
   className,
   triggerClassName,
+  variant = "default",
 }: {
   value: GuestCounts;
   onChange: (value: GuestCounts) => void;
@@ -41,6 +42,8 @@ export function GuestCategoryPicker({
   requireDoneToConfirm?: boolean;
   className?: string;
   triggerClassName?: string;
+  /** "hero" swaps the closed trigger's icon/label/value to white at lg: - see SearchBar's own variant, which this mirrors. The open picker panel is unaffected. */
+  variant?: "default" | "hero";
 }) {
   const [open, setOpen] = useState(false);
   // Only meaningful when requireDoneToConfirm - +/- clicks update this
@@ -114,10 +117,25 @@ export function GuestCategoryPicker({
           triggerClassName,
         )}
       >
+        {/* Icon color for the non-hero case is set externally via
+            triggerClassName's [&>svg]: override (see SearchBar.tsx) so
+            this component's own default (stone-400, matched by the
+            booking widget's unstyled usage) is never touched - the hero
+            lg: amber override lives in that same external className for
+            the same reason. */}
         <Users className="h-4 w-4 shrink-0 text-stone-400" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-semibold text-foreground">Guests</span>
-          <span className="block truncate text-sm text-stone-500">
+          <span
+            className={cn(
+              "block text-[11px] font-semibold text-foreground",
+              variant === "hero" && "lg:text-white",
+            )}
+          >
+            Guests
+          </span>
+          <span
+            className={cn("block truncate text-sm text-stone-500", variant === "hero" && "lg:text-white/70")}
+          >
             {summarizeGuests(displayValue)}
           </span>
         </span>

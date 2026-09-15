@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { UserMenu } from "@/components/UserMenu";
 import { GuestMenu } from "@/components/GuestMenu";
 import { Logo } from "@/components/Logo";
+import { NavbarChrome } from "@/components/NavbarChrome";
+import { DesktopNavLinks } from "@/components/DesktopNavLinks";
 
 export async function Navbar() {
   const session = await auth();
@@ -19,7 +21,7 @@ export async function Navbar() {
     : 0;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border-subtle bg-surface/90 backdrop-blur">
+    <NavbarChrome>
       {/* relative + an absolutely-positioned centering layer, rather than a
           grid with an empty balancing column: a grid track sized to "the
           rest of the space" still has to yield to its content's minimum
@@ -30,21 +32,34 @@ export async function Navbar() {
           signed-in/signed-out nav controls happen to be, keeps it exactly
           centered regardless. pointer-events-none/auto so the transparent
           overlay never blocks clicks on the icon or the nav on either
-          side of it. */}
+          side of it.
+
+          This whole centered-icon layout is the <lg (and every non-home
+          page's) treatment only - at lg: on the homepage it gives way to a
+          conventional left-logo/center-links/right-menu bar (see the
+          lg:hidden / hidden lg:flex pairs below), matching the transparent
+          hero nav design without touching how every other page's desktop
+          nav, or any page's mobile nav, already looks. */}
       <div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
         <Link
           href="/"
           aria-label="FYStay home"
-          className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white"
+          className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white lg:hidden"
         >
           <Home className="h-5 w-5" strokeWidth={2.5} />
         </Link>
 
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <Link href="/" className="relative z-10 hidden items-center gap-2 lg:flex">
+          <Logo size="sm" withTagline taglineClassName="mt-0 leading-tight" />
+        </Link>
+
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center lg:hidden">
           <Link href="/" className="pointer-events-auto flex items-center gap-2">
             <Logo size="sm" withTagline taglineClassName="mt-0 leading-tight" />
           </Link>
         </div>
+
+        <DesktopNavLinks />
 
         <nav className="relative z-10 flex items-center gap-3">
           {session?.user ? (
@@ -58,6 +73,6 @@ export async function Navbar() {
           )}
         </nav>
       </div>
-    </header>
+    </NavbarChrome>
   );
 }

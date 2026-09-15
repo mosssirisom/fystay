@@ -12,12 +12,15 @@ export function SearchDateRangeField({
   onChange,
   className,
   triggerClassName,
+  variant = "default",
 }: {
   range: DateRange | undefined;
   onChange: (range: DateRange | undefined) => void;
   className?: string;
   /** Overrides both trigger buttons' own padding/sizing - see GuestCategoryPicker's identical prop. */
   triggerClassName?: string;
+  /** "hero" swaps both closed triggers' icon/label/value to white at lg: - see SearchBar's own variant, which this mirrors. The open calendar popover is unaffected. */
+  variant?: "default" | "hero";
 }) {
   const [open, setOpen] = useState(false);
   // Picking dates only updates this local draft; the parent (and, on the
@@ -86,13 +89,23 @@ export function SearchDateRangeField({
           triggerClassName,
         )}
       >
-        <CalendarDays className="h-4 w-4 shrink-0 text-brand-600" />
+        <CalendarDays
+          className={cn("h-4 w-4 shrink-0 text-brand-600", variant === "hero" && "lg:text-amber-400")}
+        />
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-semibold text-foreground">Check-in</span>
+          <span
+            className={cn(
+              "block text-[11px] font-semibold text-foreground",
+              variant === "hero" && "lg:text-white",
+            )}
+          >
+            Check-in
+          </span>
           <span
             className={cn(
               "block truncate text-sm",
               checkInLabel ? "text-foreground" : "text-stone-500",
+              variant === "hero" && (checkInLabel ? "lg:text-white" : "lg:text-white/60"),
             )}
           >
             {checkInLabel ?? "Add date"}
@@ -100,7 +113,7 @@ export function SearchDateRangeField({
         </span>
       </button>
 
-      <div className="my-2 w-px shrink-0 bg-border-subtle" aria-hidden />
+      <div className={cn("my-2 w-px shrink-0 bg-border-subtle", variant === "hero" && "lg:bg-white/25")} aria-hidden />
 
       <button
         type="button"
@@ -114,11 +127,19 @@ export function SearchDateRangeField({
         )}
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-semibold text-foreground">Check-out</span>
+          <span
+            className={cn(
+              "block text-[11px] font-semibold text-foreground",
+              variant === "hero" && "lg:text-white",
+            )}
+          >
+            Check-out
+          </span>
           <span
             className={cn(
               "block truncate text-sm",
               checkOutLabel ? "text-foreground" : "text-stone-500",
+              variant === "hero" && (checkOutLabel ? "lg:text-white" : "lg:text-white/60"),
             )}
           >
             {checkOutLabel ?? "Add date"}

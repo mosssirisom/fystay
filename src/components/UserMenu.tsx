@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { signOutAction } from "@/actions/auth";
 import { cn } from "@/lib/cn";
+import { useNavTone } from "@/components/NavTone";
 
 type Props = {
   name: string;
@@ -16,6 +17,7 @@ type Props = {
 
 export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
   const [open, setOpen] = useState(false);
+  const isHero = useNavTone() === "hero";
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -53,7 +55,10 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="user-menu-panel"
-        className="focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)]"
+        className={cn(
+          "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)]",
+          isHero && "lg:border-white/40 lg:text-white lg:hover:bg-white/10 lg:hover:shadow-none",
+        )}
       >
         <span className="hidden text-sm font-medium sm:inline">{name.split(" ")[0]}</span>
         <span className="relative">

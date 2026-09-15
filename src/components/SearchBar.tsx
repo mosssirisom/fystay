@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { Loader2, Search } from "lucide-react";
+import { ArrowRight, Loader2, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { parseGuestParam, type GuestCounts } from "@/lib/search";
 import { GuestCategoryPicker } from "@/components/GuestCategoryPicker";
@@ -200,11 +200,21 @@ export function SearchBar({
             // variant below uses) rather than the narrow box this
             // replaced - a short, horizontal bar reads as "search bar", a
             // small square box over the video didn't.
-            "w-full gap-0.5 rounded-2xl border-white/25 bg-white/20 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1"
+            // The desktop-hero treatment (lg:) darkens this from the light
+            // frosted glass above into a solid, near-black pill with white
+            // field text (see the variant="hero" prop threaded into each
+            // of the three fields below) - the mobile/tablet frosted-glass
+            // look above is untouched below lg:.
+            "w-full gap-0.5 rounded-2xl border-white/25 bg-white/20 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:rounded-full lg:border-white/10 lg:bg-black/45 lg:p-1.5 lg:shadow-[0_16px_40px_-16px_rgba(0,0,0,0.6)]"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
-      <div className="flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle">
+      <div
+        className={cn(
+          "flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle",
+          isHero && "lg:divide-white/15",
+        )}
+      >
         <DestinationAutocomplete
           id="search-city"
           value={city}
@@ -226,6 +236,7 @@ export function SearchBar({
           }}
           className="sm:flex-[1.15]"
           triggerClassName={isHero ? "px-2 py-1" : undefined}
+          variant={isHero ? "hero" : "default"}
         />
 
         {/* Wider than the other segments: it holds two labelled sub-fields
@@ -240,6 +251,7 @@ export function SearchBar({
           onChange={setRange}
           className="sm:flex-[1.6]"
           triggerClassName={isHero ? "px-2 py-1" : undefined}
+          variant={isHero ? "hero" : "default"}
         />
 
         <GuestCategoryPicker
@@ -251,11 +263,15 @@ export function SearchBar({
           // teal used by the Where/Check-in fields, without touching
           // GuestCategoryPicker's markup - it's also used, unstyled, by the
           // listing page's booking widget, which this change shouldn't
-          // affect at all.
+          // affect at all. The lg: variant (higher-specificity, later in
+          // the stylesheet, so it wins over the plain rule above at that
+          // breakpoint) recolors it again for the desktop hero's dark pill.
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
+            isHero && "lg:[&>svg]:text-amber-400",
             isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
           )}
+          variant={isHero ? "hero" : "default"}
         />
       </div>
 
@@ -263,19 +279,29 @@ export function SearchBar({
         type="submit"
         disabled={isSearching}
         aria-busy={isSearching}
+        aria-label={isHero ? (isSearching ? "Searching…" : "Search") : undefined}
         className={cn(
           "focus-ring flex w-full items-center justify-center gap-2 rounded-full font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
           isHero
-            ? "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1"
+            ? // At lg: this collapses from the pill-with-label below into a
+              // circular icon-only button (the mockup's arrow button) - the
+              // label is still there for a screen reader (aria-label above)
+              // and for every breakpoint below lg, just visually hidden.
+              "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1 lg:aspect-square lg:h-11 lg:w-11 lg:shrink-0 lg:bg-[#e2984a] lg:px-0 lg:py-0 lg:hover:bg-[#d18538]"
             : "mt-1 bg-brand-700 px-6 py-3.5 text-sm sm:ml-1 sm:mt-0 sm:py-3",
         )}
       >
         {isSearching ? (
           <Loader2 className={cn("animate-spin", isHero ? "h-3.5 w-3.5" : "h-4 w-4")} aria-hidden />
         ) : (
-          <Search className={cn(isHero ? "h-3.5 w-3.5" : "h-4 w-4")} aria-hidden />
+          <>
+            <Search className={cn(isHero ? "h-3.5 w-3.5 lg:hidden" : "h-4 w-4")} aria-hidden />
+            {isHero && <ArrowRight className="hidden h-4 w-4 lg:block" aria-hidden />}
+          </>
         )}
-        <span aria-live="polite">{isSearching ? "Searching…" : "Search"}</span>
+        <span aria-live="polite" className={isHero ? "lg:hidden" : undefined}>
+          {isSearching ? "Searching…" : "Search"}
+        </span>
       </button>
     </form>
   );

@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/cn";
+import { useNavTone } from "@/components/NavTone";
 
 const sizeClasses = {
   sm: "text-2xl",
@@ -21,6 +24,9 @@ export function Logo({
   taglineClassName?: string;
   className?: string;
 }) {
+  const tone = useNavTone();
+  const isHero = tone === "hero";
+
   return (
     <span className={cn("inline-flex flex-col", className)}>
       <span
@@ -35,7 +41,7 @@ export function Logo({
         )}
       >
         <span className="text-brand-600">FY</span>
-        <span className="text-[var(--color-ink)]">Stay</span>
+        <span className={cn("text-[var(--color-ink)]", isHero && "lg:text-white")}>Stay</span>
       </span>
       {withTagline && (
         <span
@@ -50,8 +56,8 @@ export function Logo({
             taglineClassName,
           )}
         >
-          <span className="text-brand-700">Your stay,</span>{" "}
-          <span className="text-[var(--color-ink)]">your way</span>
+          <span className={cn("text-brand-700", isHero && "lg:text-brand-300")}>Your stay,</span>{" "}
+          <span className={cn("text-[var(--color-ink)]", isHero && "lg:text-white/90")}>your way</span>
         </span>
       )}
     </span>

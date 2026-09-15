@@ -201,11 +201,15 @@ export function SearchBar({
             // replaced - a short, horizontal bar reads as "search bar", a
             // small square box over the video didn't.
             // The desktop-hero treatment (lg:) darkens this from the light
-            // frosted glass above into a solid, near-black pill with white
-            // field text (see the variant="hero" prop threaded into each
-            // of the three fields below) - the mobile/tablet frosted-glass
-            // look above is untouched below lg:.
-            "w-full gap-0.5 rounded-2xl border-white/25 bg-white/20 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:rounded-full lg:border-white/10 lg:bg-black/45 lg:p-1.5 lg:shadow-[0_16px_40px_-16px_rgba(0,0,0,0.6)]"
+            // frosted glass above into a solid pill with white field text
+            // (see the variant="hero" prop threaded into each of the three
+            // fields below) - the mobile/tablet frosted-glass look above is
+            // untouched below lg:. bg-ink/80 (the same warm espresso-brown
+            // as the wordmark and every shadow on this site - see
+            // globals.css) rather than a neutral black, so the one truly
+            // solid surface in the whole hero still reads as part of this
+            // site's warm palette instead of a generic dark-UI slab.
+            "w-full gap-0.5 rounded-2xl border-white/25 bg-white/20 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:rounded-full lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
@@ -268,7 +272,7 @@ export function SearchBar({
           // breakpoint) recolors it again for the desktop hero's dark pill.
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
-            isHero && "lg:[&>svg]:text-amber-400",
+            isHero && "lg:[&>svg]:text-accent-400",
             isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
           )}
           variant={isHero ? "hero" : "default"}
@@ -287,7 +291,12 @@ export function SearchBar({
               // circular icon-only button (the mockup's arrow button) - the
               // label is still there for a screen reader (aria-label above)
               // and for every breakpoint below lg, just visually hidden.
-              "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1 lg:aspect-square lg:h-11 lg:w-11 lg:shrink-0 lg:bg-[#e2984a] lg:px-0 lg:py-0 lg:hover:bg-[#d18538]"
+              // bg-brand-500 (not a freehand hex) so this reads as the same
+              // accent color as the rest of the site rather than a
+              // one-off amber picked to match a reference screenshot -
+              // brand-500 is this design system's own version of that
+              // exact terracotta.
+              "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1 lg:aspect-square lg:h-11 lg:w-11 lg:shrink-0 lg:bg-brand-500 lg:px-0 lg:py-0 lg:hover:bg-brand-600"
             : "mt-1 bg-brand-700 px-6 py-3.5 text-sm sm:ml-1 sm:mt-0 sm:py-3",
         )}
       >

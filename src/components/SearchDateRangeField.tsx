@@ -90,7 +90,7 @@ export function SearchDateRangeField({
         )}
       >
         <CalendarDays
-          className={cn("h-4 w-4 shrink-0 text-brand-600", variant === "hero" && "lg:text-amber-400")}
+          className={cn("h-4 w-4 shrink-0 text-brand-600", variant === "hero" && "lg:text-accent-400")}
         />
         <span className="min-w-0 flex-1">
           <span

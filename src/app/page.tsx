@@ -262,7 +262,7 @@ export default async function Home() {
             links render at each breakpoint. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 mx-auto hidden max-w-6xl px-6 lg:block">
           <div className="pointer-events-auto flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+            <span className="text-xs font-semibold uppercase tracking-wide text-accent-400">
               Now covering
             </span>
             {FYLDE_COAST_DESTINATIONS.map((destination) => {
@@ -274,7 +274,7 @@ export default async function Home() {
                   href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
                   className="focus-ring flex items-center gap-1.5 rounded-full border border-white/40 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:border-white hover:bg-white/10"
                 >
-                  {Icon && <Icon className="h-3.5 w-3.5 text-amber-400" aria-hidden />}
+                  {Icon && <Icon className="h-3.5 w-3.5 text-accent-400" aria-hidden />}
                   {destination.name}
                 </Link>
               );

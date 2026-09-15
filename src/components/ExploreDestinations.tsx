@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Anchor, Compass, FerrisWheel, Flower2, Waves, Wind, type LucideIcon } from "lucide-react";
+import { Anchor, FerrisWheel, Waves, Wind, type LucideIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
@@ -10,27 +10,22 @@ export const DESTINATION_ART: Record<string, { icon: LucideIcon; gradient: strin
   "lytham-st-annes": { icon: Wind, gradient: "from-brand-500 to-ink" },
   cleveleys: { icon: Waves, gradient: "from-sky-500 to-brand-800" },
   fleetwood: { icon: Anchor, gradient: "from-ink to-brand-950" },
-  bispham: { icon: Flower2, gradient: "from-accent-500 to-brand-700" },
 };
 
 /**
- * The tile a live per-town count couldn't (or shouldn't yet) speak to a
- * single town: a catch-all pointing at every published listing, standing
- * in for "and surrounding Fylde Coast areas" rather than inventing another
- * named place with no listings behind it.
+ * Only the towns with real, licensed photography lead this section - it's
+ * the homepage's shop window, not the full coverage index (that's what
+ * every /destinations/[slug] page and the footer's town links are for).
+ * Bispham and the "more of the coast" catch-all stay reachable there, just
+ * not competing for space in a section meant to look its best.
  */
-const MORE_TILE = {
-  name: "More of the coast",
-  href: "/search",
-  icon: Compass,
-  gradient: "from-brand-700 via-brand-800 to-ink",
-};
+const FEATURED_SLUGS = ["blackpool", "lytham-st-annes", "cleveleys", "fleetwood"];
 
 export function ExploreDestinationsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-surface-muted" />
+    <div className="grid grid-cols-2 gap-4 sm:gap-6">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-surface-muted sm:aspect-[5/4]" />
       ))}
     </div>
   );
@@ -56,7 +51,7 @@ function DestinationTile({
     <Link
       href={href}
       className={cn(
-        "focus-ring group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-2xl bg-gradient-to-br p-4 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]",
+        "focus-ring group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-3xl bg-gradient-to-br p-5 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card-hover)] sm:aspect-[16/11] sm:p-7",
         gradient,
       )}
     >
@@ -66,19 +61,19 @@ function DestinationTile({
           <img
             src={photoSrc}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
         </>
       ) : (
         <Icon
-          className="absolute -right-3 -top-3 h-24 w-24 text-white/15 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+          className="absolute -right-4 -top-4 h-32 w-32 text-white/15 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 sm:h-40 sm:w-40"
           aria-hidden
         />
       )}
       <div className="relative">
-        <p className="text-base font-bold text-white sm:text-lg">{name}</p>
-        <p className="mt-0.5 text-xs text-white/80">{subtitle}</p>
+        <p className="text-xl font-bold text-white sm:text-3xl">{name}</p>
+        <p className="mt-1 text-sm text-white/85 sm:text-base">{subtitle}</p>
       </div>
     </Link>
   );
@@ -102,9 +97,11 @@ export async function ExploreDestinations() {
   });
   const countByCity = new Map(counts.map((row) => [row.city, row._count._all]));
 
+  const featured = FYLDE_COAST_DESTINATIONS.filter((d) => FEATURED_SLUGS.includes(d.slug));
+
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
-      {FYLDE_COAST_DESTINATIONS.map((destination) => {
+    <div className="grid grid-cols-2 gap-4 sm:gap-6">
+      {featured.map((destination) => {
         const art = DESTINATION_ART[destination.slug];
         const count = countByCity.get(destination.searchCity) ?? 0;
         return (
@@ -119,13 +116,6 @@ export async function ExploreDestinations() {
           />
         );
       })}
-      <DestinationTile
-        name={MORE_TILE.name}
-        href={MORE_TILE.href}
-        icon={MORE_TILE.icon}
-        gradient={MORE_TILE.gradient}
-        subtitle="Every stay on the coast"
-      />
     </div>
   );
 }

@@ -22,13 +22,11 @@ import { cn } from "@/lib/cn";
  * Tower in frame at every crop - see the class below.
  *
  * `prefers-reduced-motion` swaps the whole thing for the still poster frame
- * instead of autoplaying - the same motion-safe/motion-reduce split already
- * used for the Ken Burns effect on FeaturedListingHero's photos.
+ * instead of autoplaying.
  *
- * Falls back to this (not the rotating FeaturedListingHero) only while the
- * real featured-listings query is loading, or once the catalog is big
- * enough that a listing's own photo can't carry the whole hero yet - see
- * FeaturedHero in page.tsx for exactly when each one renders.
+ * The homepage hero's only backdrop - a pure video moment, not a rotating
+ * spotlight through real listings (that's what search results and
+ * destination pages are for).
  */
 export function HeroBanner({ className }: { className?: string }) {
   return (
@@ -53,11 +51,8 @@ export function HeroBanner({ className }: { className?: string }) {
         <source src="/videos/hero-blackpool-pier-mobile.mp4" media="(max-width: 640px)" type="video/mp4" />
         <source src="/videos/hero-blackpool-pier.mp4" type="video/mp4" />
       </video>
-      {/* No scrim of its own: page.tsx layers one unified top-and-bottom
-          scrim over the whole hero section, on top of whichever backdrop
-          is showing (this video, or FeaturedListingHero's real photos) -
-          one system for both, rather than each backdrop darkening itself
-          its own slightly different way. */}
+      {/* No scrim of its own: page.tsx layers a top-and-bottom scrim over
+          the whole hero section on top of this video. */}
     </div>
   );
 }

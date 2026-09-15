@@ -147,16 +147,17 @@ export function SearchBar({
         isHero
           ? // Frosted glass rather than the solid card below: this is the
             // one instance of SearchBar that floats directly over the hero
-            // video/photo, so it needs to read as "part of the video" -
-            // small and see-through - rather than a full-size opaque
-            // control sitting on top of it. backdrop-blur keeps the text
-            // legible over busy footage despite the low opacity. Full-width
-            // and flat - rounded only across the top edge, no side border/
-            // shadow - the same shape as FeaturedListingHero's own bottom
-            // caption strip, rather than a smaller floating rounded card,
-            // so it reads as one thin band low in the frame instead of a
-            // block sitting on top of the video.
-            "w-full rounded-none rounded-t-2xl border-x-0 border-b-0 border-t border-white/40 bg-white/35 p-1.5 shadow-none backdrop-blur-md sm:rounded-t-2xl sm:p-2"
+            // video, so it needs to read as "part of the video" - small
+            // and see-through - rather than a full-size opaque control
+            // sitting on top of it. backdrop-blur keeps the text legible
+            // over busy footage despite the low opacity. Full-width and
+            // flat - rounded only across the top edge, no side border/
+            // shadow - a thin band low in the frame rather than a block
+            // sitting on top of the video. gap-0.5 and tighter field
+            // padding (see triggerClassName below) keep its stacked-field
+            // mobile height as small as it can be while each row stays
+            // comfortably tappable.
+            "w-full gap-0.5 rounded-none rounded-t-2xl border-x-0 border-b-0 border-t border-white/40 bg-white/35 p-1 shadow-none backdrop-blur-md sm:rounded-t-2xl sm:p-1.5"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
@@ -181,7 +182,7 @@ export function SearchBar({
             }
           }}
           className="sm:flex-[1.15]"
-          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
+          triggerClassName={isHero ? "px-2 py-1" : undefined}
         />
 
         {/* Wider than the other segments: it holds two labelled sub-fields
@@ -190,7 +191,7 @@ export function SearchBar({
           range={range}
           onChange={setRange}
           className="sm:flex-[1.6]"
-          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
+          triggerClassName={isHero ? "px-2 py-1" : undefined}
         />
 
         <GuestCategoryPicker
@@ -205,7 +206,7 @@ export function SearchBar({
           // affect at all.
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
-            isHero ? "px-2 py-1.5" : "px-3 py-2.5 sm:py-1.5",
+            isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
           )}
         />
       </div>
@@ -217,7 +218,7 @@ export function SearchBar({
         className={cn(
           "focus-ring flex w-full items-center justify-center gap-2 rounded-full font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
           isHero
-            ? "mt-0.5 bg-brand-700/90 px-4 py-2 text-xs sm:ml-1 sm:mt-0 sm:py-1.5"
+            ? "bg-brand-700/90 px-4 py-1.5 text-xs sm:ml-1 sm:py-1.5"
             : "mt-1 bg-brand-700 px-6 py-3.5 text-sm sm:ml-1 sm:mt-0 sm:py-3",
         )}
       >

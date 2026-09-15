@@ -6,12 +6,9 @@
  * ever padding the page with a near-empty or fabricated row.
  */
 
-import { averageRating } from "./reviews";
-
 export const MIN_LISTINGS_PER_SECTION = 2;
 export const MAX_CITY_SECTIONS = 2;
 const RECENT_WINDOW_DAYS = 30;
-const MAX_FEATURED_LISTINGS = 5;
 
 export type MarketplaceListing = {
   id: string;
@@ -102,65 +99,3 @@ export function recentlyAddedSection<T extends MarketplaceListing>(
   };
 }
 
-export type FeaturableListing = {
-  id: string;
-  title: string;
-  city: string;
-  country: string;
-  pricePerNightCents: number;
-  photos: string[];
-  amenities: string[];
-  maxGuests: number;
-  bedrooms: number;
-  reviews: { rating: number }[];
-};
-
-export type FeaturedListing = {
-  id: string;
-  title: string;
-  city: string;
-  country: string;
-  pricePerNightCents: number;
-  photo: string;
-  amenities: string[];
-  maxGuests: number;
-  bedrooms: number;
-  rating: number | null;
-  reviewCount: number;
-};
-
-/**
- * The homepage hero's rotating spotlight: published listings with at least
- * one photo, ranked so the best-reviewed stays lead (highest average
- * rating, then most reviews). A listing with no reviews yet sorts last,
- * not first, since a null rating is "unproven", not "perfect". Ties within
- * the same rating/review-count are left in whatever order the caller
- * passed in - querying newest-first makes that tiebreak "most recent" for
- * free, without this function needing to know about createdAt at all.
- */
-export function featuredListings<T extends FeaturableListing>(
-  listings: T[],
-  maxFeatured = MAX_FEATURED_LISTINGS,
-): FeaturedListing[] {
-  return listings
-    .filter((listing) => listing.photos.length > 0)
-    .map((listing) => ({
-      id: listing.id,
-      title: listing.title,
-      city: listing.city,
-      country: listing.country,
-      pricePerNightCents: listing.pricePerNightCents,
-      photo: listing.photos[0],
-      amenities: listing.amenities,
-      maxGuests: listing.maxGuests,
-      bedrooms: listing.bedrooms,
-      rating: averageRating(listing.reviews),
-      reviewCount: listing.reviews.length,
-    }))
-    .sort((a, b) => {
-      const ratingDiff = (b.rating ?? -1) - (a.rating ?? -1);
-      if (ratingDiff !== 0) return ratingDiff;
-      return b.reviewCount - a.reviewCount;
-    })
-    .slice(0, maxFeatured);
-}

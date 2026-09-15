@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
 import { HeroBanner } from "@/components/HeroBanner";
-import { FeaturedListingHero } from "@/components/FeaturedListingHero";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
 import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { buttonVariants } from "@/components/ui/Button";
@@ -19,7 +18,7 @@ import {
 import { TripTypeCategories } from "@/components/TripTypeCategories";
 import { AirportTransferPromo } from "@/components/AirportTransferPromo";
 import { Reveal } from "@/components/Reveal";
-import { beachStaysSection, featuredListings, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
+import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/seo";
 import { cn } from "@/lib/cn";
@@ -120,39 +119,6 @@ async function MarketplaceSections() {
   );
 }
 
-/**
- * The rotating hero spotlight, split out behind its own Suspense boundary
- * (fallback: the plain generated illustration) rather than awaited inline
- * in Home() - an early version awaited this query directly, which blocks
- * the entire page's initial HTML (SearchBar included) on a DB round trip
- * for no real benefit, the same reasoning MarketplaceSections already
- * follows below. Not, on its own, a fix for hydration-timing flakiness
- * elsewhere on the page (see the comment on search-bar-dates.spec.ts for
- * the real story there) - just not adding to it.
- */
-async function FeaturedHero() {
-  const featuredListingsData = await prisma.listing.findMany({
-    where: { published: true },
-    select: {
-      id: true,
-      title: true,
-      city: true,
-      country: true,
-      pricePerNightCents: true,
-      photos: true,
-      amenities: true,
-      maxGuests: true,
-      bedrooms: true,
-      reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  const featured = featuredListings(featuredListingsData);
-
-  if (featured.length === 0) return <HeroBanner className="absolute inset-0 h-full w-full" />;
-  return <FeaturedListingHero listings={featured} className="absolute inset-0 h-full w-full" />;
-}
-
 export default async function Home() {
   // WebSite + SearchAction tells Google this site has an internal search it
   // can offer directly in results (a "sitelinks search box"), targeting the
@@ -200,22 +166,18 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       {/* Full-bleed backdrop, deliberately outside the max-w-6xl content
-          container so it spans the entire viewport width. Falls back to the
-          generated illustration only when there's nothing real to feature
-          yet (a brand-new, empty catalog), or for the brief moment before
-          the real one has loaded. */}
+          container so it spans the entire viewport width. Purely a video
+          moment - no rotating real-listing photo or caption here (that's
+          what the search results and destination pages are for), so
+          nothing on this section depends on the catalog having listings
+          in it. */}
       <section className="relative mt-6 h-[420px] w-full overflow-hidden sm:mt-8 sm:h-[500px] lg:h-[580px]">
-        <Suspense fallback={<HeroBanner className="absolute inset-0 h-full w-full" />}>
-          <FeaturedHero />
-        </Suspense>
+        <HeroBanner className="absolute inset-0 h-full w-full" />
 
-        {/* One scrim for the whole hero, over whichever backdrop is
-            showing - darkens only the sky band (behind the headline) and
-            the sand band (behind the search bar), left fully clear through
-            the middle third on purpose so the Tower, pier and beach (or a
-            real listing's own photo) read at full strength. pointer-events
-            stays off so it never blocks FeaturedListingHero's own
-            arrows/dots underneath. */}
+        {/* Scrim over the video - darkens only the sky band (behind the
+            headline) and the sand band (behind the search bar), left
+            fully clear through the middle third on purpose so the Tower,
+            pier and beach read at full strength. */}
         <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.5)_0%,rgba(12,9,7,0)_28%,rgba(12,9,7,0)_64%,rgba(12,9,7,0.55)_100%)]" />
 
         {/* The headline: one line, up in the open sky at the top of the
@@ -229,15 +191,13 @@ export default async function Home() {
           </h1>
         </div>
 
-        {/* The search bar sits low over the video as a full-width band
-            (edge to edge, same shape as FeaturedListingHero's own bottom
-            caption strip below it - see SearchBar.tsx's "hero" variant),
-            rather than a smaller floating rounded card - a thin strip
-            covers noticeably less of the footage than a padded, all-round-
-            rounded card did. Kept clear of that caption strip itself,
-            which stays flush at the very bottom in the real-listing
-            state. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-40">
+        {/* The search bar sits flush at the very bottom as a full-width
+            band (edge to edge, curved only across its top edge - see
+            SearchBar.tsx's "hero" variant). This is purely a video moment
+            now - no rotating real-listing photo/caption strip to clear -
+            so the bar can sit right at the bottom edge instead of leaving
+            a gap above it, giving the video more room to show through. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40">
           <div className="pointer-events-auto">
             <Suspense>
               <SearchBar liveUpdate={false} variant="hero" />
@@ -410,7 +370,7 @@ export default async function Home() {
  * urgency or growth claim - only rendered once there's at least one real
  * stay to count, so an empty catalog never states "0 stays live" as if
  * that were a selling point. Its own query (not threaded down from
- * MarketplaceSections/FeaturedHero above) since a plain count is cheap and
+ * MarketplaceSections above) since a plain count is cheap and
  * this is the one place on the page that needs exactly that number.
  */
 async function LiveStayCount() {

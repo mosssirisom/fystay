@@ -183,21 +183,38 @@ export default async function Home() {
       <section className="relative mt-6 h-[420px] w-full sm:mt-8 sm:h-[500px] lg:h-[580px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
-        {/* Scrim over the video - darkens only the sky band (behind the
-            headline) and the sand band (behind the search bar), left
-            fully clear through the middle third on purpose so the Tower,
-            pier and beach read at full strength. */}
-        <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.5)_0%,rgba(12,9,7,0)_28%,rgba(12,9,7,0)_64%,rgba(12,9,7,0.55)_100%)]" />
+        {/* Scrim over the video - darkens the sky band (behind the
+            headline/subcopy) and the sand band (behind the search bar),
+            left fully clear through the middle so the Tower, pier and
+            beach still read at full strength. Taller top fade than a bare
+            one-line headline needed - confirmed on screenshots that 34%
+            still let the subcopy's second line cross into the clear zone
+            and land on the pier's own crossbeams, killing legibility - so
+            this now fully contains headline + subcopy before the fade
+            starts. */}
+        <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.6)_0%,rgba(12,9,7,0)_40%,rgba(12,9,7,0)_64%,rgba(12,9,7,0.55)_100%)]" />
 
-        {/* The headline: one line, up in the open sky at the top of the
-            frame - not a left-aligned block over the water, and not a
-            multi-line pitch. The eyebrow label and descriptive line that
-            used to sit here now live below the fold entirely (see the
-            strip right after this section), off the footage. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center px-6 pt-7 sm:pt-9">
-          <h1 className="max-w-[15ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white sm:text-4xl lg:text-5xl">
-            Your stay starts <em className="italic">here.</em>
+        {/* Headline + subcopy, stacked as one quiet block up in the open
+            sky - no card, no scrim of their own beyond the section-wide
+            one above, so they read as part of the frame rather than a
+            text block laid over it. The search bar (bottom of this
+            section) is the next beat after this copy, not a separate
+            component competing with it - same reason there's no button
+            or extra ornament here, just the two lines and then the
+            video leading down to the bar. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-7 sm:pt-9">
+          <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:text-5xl">
+            Stay somewhere <em className="italic">worth staying.</em>
           </h1>
+          {/* A soft text-shadow (here and on the headline above), not just
+              the section-wide scrim, so both lines stay legible over
+              whatever happens to be behind them at a given viewport width
+              - the pier's own crossbeams sit right at this text's lower
+              edge on wider screens, and no single scrim stop covers every
+              breakpoint's exact line count/wrap perfectly. */}
+          <p className="mt-2 max-w-[32ch] text-balance text-center text-sm font-light leading-snug text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] sm:mt-3 sm:max-w-[38ch] sm:text-base">
+            Hand-picked places, local knowledge and a better way to book your next stay.
+          </p>
         </div>
 
         {/* The search bar floats low over the video - close to the bottom
@@ -218,13 +235,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
-        {/* The line that used to sit on the video, now back on the page's
-            own background directly below the search bar - a hero is just
-            the one line up top, this is where the rest of the pitch goes. */}
-        <p className="mx-auto max-w-lg pt-6 text-center text-sm text-stone-600 sm:pt-8 sm:text-base">
-          Local stays, chosen with care. Local knowledge, on arrival. Door-to-door transfers, sorted before you land.
-        </p>
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8 pt-8 sm:pt-10">
         {/* A horizontally-scrollable strip on mobile (edge-fade masks, not
             clipped arrows) rather than the wrapped-badge row this replaces -
             reads more like an app's own category rail, and each pill now

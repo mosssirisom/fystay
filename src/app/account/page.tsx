@@ -5,10 +5,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 import { isPhoneVerificationConfigured } from "@/lib/phoneVerification";
-import { Card, CardContent } from "@/components/ui/Card";
 import { IdentityVerificationCard } from "@/components/IdentityVerificationCard";
 import { PhoneVerificationCard } from "@/components/PhoneVerificationCard";
 import { PrivacyDataCard } from "@/components/PrivacyDataCard";
+import { ProfileCard } from "@/components/ProfileCard";
+import { EmailChangeCard } from "@/components/EmailChangeCard";
 import { SecuritySessionsCard } from "@/components/SecuritySessionsCard";
 import { TwoFactorCard } from "@/components/TwoFactorCard";
 
@@ -25,6 +26,7 @@ export default async function AccountPage() {
     select: {
       name: true,
       email: true,
+      image: true,
       phone: true,
       phoneVerifiedAt: true,
       identityVerificationStatus: true,
@@ -53,14 +55,12 @@ export default async function AccountPage() {
         </div>
       </div>
 
-      <Card className="mt-6 p-5">
-        <CardContent className="flex flex-col gap-1 p-0 text-sm">
-          <p className="font-medium text-foreground">{user.name}</p>
-          <p className="text-stone-500">{user.email}</p>
-        </CardContent>
-      </Card>
+      <div className="mt-6">
+        <ProfileCard initialName={user.name} email={user.email} image={user.image} />
+      </div>
 
       <div className="mt-6 flex flex-col gap-4">
+        {hasPassword && <EmailChangeCard currentEmail={user.email} />}
         <IdentityVerificationCard
           status={user.identityVerificationStatus}
           configured={Boolean(getStripeClient())}

@@ -256,6 +256,7 @@ model User {
   savedListings       SavedListing[]
   savedPlaces         SavedPlace[]
   passwordResetTokens PasswordResetToken[]
+  emailChangeTokens   EmailChangeToken[]
   reviewReports       ReviewReport[]
   guestConversations  Conversation[]       @relation("GuestConversations")
   hostConversations   Conversation[]       @relation("HostConversations")
@@ -287,6 +288,26 @@ model User {
 model PasswordResetToken {
   id        String    @id @default(cuid())
   tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// A single-use, time-limited token for the self-service "change email"
+// flow (see src/lib/emailChange.ts) - same shape and reasoning as
+// PasswordResetToken (only a hash stored, single use, expires), plus the
+// actual newEmail the token was issued for, since - unlike a password
+// reset - there's no separate field on User to stage a "pending" email
+// into; the token row itself is that staging area until it's confirmed.
+model EmailChangeToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  newEmail  String
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())

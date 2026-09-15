@@ -1,22 +1,21 @@
 import Link from "next/link";
-import { BedDouble, Gem, Umbrella, UsersRound, Waves, type LucideIcon } from "lucide-react";
+import { BedDouble, Gem, Umbrella, UsersRound, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
  * Each tile routes to a real, working /search filter (see
  * lib/listingSearch.ts's parseListingFiltersFromParams for the exact param
- * names) rather than a decorative link - a "Luxury Stay" or "Seaside
- * Escape" that led nowhere useful would be worse than not having the tile
- * at all. Framed as trip-type inspiration, not as a promise about the
- * catalog's actual size or star rating in any one category.
+ * names) rather than a decorative link - a "Luxury Stay" that led nowhere
+ * useful would be worse than not having the tile at all. Framed as
+ * trip-type inspiration, not as a promise about the catalog's actual size
+ * or star rating in any one category.
+ *
+ * Seaside Escape (amenities=sea_view) was dropped: too few listings tag a
+ * sea view yet for the filter to feel worth a whole tile - matches the
+ * same "only show what's actually worth showing" call as the Explore
+ * section above dropping Bispham/"more of the coast".
  */
 const TRIP_TYPES: { name: string; description: string; icon: LucideIcon; href: string }[] = [
-  {
-    name: "Seaside Escape",
-    description: "Stays with a sea view",
-    icon: Waves,
-    href: "/search?amenities=sea_view",
-  },
   {
     name: "Family Break",
     description: "Space for everyone",
@@ -45,21 +44,21 @@ const TRIP_TYPES: { name: string; description: string; icon: LucideIcon; href: s
 
 export function TripTypeCategories() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4">
+    <div className="grid grid-cols-2 gap-4 sm:gap-6">
       {TRIP_TYPES.map(({ name, description, icon: Icon, href }) => (
         <Link
           key={name}
           href={href}
           className={cn(
-            "focus-ring group flex flex-col items-start gap-3 rounded-2xl border border-border-subtle bg-surface p-4 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[var(--shadow-card-hover)]",
+            "focus-ring group flex flex-col items-start gap-4 rounded-3xl border border-border-subtle bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-[var(--shadow-card-hover)] sm:p-8",
           )}
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100">
-            <Icon className="h-5 w-5" aria-hidden />
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100 sm:h-16 sm:w-16">
+            <Icon className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
           </span>
           <div>
-            <p className="text-sm font-semibold text-foreground">{name}</p>
-            <p className="mt-0.5 text-xs text-stone-500">{description}</p>
+            <p className="text-lg font-bold text-foreground sm:text-xl">{name}</p>
+            <p className="mt-1 text-sm text-stone-500 sm:text-base">{description}</p>
           </div>
         </Link>
       ))}

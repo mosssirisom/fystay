@@ -158,7 +158,7 @@ export function SearchBar({
             // uses) rather than the narrow box this replaced - a short,
             // horizontal bar reads as "search bar", a small square box
             // over the video didn't.
-            "w-full gap-0.5 rounded-2xl border-white/40 bg-white/35 p-1 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md sm:max-w-4xl sm:p-1.5"
+            "w-full gap-0.5 rounded-2xl border-white/40 bg-white/35 p-1 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md sm:max-w-4xl sm:p-1"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
@@ -183,7 +183,7 @@ export function SearchBar({
             }
           }}
           className="sm:flex-[1.15]"
-          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
+          triggerClassName={isHero ? "px-2 py-1" : undefined}
         />
 
         {/* Wider than the other segments: it holds two labelled sub-fields
@@ -197,7 +197,7 @@ export function SearchBar({
           range={range}
           onChange={setRange}
           className="sm:flex-[1.6]"
-          triggerClassName={isHero ? "px-2 py-1.5" : undefined}
+          triggerClassName={isHero ? "px-2 py-1" : undefined}
         />
 
         <GuestCategoryPicker
@@ -212,7 +212,7 @@ export function SearchBar({
           // affect at all.
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
-            isHero ? "px-2 py-1.5" : "px-3 py-2.5 sm:py-1.5",
+            isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
           )}
         />
       </div>
@@ -224,7 +224,7 @@ export function SearchBar({
         className={cn(
           "focus-ring flex w-full items-center justify-center gap-2 rounded-full font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
           isHero
-            ? "bg-brand-700/90 px-4 py-1.5 text-xs sm:ml-1 sm:py-1.5"
+            ? "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1"
             : "mt-1 bg-brand-700 px-6 py-3.5 text-sm sm:ml-1 sm:mt-0 sm:py-3",
         )}
       >

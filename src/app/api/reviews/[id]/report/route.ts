@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { canReportReview } from "@/lib/reviews";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 
 const REPORT_REASONS = ["spam", "offensive", "not_genuine", "other"] as const;
 
@@ -23,6 +24,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rateLimit = await checkRateLimit({
+    key: `reviews:report:${session.user.id}`,
+    limit: 20,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
 
   const body = await request.json();
   const parsed = reportSchema.safeParse(body);

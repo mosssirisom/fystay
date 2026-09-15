@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { canReviewBooking } from "@/lib/reviews";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 
 const categoryRating = z.number().int().min(1).max(5).optional();
 
@@ -25,6 +26,16 @@ export async function POST(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // One review per booking is already enforced below (canReviewBooking) -
+  // this just caps how many attempts (rejected or not) a single guest can
+  // fire at the endpoint in a burst.
+  const rateLimit = await checkRateLimit({
+    key: `reviews:create:${session.user.id}`,
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
 
   const body = await request.json();
   const parsed = createReviewSchema.safeParse(body);

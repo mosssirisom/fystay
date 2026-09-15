@@ -10,6 +10,7 @@ import {
 } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 import { computePromoDiscount, normalizePromoCode, validatePromoCode } from "@/lib/promoCode";
+import { checkRateLimit, clientIp, rateLimitedResponse } from "@/lib/rateLimit";
 
 const querySchema = z.object({
   checkIn: z.string().min(1),
@@ -67,6 +68,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  // This is a public, unauthenticated, read-only endpoint that also tells
+  // the caller whether an arbitrary ?promoCode= is valid and, if so, its
+  // exact discount - without it, nothing stops a script from working
+  // through codes to find ones that redeem. Ordinary date-availability
+  // checks (no promoCode) aren't limited here; only guessing attempts are.
+  if (parsed.data.promoCode) {
+    const rateLimit = await checkRateLimit({
+      key: `promo-preview:${clientIp(request)}`,
+      limit: 20,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (!rateLimit.allowed) return rateLimitedResponse(rateLimit);
   }
 
   const checkIn = new Date(parsed.data.checkIn);

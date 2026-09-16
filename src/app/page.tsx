@@ -285,8 +285,16 @@ export default async function Home() {
             pushed the "Now covering" label up far enough to collide with
             the search bar sitting right above it. A fixed single-line
             height keeps the gap between them predictable at every
-            breakpoint down here. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-30 flex flex-col items-center gap-2.5 px-6 sm:bottom-6 lg:hidden">
+            breakpoint down here.
+
+            bottom-8/sm:bottom-10 (not bottom-4/bottom-6, this row's
+            original offset from before the hero-to-page blend below
+            existed) leaves clear headroom above the cream section's own
+            -mt-5/-mt-6 rise - otherwise the two edges land within a few
+            px of each other and the rounded curve visibly grazes this
+            row's pill icons/text instead of tucking in cleanly beneath
+            them. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-8 z-30 flex flex-col items-center gap-2.5 px-6 sm:bottom-10 lg:hidden">
           <div className="flex w-full max-w-[220px] items-center gap-3">
             <span
               className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-300/60"

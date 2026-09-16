@@ -11,7 +11,6 @@ import { ListingsCarouselSkeleton } from "@/components/ListingCardSkeleton";
 import { buttonVariants } from "@/components/ui/Button";
 import { ListingsCarousel } from "@/components/ListingsCarousel";
 import {
-  DESTINATION_ART,
   ExploreDestinations,
   ExploreDestinationsSkeleton,
 } from "@/components/ExploreDestinations";
@@ -194,7 +193,7 @@ export default async function Home() {
           below lg because of the mobile icon-button layout vs. the
           desktop logo/links layout) - if the navbar's own padding/content
           ever changes height, this needs to move with it. */}
-      <section className="relative -mt-[75px] h-[420px] w-full sm:h-[500px] lg:-mt-[74px] lg:h-[700px]">
+      <section className="relative -mt-[75px] h-[560px] w-full sm:h-[640px] lg:-mt-[74px] lg:h-[700px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens the sky band (behind the
@@ -260,13 +259,18 @@ export default async function Home() {
             card ever touches the video's own frame - rather than the
             earlier full-bleed band this replaced.
 
-            lg: moves up from that bottom-hugging mobile/tablet position to
-            leave room below it for the "Now covering" row (in-hero at that
-            breakpoint - see below), and switches from centered-on-viewport
-            to left-aligned within the same max-w-6xl/px-6 container as the
-            headline and navbar above, rather than centered independently
-            of them. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4 lg:inset-x-0 lg:bottom-32 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
+            Leaves room below it (bottom-24/sm:bottom-28, not the old
+            bottom-3/sm:bottom-4 hugging the very edge) for the "Now
+            covering" pill row now living in-hero at every breakpoint - see
+            below - rather than in its own separate section after the
+            hero, which is what used to make this bar tolerate sitting
+            right at the bottom edge.
+
+            lg: moves up further still and switches from centered-on-
+            viewport to left-aligned within the same max-w-6xl/px-6
+            container as the headline and navbar above, rather than
+            centered independently of them. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-40 flex justify-center px-4 sm:bottom-28 lg:inset-x-0 lg:bottom-32 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
           {/* w-full max-w-4xl (not just letting the flex item shrink-wrap
               its content) so the bar actually grows to fill the width
               this row allows, rather than only ever rendering as wide as
@@ -278,14 +282,73 @@ export default async function Home() {
           </div>
         </div>
 
+        {/* Mobile/tablet: "Now covering" pills sit inside the hero itself,
+            just below the search bar - previously this lived in its own
+            plain section after the hero (on the page's cream background),
+            which read as a separate, lower-effort afterthought instead of
+            part of the same premium video moment the search bar is in.
+
+            Styling matches the reference the user shared: a champagne-gold
+            accent (the label flanked by hairline rules, and a plain pin
+            icon per pill in the same gold) against outlined, glassy pills
+            rather than the solid white badges this used to be - the
+            outlined treatment reads as sitting *in* the video rather than
+            floating a light card on top of it.
+
+            A single scrolling line at every width below lg, not wrapping
+            to multiple rows at sm: (an earlier version of this did) - this
+            block is anchored to the hero's bottom edge and grows upward as
+            its own content gets taller, so a two-row wrap at tablet width
+            pushed the "Now covering" label up far enough to collide with
+            the search bar sitting right above it. A fixed single-line
+            height keeps the gap between them predictable at every
+            breakpoint down here. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-30 flex flex-col items-center gap-2.5 px-6 sm:bottom-6 lg:hidden">
+          <div className="flex w-full max-w-[220px] items-center gap-3">
+            <span
+              className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-300/60"
+              aria-hidden
+            />
+            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
+              Now covering
+            </span>
+            <span
+              className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-300/60"
+              aria-hidden
+            />
+          </div>
+          <div className="relative w-full max-w-md">
+            <div className="pointer-events-auto flex snap-x snap-mandatory justify-start gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {FYLDE_COAST_DESTINATIONS.map((destination) => (
+                <Link
+                  key={destination.slug}
+                  href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
+                  className="focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-amber-200/30 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-200/60 hover:bg-white/10"
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden />
+                  {destination.name}
+                </Link>
+              ))}
+            </div>
+            <div
+              className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-black/50 to-transparent"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-black/50 to-transparent"
+              aria-hidden
+            />
+          </div>
+        </div>
+
         {/* Desktop-only: "Now covering" overlaps the hero's own bottom
             edge here - the exact same list stays in its original spot, in
-            a bolder badge style, below the hero at <lg (see the lg:hidden
-            strip further down the page); this isn't a duplicate content
-            addition, just where the same links render at each breakpoint.
+            a bolder badge style, in-hero at <lg (see just above); this
+            isn't a duplicate content addition, just where the same links
+            render at each breakpoint.
 
-            Deliberately plainer here than the pill/icon treatment used
-            below: five bordered, icon-carrying badges in a row read as a
+            Deliberately plainer here than the pill/icon treatment above:
+            five bordered, icon-carrying badges in a row read as a
             directory footer next to the search bar's own restraint - an
             inline index line (name, name, name) reads as an editorial
             "we cover these towns" note instead. */}
@@ -311,65 +374,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8 pt-8 sm:pt-10">
-        {/* A horizontally-scrollable strip on mobile (edge fades, not
-            clipped arrows) rather than the wrapped-badge row this replaces -
-            reads more like an app's own category rail, and each pill now
-            carries the same per-town icon/gradient motif as the "Explore"
-            tiles below, so a visitor sees the same visual language for a
-            town twice, not two unrelated treatments of the same five names.
-
-            The edge fade is two painted gradient overlays, not a
-            mask-image on the scroll row itself (an earlier version of
-            this) - confirmed on a real phone that the mask-image wasn't
-            rendering at all there, so the last pill just hard-clipped at
-            the screen edge mid-word instead of fading. A painted overlay
-            can't silently fail to apply the way a mask can. */}
-        {/* lg:hidden: at that breakpoint this same list already renders
-            inside the hero itself, overlapping its bottom edge (see the
-            "Now covering" block in the hero <section> above) - matching
-            the target desktop design without showing the list twice. */}
-        <div className="relative mt-8 lg:hidden">
-          <div className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:px-0 [&::-webkit-scrollbar]:hidden">
-            <span className="flex shrink-0 snap-start items-center text-xs font-semibold uppercase tracking-wide text-stone-500">
-              Now covering
-            </span>
-            {FYLDE_COAST_DESTINATIONS.map((destination) => {
-              const art = DESTINATION_ART[destination.slug];
-              const Icon = art?.icon;
-              return (
-                <Link
-                  key={destination.slug}
-                  href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
-                  className={cn(
-                    "focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-3 py-1.5 text-sm font-medium text-stone-700 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800 hover:shadow-[var(--shadow-card-hover)]",
-                  )}
-                >
-                  {Icon && (
-                    <span
-                      className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-white",
-                        art.gradient,
-                      )}
-                    >
-                      <Icon className="h-3 w-3" aria-hidden />
-                    </span>
-                  )}
-                  {destination.name}
-                </Link>
-              );
-            })}
-          </div>
-          <div
-            className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-background to-transparent sm:hidden"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-background to-transparent sm:hidden"
-            aria-hidden
-          />
-        </div>
-
+      {/* pb-8 only, not the pt-8/sm:pt-10 this used to also carry - that
+          top padding existed to leave room for the "Now covering" strip
+          that used to open this section; now that it lives inside the
+          hero instead (see above), "Hand-picked stays" own mt-10 just
+          below is the only top spacing this section needs. */}
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
         <div className="mt-10">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Hand-picked stays</h2>
           <p className="mt-1 text-sm text-stone-500">

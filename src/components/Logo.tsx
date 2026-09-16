@@ -48,16 +48,28 @@ export function Logo({
           className={cn(
             // Sized to match the "FYStay" wordmark's own rendered width at
             // this component's "sm" size (the only size any caller
-            // currently pairs with a tagline) - "Your stay, your way" is
-            // roughly 3x the character count of "FYStay", so fitting it
+            // currently pairs with a tagline) - "Hotels · B&Bs · Cottages"
+            // is roughly 3x the character count of "FYStay", so fitting it
             // into the same width needs a font size this much smaller, not
             // just a token step down like text-sm/text-xs.
-            "mt-1.5 font-[family-name:var(--font-logo)] text-[7px] uppercase tracking-wide",
+            //
+            // States what's actually on the marketplace (three real
+            // property-type categories, not a mood line) - "Your stay,
+            // your way" said nothing a visitor couldn't already guess from
+            // "FYStay" itself.
+            "mt-1.5 flex items-center gap-1 font-[family-name:var(--font-logo)] text-[7px] uppercase tracking-wide",
             taglineClassName,
           )}
         >
-          <span className={cn("text-brand-700", isHero && "text-brand-300")}>Your stay,</span>{" "}
-          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>your way</span>
+          <span className={cn("text-brand-700", isHero && "text-brand-300")}>Hotels</span>
+          <span className={cn("text-stone-400", isHero && "text-white/40")} aria-hidden>
+            &middot;
+          </span>
+          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>B&amp;Bs</span>
+          <span className={cn("text-stone-400", isHero && "text-white/40")} aria-hidden>
+            &middot;
+          </span>
+          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>Cottages</span>
         </span>
       )}
     </span>

@@ -48,7 +48,7 @@ export function Logo({
           className={cn(
             // Sized to match the "FYStay" wordmark's own rendered width at
             // this component's "sm" size (the only size any caller
-            // currently pairs with a tagline) - "Hotels · B&Bs · Cottages"
+            // currently pairs with a tagline) - "Hotels · B&Bs · Lodges"
             // is roughly 3x the character count of "FYStay", so fitting it
             // into the same width needs a font size this much smaller, not
             // just a token step down like text-sm/text-xs.
@@ -69,7 +69,7 @@ export function Logo({
           <span className={cn("text-stone-400", isHero && "text-white/40")} aria-hidden>
             &middot;
           </span>
-          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>Cottages</span>
+          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>Lodges</span>
         </span>
       )}
     </span>

@@ -1,41 +1,49 @@
+import { createHash, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
-
-export const maxDuration = 60;
+import { prisma } from "@/lib/prisma";
+import { seedDemoData } from "@/lib/demoSeed";
 
 /**
- * Temporary, manually-triggered endpoint to run prisma/seed.ts's demo data
- * against a deployment's database - for standing up a fresh preview/staging
- * database with the same visual demo content the local dev DB has, without
- * needing a direct Postgres connection to it. Gated behind SEED_DEMO_SECRET
- * (unset by default, so this refuses every request until someone
- * deliberately configures it) rather than any session/role check, since an
- * empty database has no admin user yet to authenticate as.
+ * One-off: populates the demo host/guest/listings/reviews/trip-extras
+ * dataset (the same content prisma/seed.ts uses for local dev) through
+ * the app's own already-configured DATABASE_URL, for an environment
+ * nobody has a direct database connection to.
  *
- * Delete this route once it's no longer needed - it's a one-off tool for
- * bootstrapping a database's demo content, not a feature.
+ * Gated by a shared secret (SEED_ADMIN_SECRET) rather than an ADMIN
+ * session, since a freshly-provisioned database has no admin account to
+ * sign in as yet - this is meant to be the very first write against it.
+ * Fails closed if the env var isn't set, rather than falling open.
  *
- * GET (not POST) and a query param (not an Authorization header) purely so
- * this can be triggered with a plain URL fetch - there's no browser or
- * scriptable client in the loop for this one-off, just a URL pasted or
- * fetched directly.
+ * GET (not just POST) so this can be triggered by visiting a URL - the
+ * one time this app accepts a state-changing GET, matching the same
+ * pragmatic pattern as an email-verification link, since the whole point
+ * is a single manual trigger with nothing else able to reach this path
+ * without the secret.
+ *
+ * Safe to call more than once - every write it makes is idempotent (see
+ * src/lib/demoSeed.ts), so a repeat call just reports what already
+ * existed instead of duplicating rows.
  */
-function isAuthorized(request: Request): boolean {
-  const secret = process.env.SEED_DEMO_SECRET;
-  if (!secret) return false;
-  const provided = new URL(request.url).searchParams.get("secret");
-  return provided === secret;
-}
-
-export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+async function handle(request: Request) {
+  const expected = process.env.SEED_ADMIN_SECRET;
+  if (!expected) {
+    return NextResponse.json({ error: "SEED_ADMIN_SECRET is not configured" }, { status: 501 });
   }
 
-  // Dynamic import (not a static top-level one) so prisma/seed.ts's
-  // module-level `main().catch().finally()` only runs once this request is
-  // actually authorized, not on every cold start that happens to load this
-  // route's bundle.
-  await import("../../../../../prisma/seed");
+  const provided =
+    new URL(request.url).searchParams.get("secret") ?? request.headers.get("x-seed-secret") ?? "";
+  // Compare fixed-length digests, not the raw strings - timingSafeEqual
+  // throws on a length mismatch, which itself would otherwise leak the
+  // real secret's length to a probing caller.
+  const expectedDigest = createHash("sha256").update(expected).digest();
+  const providedDigest = createHash("sha256").update(provided).digest();
+  if (!timingSafeEqual(expectedDigest, providedDigest)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  return NextResponse.json({ ok: true });
+  const summary = await seedDemoData(prisma);
+  return NextResponse.json({ summary });
 }
+
+export const GET = handle;
+export const POST = handle;

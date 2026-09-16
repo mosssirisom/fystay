@@ -61,7 +61,7 @@ export function DestinationAutocomplete({
   className?: string;
   /** Overrides the trigger label's own padding/sizing - see GuestCategoryPicker's identical prop. */
   triggerClassName?: string;
-  /** "hero" swaps the closed trigger's icon/label/input to white at lg: - see SearchBar's own variant, which this mirrors for its desktop-hero dark pill. The open dropdown panel is unaffected (always on a white surface, so its own text stays dark regardless). */
+  /** "hero" swaps the closed trigger's icon/label/input to white, at every breakpoint - see SearchBar's own variant, which this mirrors for its tinted-glass-to-solid-pill treatment. The open dropdown panel is unaffected (always on a white surface, so its own text stays dark regardless). */
   variant?: "default" | "hero";
 }) {
   const [open, setOpen] = useState(false);
@@ -248,14 +248,14 @@ export function DestinationAutocomplete({
         )}
       >
         <MapPin
-          className={cn("h-4 w-4 shrink-0 text-brand-600", variant === "hero" && "lg:text-accent-400")}
+          className={cn("h-4 w-4 shrink-0 text-brand-600", variant === "hero" && "text-accent-400")}
           aria-hidden
         />
         <span className="min-w-0 flex-1">
           <span
             className={cn(
               "block text-[11px] font-semibold text-foreground",
-              variant === "hero" && "lg:text-white",
+              variant === "hero" && "text-white",
             )}
           >
             Where
@@ -287,7 +287,7 @@ export function DestinationAutocomplete({
             // isn't room for it in full.
             className={cn(
               "focus-ring w-full truncate rounded-lg bg-transparent px-0 py-0 text-base text-foreground placeholder:text-stone-500 sm:text-sm",
-              variant === "hero" && "lg:text-white lg:placeholder:text-white/60",
+              variant === "hero" && "text-white placeholder:text-white/70",
             )}
           />
         </span>

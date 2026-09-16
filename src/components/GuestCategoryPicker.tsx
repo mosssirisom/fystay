@@ -42,7 +42,7 @@ export function GuestCategoryPicker({
   requireDoneToConfirm?: boolean;
   className?: string;
   triggerClassName?: string;
-  /** "hero" swaps the closed trigger's icon/label/value to white at lg: - see SearchBar's own variant, which this mirrors. The open picker panel is unaffected. */
+  /** "hero" swaps the closed trigger's icon/label/value to white, at every breakpoint - see SearchBar's own variant, which this mirrors. The open picker panel is unaffected. */
   variant?: "default" | "hero";
 }) {
   const [open, setOpen] = useState(false);
@@ -128,14 +128,16 @@ export function GuestCategoryPicker({
           <span
             className={cn(
               "block text-[11px] font-semibold text-foreground",
-              variant === "hero" && "lg:text-white",
+              variant === "hero" && "text-white",
             )}
           >
             Guests
           </span>
-          <span
-            className={cn("block truncate text-sm text-stone-500", variant === "hero" && "lg:text-white/70")}
-          >
+          {/* Full white, not a dimmed white/70 - unlike Where/dates, this
+              field never actually reads as "empty": its default state is
+              already a real value ("1 guest"), so treating it like an
+              unset placeholder was the inconsistency, not the fix. */}
+          <span className={cn("block truncate text-sm text-stone-500", variant === "hero" && "text-white")}>
             {summarizeGuests(displayValue)}
           </span>
         </span>

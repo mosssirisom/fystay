@@ -194,13 +194,16 @@ export default async function Home() {
         {/* Scrim over the video - darkens the sky band (behind the
             headline/subcopy) and the sand band (behind the search bar),
             left fully clear through the middle so the Tower, pier and
-            beach still read at full strength. Taller top fade than a bare
-            one-line headline needed - confirmed on screenshots that 34%
-            still let the subcopy's second line cross into the clear zone
-            and land on the pier's own crossbeams, killing legibility - so
-            this now fully contains headline + subcopy before the fade
-            starts. */}
-        <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.6)_0%,rgba(12,9,7,0)_40%,rgba(12,9,7,0)_64%,rgba(12,9,7,0.55)_100%)]" />
+            beach still read at full strength. A held plateau (0-50%) at
+            full opacity, not a fade starting at 0% - a straight two-stop
+            linear-gradient (an earlier version of this) is already
+            substantially faded by the time it reaches the middle of its
+            own range, which put the subcopy's second line - sitting well
+            inside what looked like "the opaque zone" on paper - over the
+            pier's own crossbeams at only ~10% scrim opacity, unreadable.
+            The plateau's own end (50%) is past the actual measured bottom
+            edge of the headline+subcopy block at every breakpoint. */}
+        <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.75)_0%,rgba(12,9,7,0.75)_50%,rgba(12,9,7,0)_62%,rgba(12,9,7,0)_66%,rgba(12,9,7,0.55)_100%)]" />
 
         {/* Headline + subcopy, stacked as one quiet block up in the open
             sky - no card, no scrim of their own beyond the section-wide
@@ -215,7 +218,7 @@ export default async function Home() {
             navbar's own logo sits in, so the headline lines up with it -
             matching the desktop hero design rather than staying centered
             over the whole viewport. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-7 sm:pt-9 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-32">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-7 sm:pt-9 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-28">
           <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
             Stay somewhere <em className="italic">worth staying.</em>
           </h1>
@@ -224,9 +227,17 @@ export default async function Home() {
               whatever happens to be behind them at a given viewport width
               - the pier's own crossbeams sit right at this text's lower
               edge on wider screens, and no single scrim stop covers every
-              breakpoint's exact line count/wrap perfectly. */}
-          <p className="mt-2 max-w-[32ch] text-balance text-center text-sm font-light leading-snug text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] sm:mt-3 sm:max-w-[38ch] sm:text-base lg:mt-16 lg:max-w-[34ch] lg:text-left lg:text-lg">
-            Hand-picked places, local knowledge and a better way to book your next stay.
+              breakpoint's exact line count/wrap perfectly.
+
+              Real, place-specific copy rather than a line any OTA could
+              run - "chosen by locals, not an algorithm" is the actual
+              differentiator this site has over Booking.com/Airbnb search,
+              so the subcopy says that instead of a generic "hand-picked
+              places" line (which also just duplicated the "Hand-picked
+              stays" section heading a few hundred pixels further down
+              this same page). */}
+          <p className="mt-2 max-w-[32ch] text-balance text-center text-sm font-light leading-snug text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] sm:mt-3 sm:max-w-[38ch] sm:text-base lg:mt-8 lg:max-w-[34ch] lg:text-left lg:text-lg">
+            Real places along the Fylde Coast, chosen by locals &mdash; not an algorithm.
           </p>
         </div>
 
@@ -242,7 +253,7 @@ export default async function Home() {
             to left-aligned within the same max-w-6xl/px-6 container as the
             headline and navbar above, rather than centered independently
             of them. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4 lg:inset-x-0 lg:bottom-24 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-4 sm:bottom-4 lg:inset-x-0 lg:bottom-32 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
           {/* w-full max-w-4xl (not just letting the flex item shrink-wrap
               its content) so the bar actually grows to fill the width
               this row allows, rather than only ever rendering as wide as
@@ -255,30 +266,34 @@ export default async function Home() {
         </div>
 
         {/* Desktop-only: "Now covering" overlaps the hero's own bottom
-            edge here, matching the target design - the exact same list
-            stays in its original spot, in a plainer badge style, below the
-            hero at <lg (see the lg:hidden strip further down the page);
-            this isn't a duplicate content addition, just where the same
-            links render at each breakpoint. */}
+            edge here - the exact same list stays in its original spot, in
+            a bolder badge style, below the hero at <lg (see the lg:hidden
+            strip further down the page); this isn't a duplicate content
+            addition, just where the same links render at each breakpoint.
+
+            Deliberately plainer here than the pill/icon treatment used
+            below: five bordered, icon-carrying badges in a row read as a
+            directory footer next to the search bar's own restraint - an
+            inline index line (name, name, name) reads as an editorial
+            "we cover these towns" note instead. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 mx-auto hidden max-w-6xl px-6 lg:block">
-          <div className="pointer-events-auto flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-accent-400">
-              Now covering
-            </span>
-            {FYLDE_COAST_DESTINATIONS.map((destination) => {
-              const art = DESTINATION_ART[destination.slug];
-              const Icon = art?.icon;
-              return (
+          <div className="pointer-events-auto flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-sm">
+            <span className="mr-1 font-medium text-white/60">Now covering</span>
+            {FYLDE_COAST_DESTINATIONS.map((destination, i) => (
+              <span key={destination.slug} className="flex items-baseline">
                 <Link
-                  key={destination.slug}
                   href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
-                  className="focus-ring flex items-center gap-1.5 rounded-full border border-white/40 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:border-white hover:bg-white/10"
+                  className="focus-ring rounded-sm font-medium text-white/90 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white/70"
                 >
-                  {Icon && <Icon className="h-3.5 w-3.5 text-accent-400" aria-hidden />}
                   {destination.name}
                 </Link>
-              );
-            })}
+                {i < FYLDE_COAST_DESTINATIONS.length - 1 && (
+                  <span className="ml-1.5 text-white/30" aria-hidden>
+                    &middot;
+                  </span>
+                )}
+              </span>
+            ))}
           </div>
         </div>
       </section>

@@ -200,23 +200,30 @@ export function SearchBar({
             // variant below uses) rather than the narrow box this
             // replaced - a short, horizontal bar reads as "search bar", a
             // small square box over the video didn't.
-            // The desktop-hero treatment (lg:) darkens this from the light
-            // frosted glass above into a solid pill with white field text
-            // (see the variant="hero" prop threaded into each of the three
-            // fields below) - the mobile/tablet frosted-glass look above is
-            // untouched below lg:. bg-ink/80 (the same warm espresso-brown
-            // as the wordmark and every shadow on this site - see
-            // globals.css) rather than a neutral black, so the one truly
-            // solid surface in the whole hero still reads as part of this
-            // site's warm palette instead of a generic dark-UI slab.
-            "w-full gap-0.5 rounded-2xl border-white/25 bg-white/20 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:rounded-full lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
+            // Tinted dark glass, not light - a light frosted pane (an
+            // earlier version of this) puts the field text's own contrast
+            // at the mercy of whatever's directly behind it in the video at
+            // a given moment, which on the sand-colored lower half of the
+            // frame washed the placeholder/value text out to near-
+            // illegibility. A dark tint reads as glass regardless of what's
+            // playing behind it, so the white text every field uses (see
+            // the variant="hero" prop threaded into each of the three
+            // fields below, applied at every breakpoint now rather than
+            // only from lg: up) stays legible everywhere. bg-ink/* (the
+            // same warm espresso-brown as the wordmark and every shadow on
+            // this site - see globals.css) rather than a neutral black, so
+            // this still reads as part of this site's warm palette instead
+            // of a generic dark-UI slab. lg: only deepens the same tint
+            // toward fully solid - one continuous treatment across
+            // breakpoints, not two different personalities.
+            "w-full gap-0.5 rounded-2xl border-white/15 bg-ink/40 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:rounded-full lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
       <div
         className={cn(
           "flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle",
-          isHero && "lg:divide-white/15",
+          isHero && "divide-white/15",
         )}
       >
         <DestinationAutocomplete
@@ -267,12 +274,13 @@ export function SearchBar({
           // teal used by the Where/Check-in fields, without touching
           // GuestCategoryPicker's markup - it's also used, unstyled, by the
           // listing page's booking widget, which this change shouldn't
-          // affect at all. The lg: variant (higher-specificity, later in
-          // the stylesheet, so it wins over the plain rule above at that
-          // breakpoint) recolors it again for the desktop hero's dark pill.
+          // affect at all. isHero's override (higher-specificity, later in
+          // the stylesheet, so it wins over the plain rule above) applies
+          // at every breakpoint, matching the tinted-glass-at-every-size
+          // treatment above rather than only from lg: up.
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
-            isHero && "lg:[&>svg]:text-accent-400",
+            isHero && "[&>svg]:text-accent-400",
             isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
           )}
           variant={isHero ? "hero" : "default"}

@@ -121,9 +121,13 @@ export function ListingCard({
     // The lift-on-hover applies to the whole card (image and text together)
     // rather than just zooming the photo - a plain `hover:` here, not
     // `group-hover:`, since :hover already bubbles up to this element from
-    // either Link inside it. transition-transform is separate from the
-    // image's own transition so the two don't fight over timing.
-    <div className="group flex flex-col gap-3 transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1">
+    // either Link inside it (and, the same way, :active bubbles up from
+    // tapping either Link too - a touch press briefly shrinks the whole
+    // card instead of relying on the lift, which globals.css now restricts
+    // to devices with a real hover-capable pointer). transition-transform
+    // is separate from the image's own transition so the two don't fight
+    // over timing.
+    <div className="group flex flex-col gap-3 transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1 active:scale-[0.98]">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-brand-50 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)] group-hover:ring-brand-200">
         <Link
           href={`/listings/${listing.id}`}

@@ -56,8 +56,8 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
         aria-expanded={open}
         aria-controls="user-menu-panel"
         className={cn(
-          "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)]",
-          isHero && "border-white/40 text-white hover:bg-white/10 hover:shadow-none",
+          "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-1.5 pl-3 pr-1 hover:shadow-[var(--shadow-card)] active:bg-surface-muted",
+          isHero && "border-white/40 text-white hover:bg-white/10 hover:shadow-none active:bg-white/15",
         )}
       >
         <span className="hidden text-sm font-medium sm:inline">{name.split(" ")[0]}</span>

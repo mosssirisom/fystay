@@ -12,10 +12,10 @@ export const buttonVariants = cva(
         secondary:
           "bg-surface-muted text-foreground hover:bg-border-subtle active:bg-border-subtle",
         outline:
-          "border border-border-subtle bg-transparent text-foreground hover:bg-surface-muted",
-        ghost: "bg-transparent text-foreground hover:bg-surface-muted",
+          "border border-border-subtle bg-transparent text-foreground hover:bg-surface-muted active:bg-border-subtle",
+        ghost: "bg-transparent text-foreground hover:bg-surface-muted active:bg-border-subtle",
         danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
-        link: "rounded-none bg-transparent p-0 text-brand-700 underline-offset-4 hover:underline",
+        link: "rounded-none bg-transparent p-0 text-brand-700 underline-offset-4 hover:underline active:text-brand-900",
       },
       size: {
         sm: "h-8 px-3 text-sm",

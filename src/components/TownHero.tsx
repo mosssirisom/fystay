@@ -59,7 +59,7 @@ export function TownHero({
 
         <Link
           href={exploreHref}
-          className="focus-ring mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand-900 shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+          className="focus-ring mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand-900 shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
         >
           Explore {destination.name}
           <ArrowRight className="h-4 w-4" aria-hidden />

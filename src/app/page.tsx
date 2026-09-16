@@ -336,7 +336,7 @@ export default async function Home() {
                 <Link
                   key={destination.slug}
                   href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
-                  className="focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-amber-200/30 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-200/60 hover:bg-white/10"
+                  className="focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-amber-200/30 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-200/60 hover:bg-white/10 active:scale-95 active:bg-white/10"
                 >
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden />
                   {destination.name}

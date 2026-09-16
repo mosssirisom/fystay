@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* Restricts every `hover:` utility in the codebase to devices that actually
+   have a hover-capable pointer (a mouse/trackpad), rather than Tailwind's
+   plain `&:hover` default. On a touchscreen, a plain `:hover` selector
+   still matches on tap - most mobile browsers simulate it - and then keeps
+   matching (a lifted card stays lifted, a highlighted pill stays
+   highlighted) until the visitor taps something else, since there's no
+   pointer to "leave" the element. This one rule fixes that everywhere at
+   once, for every existing and future `hover:` class, without touching
+   individual components. Touch feedback itself comes from `active:`
+   (below and on individual components), which real touchscreens do apply
+   on press. */
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 :root {
   /* Surface & text: a warm parchment/ivory pairing (the same idea as
      Anthropic's own "warm paper" canvas) rather than clinical white -

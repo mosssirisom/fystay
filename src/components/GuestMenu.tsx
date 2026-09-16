@@ -53,8 +53,8 @@ export function GuestMenu() {
         aria-controls="guest-menu-panel"
         aria-label="Account menu"
         className={cn(
-          "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-2 pl-3 pr-1.5 text-stone-600 hover:shadow-[var(--shadow-card)]",
-          isHero && "border-white/40 text-white hover:bg-white/10 hover:shadow-none",
+          "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-2 pl-3 pr-1.5 text-stone-600 hover:shadow-[var(--shadow-card)] active:bg-surface-muted",
+          isHero && "border-white/40 text-white hover:bg-white/10 hover:shadow-none active:bg-white/15",
         )}
       >
         <Menu className="h-4 w-4" />

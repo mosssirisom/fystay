@@ -223,13 +223,12 @@ export default async function Home() {
             edge of the headline+subcopy block at every breakpoint. */}
         <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.75)_0%,rgba(12,9,7,0.75)_50%,rgba(12,9,7,0)_62%,rgba(12,9,7,0)_66%,rgba(12,9,7,0.55)_100%)]" />
 
-        {/* Headline + subcopy, stacked as one quiet block up in the open
-            sky - no card, no scrim of their own beyond the section-wide
-            one above, so they read as part of the frame rather than a
-            text block laid over it. The search bar (bottom of this
-            section) is the next beat after this copy, not a separate
-            component competing with it - same reason there's no button
-            or extra ornament here, just the two lines and then the
+        {/* Headline, sitting quietly in the open sky - no card, no scrim of
+            its own beyond the section-wide one above, so it reads as part
+            of the frame rather than a text block laid over it. The search
+            bar (bottom of this section) is the next beat after it, not a
+            separate component competing with it - same reason there's no
+            button or extra ornament here, just the one line and then the
             video leading down to the bar. */}
         {/* lg: this block switches from centered (mobile/tablet, unchanged)
             to left-aligned within the same max-w-6xl/px-6 container the
@@ -247,23 +246,6 @@ export default async function Home() {
           <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
             Stay somewhere <em className="italic">worth staying.</em>
           </h1>
-          {/* A soft text-shadow (here and on the headline above), not just
-              the section-wide scrim, so both lines stay legible over
-              whatever happens to be behind them at a given viewport width
-              - the pier's own crossbeams sit right at this text's lower
-              edge on wider screens, and no single scrim stop covers every
-              breakpoint's exact line count/wrap perfectly.
-
-              Real, place-specific copy rather than a line any OTA could
-              run - "chosen by locals, not an algorithm" is the actual
-              differentiator this site has over Booking.com/Airbnb search,
-              so the subcopy says that instead of a generic "hand-picked
-              places" line (which also just duplicated the "Hand-picked
-              stays" section heading a few hundred pixels further down
-              this same page). */}
-          <p className="mt-2 max-w-[32ch] text-balance text-center text-sm font-light leading-snug text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] sm:mt-3 sm:max-w-[38ch] sm:text-base lg:mt-8 lg:max-w-[34ch] lg:text-left lg:text-lg">
-            Real places along the Fylde Coast, chosen by locals &mdash; not an algorithm.
-          </p>
         </div>
 
         {/* The search bar floats low over the video - close to the bottom

@@ -357,11 +357,29 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* pb-8 only, not the pt-8/sm:pt-10 this used to also carry - that
+      {/* Rounded top + a small negative margin pulls this section up over
+          the hero's own last few pixels, instead of the two meeting in a
+          hard rectangular line - reads as one continuous page (a sheet
+          rising over the video) rather than a video banner bolted onto a
+          separate page below it. relative z-50 is required, not
+          decorative: this div is a plain static sibling of the hero
+          <section>, and everything inside that section is absolutely
+          positioned with its own z-index (up to z-40, the search bar) -
+          without a higher z-index of its own here, those layers would
+          paint on top of this rounded edge instead of tucking behind it,
+          even though they come earlier in the DOM. The overlap amount is
+          deliberately small (and smaller again at lg: the desktop "Now
+          covering" row is a plain text line, not a pill block, so it
+          sits closer to the hero's true bottom edge than the mobile/
+          tablet pill row does) so it never actually covers them, just
+          softens the seam beneath.
+
+          pb-8 only, not the pt-8/sm:pt-10 this used to also carry - that
           top padding existed to leave room for the "Now covering" strip
           that used to open this section; now that it lives inside the
           hero instead (see above), "Hand-picked stays" own mt-10 just
           below is the only top spacing this section needs. */}
+      <div className="relative z-50 -mt-5 rounded-t-[28px] bg-background pt-px sm:-mt-6 sm:rounded-t-[36px] lg:-mt-3">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
         <div className="mt-10">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Hand-picked stays</h2>
@@ -469,6 +487,7 @@ export default async function Home() {
             </Link>
           </div>
         </Reveal>
+      </div>
       </div>
     </>
   );

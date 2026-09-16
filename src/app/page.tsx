@@ -312,20 +312,25 @@ export default async function Home() {
       </section>
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8 pt-8 sm:pt-10">
-        {/* A horizontally-scrollable strip on mobile (edge-fade masks, not
+        {/* A horizontally-scrollable strip on mobile (edge fades, not
             clipped arrows) rather than the wrapped-badge row this replaces -
             reads more like an app's own category rail, and each pill now
             carries the same per-town icon/gradient motif as the "Explore"
             tiles below, so a visitor sees the same visual language for a
-            town twice, not two unrelated treatments of the same five names. */}
+            town twice, not two unrelated treatments of the same five names.
+
+            The edge fade is two painted gradient overlays, not a
+            mask-image on the scroll row itself (an earlier version of
+            this) - confirmed on a real phone that the mask-image wasn't
+            rendering at all there, so the last pill just hard-clipped at
+            the screen edge mid-word instead of fading. A painted overlay
+            can't silently fail to apply the way a mask can. */}
         {/* lg:hidden: at that breakpoint this same list already renders
             inside the hero itself, overlapping its bottom edge (see the
             "Now covering" block in the hero <section> above) - matching
             the target desktop design without showing the list twice. */}
         <div className="relative mt-8 lg:hidden">
-          <div
-            className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none] [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)] [&::-webkit-scrollbar]:hidden"
-          >
+          <div className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:px-0 [&::-webkit-scrollbar]:hidden">
             <span className="flex shrink-0 snap-start items-center text-xs font-semibold uppercase tracking-wide text-stone-500">
               Now covering
             </span>
@@ -355,6 +360,14 @@ export default async function Home() {
               );
             })}
           </div>
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-background to-transparent sm:hidden"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-background to-transparent sm:hidden"
+            aria-hidden
+          />
         </div>
 
         <div className="mt-10">

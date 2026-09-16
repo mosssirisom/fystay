@@ -170,7 +170,12 @@ export async function ListingsGrid({
   if (!showResultsView) {
     if (petFiltered.length === 0) {
       return (
-        <div className="mt-16 flex flex-col items-center gap-3 text-center">
+        // mt-8, matching the /search page's own zero-results state just
+        // below (same component, showResultsView: true branch) - this one
+        // used to be mt-16 for no evident reason, which read as a much
+        // bigger gap under the "Hand-picked stays" heading right above it
+        // than the identical empty state gets anywhere else in the app.
+        <div className="mt-8 flex flex-col items-center gap-3 text-center">
           <SearchX className="h-8 w-8 text-stone-300" />
           <p className="font-medium text-foreground">No stays match your search</p>
           <p className="max-w-sm text-sm text-stone-500">

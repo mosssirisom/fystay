@@ -41,7 +41,7 @@ export function Logo({
         )}
       >
         <span className="text-brand-600">FY</span>
-        <span className={cn("text-[var(--color-ink)]", isHero && "lg:text-white")}>Stay</span>
+        <span className={cn("text-[var(--color-ink)]", isHero && "text-white")}>Stay</span>
       </span>
       {withTagline && (
         <span
@@ -56,8 +56,8 @@ export function Logo({
             taglineClassName,
           )}
         >
-          <span className={cn("text-brand-700", isHero && "lg:text-brand-300")}>Your stay,</span>{" "}
-          <span className={cn("text-[var(--color-ink)]", isHero && "lg:text-white/90")}>your way</span>
+          <span className={cn("text-brand-700", isHero && "text-brand-300")}>Your stay,</span>{" "}
+          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>your way</span>
         </span>
       )}
     </span>

@@ -54,12 +54,12 @@ export function GuestMenu() {
         aria-label="Account menu"
         className={cn(
           "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-2 pl-3 pr-1.5 text-stone-600 hover:shadow-[var(--shadow-card)]",
-          isHero && "lg:border-white/40 lg:text-white lg:hover:bg-white/10 lg:hover:shadow-none",
+          isHero && "border-white/40 text-white hover:bg-white/10 hover:shadow-none",
         )}
       >
         <Menu className="h-4 w-4" />
         <CircleUserRound
-          className={cn("h-7 w-7 text-stone-400", isHero && "lg:text-white/90")}
+          className={cn("h-7 w-7 text-stone-400", isHero && "text-white/90")}
           strokeWidth={1.5}
         />
       </button>

@@ -7,11 +7,12 @@ import { NavToneContext } from "@/components/NavTone";
 /**
  * Owns the one piece of the navbar that has to know the current route: the
  * homepage's video hero wants the bar transparent and overlaid on the
- * footage (desktop only - see page.tsx's hero section), every other page
- * wants the normal opaque, sticky bar this site has always had. Splitting
- * this out into its own client component - rather than making the whole
- * (server, session-fetching) Navbar a client component - keeps that data
- * fetch on the server while still letting the chrome react to the route.
+ * footage at every breakpoint (see page.tsx's hero section), every other
+ * page wants the normal opaque, sticky bar this site has always had.
+ * Splitting this out into its own client component - rather than making
+ * the whole (server, session-fetching) Navbar a client component - keeps
+ * that data fetch on the server while still letting the chrome react to
+ * the route.
  */
 export function NavbarChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,16 +23,21 @@ export function NavbarChrome({ children }: { children: React.ReactNode }) {
       <header
         className={cn(
           "sticky top-0 z-30 border-b border-border-subtle bg-surface/90 backdrop-blur",
-          // lg: on the homepage this drops out of "sticky, opaque, its own
+          // On the homepage this drops out of "sticky, opaque, its own
           // height" into "static, transparent, a fixed height with a
           // matching negative margin pulled onto the hero section right
-          // after it" (see that section's lg:-mt-20 in page.tsx) - a
-          // negative-margin overlap rather than position:absolute, so this
-          // still renders in normal document flow right after whatever the
-          // cookie consent banner (a sibling, in-flow block above this)
-          // currently occupies, instead of pinning to the literal top of
-          // the page and overlapping the banner when it's showing.
-          isHome && "lg:static lg:z-40 lg:border-none lg:bg-transparent lg:shadow-none lg:backdrop-blur-none",
+          // after it" (see that section's -mt-[75px]/lg:-mt-[74px] in
+          // page.tsx) - a negative-margin overlap rather than
+          // position:absolute, so this still renders in normal document
+          // flow right after whatever the cookie consent banner (a
+          // sibling, in-flow block above this) currently occupies, instead
+          // of pinning to the literal top of the page and overlapping the
+          // banner when it's showing. Applies at every breakpoint, not
+          // just lg: - the header's own rendered height is ~74-75px
+          // everywhere (measured directly), so the same trick works
+          // whether the mobile icon-only layout or the desktop
+          // logo/links/menu layout is what's actually rendering inside.
+          isHome && "static z-40 border-none bg-transparent shadow-none backdrop-blur-none",
         )}
       >
         {children}

@@ -180,15 +180,21 @@ export default async function Home() {
           bar - clipping the section would cut those panels off (confirmed
           on a real phone) instead of letting them float over the page
           content below, which is normal, expected dropdown behaviour. */}
-      {/* lg:-mt-[74px] pulls this section up underneath the navbar - see
-          NavbarChrome's own comment on why that's a negative margin on
-          this sibling rather than making the nav position:absolute
-          (which would ignore the cookie consent banner's flow height and
-          overlap it). 74px matches that navbar's actual rendered height
-          at this breakpoint (measured directly, not a round-number
-          guess) - if the navbar's own padding/content ever changes
-          height, this needs to move with it. */}
-      <section className="relative mt-6 h-[420px] w-full sm:mt-8 sm:h-[500px] lg:-mt-[74px] lg:h-[700px]">
+      {/* -mt-[75px]/lg:-mt-[74px] pulls this section up underneath the
+          navbar at every breakpoint (previously lg:-only, with a plain
+          positive margin below lg instead - the navbar itself used to
+          stay opaque and in-flow there, so nothing needed to overlap; now
+          that it's transparent everywhere too, the hero needs to sit
+          behind it everywhere too) - see NavbarChrome's own comment on why
+          that's a negative margin on this sibling rather than making the
+          nav position:absolute (which would ignore the cookie consent
+          banner's flow height and overlap it). 75px/74px match that
+          navbar's actual rendered height at each breakpoint (measured
+          directly, not a round-number guess - it comes out ~1px different
+          below lg because of the mobile icon-button layout vs. the
+          desktop logo/links layout) - if the navbar's own padding/content
+          ever changes height, this needs to move with it. */}
+      <section className="relative -mt-[75px] h-[420px] w-full sm:h-[500px] lg:-mt-[74px] lg:h-[700px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens the sky band (behind the
@@ -217,8 +223,15 @@ export default async function Home() {
             to left-aligned within the same max-w-6xl/px-6 container the
             navbar's own logo sits in, so the headline lines up with it -
             matching the desktop hero design rather than staying centered
-            over the whole viewport. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-7 sm:pt-9 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-28">
+            over the whole viewport.
+
+            pt-20/sm:pt-24 (not the ~28-36px this used to be): the navbar
+            now overlays the top of this section at every breakpoint (see
+            the section's own -mt-[75px]/lg:-mt-[74px]) and sits above this
+            block in stacking order (z-40 vs. this block's z-30), so the
+            headline needs enough clearance to start below the navbar's own
+            ~75px row rather than right under its logo/menu button. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-20 sm:pt-24 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-28">
           <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
             Stay somewhere <em className="italic">worth staying.</em>
           </h1>

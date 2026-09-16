@@ -192,8 +192,21 @@ export default async function Home() {
           directly, not a round-number guess - it comes out ~1px different
           below lg because of the mobile icon-button layout vs. the
           desktop logo/links layout) - if the navbar's own padding/content
-          ever changes height, this needs to move with it. */}
-      <section className="relative -mt-[75px] h-[560px] w-full sm:h-[640px] lg:-mt-[74px] lg:h-[700px]">
+          ever changes height, this needs to move with it.
+
+          h-[100svh] (small viewport height, not dvh - a hero shouldn't
+          resize itself while the user is mid-scroll as mobile browser
+          chrome collapses) rather than a fixed pixel height per breakpoint
+          - the negative margin above already cancels out the navbar's own
+          in-flow height, so this makes the video fill exactly the first
+          screenful on any device instead of stopping ~150-200px short of
+          the fold, which read as the hero being "tucked up" into a band at
+          the top rather than a full-bleed moment. min-h-[560px] guards the
+          shortest real viewports (a landscape phone); lg:max-h-[860px]
+          stops it growing unbounded on a very tall desktop window, where a
+          hero taller than that starts to feel like its own page rather
+          than an opener. */}
+      <section className="relative -mt-[75px] h-[100svh] min-h-[560px] w-full lg:-mt-[74px] lg:max-h-[860px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens the sky band (behind the

@@ -242,18 +242,24 @@ export default async function Home() {
             card ever touches the video's own frame - rather than the
             earlier full-bleed band this replaced.
 
-            Leaves room below it (bottom-24/sm:bottom-28, not the old
+            Leaves room below it (bottom-28/sm:bottom-32, not the old
             bottom-3/sm:bottom-4 hugging the very edge) for the "Now
             covering" pill row now living in-hero at every breakpoint - see
             below - rather than in its own separate section after the
             hero, which is what used to make this bar tolerate sitting
             right at the bottom edge.
 
+            Raised from bottom-24/sm:bottom-28 by the same 16px the pill
+            row below was pushed up by (to clear the hero-to-page blend's
+            own curve, see that row's comment) - moving only the pill row
+            would have closed this gap by that same 16px instead, so both
+            move together to keep it the width it was.
+
             lg: moves up further still and switches from centered-on-
             viewport to left-aligned within the same max-w-6xl/px-6
             container as the headline and navbar above, rather than
             centered independently of them. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-40 flex justify-center px-4 sm:bottom-28 lg:inset-x-0 lg:bottom-32 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
+        <div className="pointer-events-none absolute inset-x-0 bottom-28 z-40 flex justify-center px-4 sm:bottom-32 lg:inset-x-0 lg:bottom-32 lg:mx-auto lg:max-w-6xl lg:justify-start lg:px-6">
           {/* w-full max-w-4xl (not just letting the flex item shrink-wrap
               its content) so the bar actually grows to fill the width
               this row allows, rather than only ever rendering as wide as

@@ -1,6 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { nightsBetween } from "@/lib/availability";
 import { computeBookingPricing } from "@/lib/pricing";
 import { generateBookingReference } from "@/lib/bookingReference";
 import { geocodeListing } from "@/lib/geocoding";
@@ -61,8 +60,8 @@ const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
     "M2 9c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
     "M2 15c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0",
   ],
-  // The one premium listing (see DEMO_LISTINGS below) - a distinct glyph so
-  // it reads as a different tier at a glance rather than just a higher
+  // The premium listings (see DEMO_LISTINGS below) - a distinct glyph so
+  // they read as a different tier at a glance rather than just a higher
   // price tag on an otherwise identical card.
   star: [
     "M12 3l2.6 5.8 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 20l1.4-6.3-4.8-4.3 6.4-.6z",
@@ -207,6 +206,62 @@ export const DEMO_LISTINGS = [
     placeholderIcon: "star" as const,
     cancellationPolicy: "MODERATE" as const,
   },
+  {
+    title: "Signature villa with private pool near Lytham St Annes",
+    description:
+      "A gated four-bedroom villa moments from the town's famous golf links, built around a heated pool and private hot tub terrace. Interior-designed throughout, with a chef's kitchen and a walled garden made for evenings outside.",
+    city: "Lytham St Annes",
+    country: "England",
+    propertyType: "VILLA" as const,
+    pricePerNightCents: 39000,
+    cleaningFeeCents: 9000,
+    maxGuests: 8,
+    bedrooms: 4,
+    beds: 5,
+    bathrooms: 3,
+    amenities: [
+      "Wifi",
+      "Pool",
+      "Hot tub",
+      "Kitchen",
+      "Garden",
+      "Free parking",
+      "Air conditioning",
+      "Washer",
+      "Dryer",
+      "BBQ grill",
+      "Fireplace",
+    ],
+    placeholderIcon: "star" as const,
+    cancellationPolicy: "STRICT" as const,
+  },
+  {
+    title: "Designer duplex overlooking Fleetwood Marina",
+    description:
+      "An architect-renovated two-storey duplex with full-height glass looking straight down Fleetwood Marina to the water. Private hot tub balcony, hotel-grade finishes, and lift access - a short stroll from the lighthouses and the Knott End ferry.",
+    city: "Fleetwood",
+    country: "England",
+    propertyType: "APARTMENT" as const,
+    pricePerNightCents: 21000,
+    cleaningFeeCents: 5000,
+    maxGuests: 5,
+    bedrooms: 2,
+    beds: 3,
+    bathrooms: 2,
+    amenities: [
+      "Wifi",
+      "Sea view",
+      "Hot tub",
+      "Kitchen",
+      "Air conditioning",
+      "Washer",
+      "Balcony",
+      "Elevator access",
+      "Free parking",
+    ],
+    placeholderIcon: "star" as const,
+    cancellationPolicy: "MODERATE" as const,
+  },
 ];
 
 export type SeedDemoDataSummary = {
@@ -275,48 +330,90 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
     listingsCreated++;
   }
 
-  // A completed stay + review, so the reviews feature has something to
-  // show without needing a real guest to complete a real stay first. Only
+  // A completed stay + review for each of these listings, so the reviews
+  // feature has something to show without needing a real guest to
+  // complete a real stay first - covers the original everyday listing
+  // plus all three premium ones, so "premium" also means "proven" rather
+  // than showing no rating at all everywhere ratings are surfaced (search
+  // sort, the homepage carousels, each listing's own detail page). Only
   // added for a listing this call actually created - otherwise a second
   // run of this same seed would keep stacking duplicate reviews onto
   // listings that already have one.
+  const REVIEW_SEEDS = [
+    {
+      title: "Seafront apartment overlooking Blackpool promenade",
+      checkInDaysAgo: 20,
+      nights: 3,
+      guests: 2,
+      valueRating: 4,
+      comment:
+        "Wonderful stay right by the seafront. Spotless, comfortable, and the host was brilliant. Would book again in a heartbeat.",
+    },
+    {
+      title: "Premium sea-view penthouse on Blackpool promenade",
+      checkInDaysAgo: 12,
+      nights: 3,
+      guests: 4,
+      valueRating: 5,
+      comment:
+        "Genuinely the best stay we've had on the Fylde Coast - the hot tub terrace at sunset looking over the sea was unreal, and everything felt hotel-grade. Worth every penny.",
+    },
+    {
+      title: "Signature villa with private pool near Lytham St Annes",
+      checkInDaysAgo: 8,
+      nights: 4,
+      guests: 6,
+      valueRating: 5,
+      comment:
+        "Booked this for a big family week and it completely delivered - the pool and hot tub got used every single day, and the kitchen is better equipped than most restaurants. Faultless.",
+    },
+    {
+      title: "Designer duplex overlooking Fleetwood Marina",
+      checkInDaysAgo: 15,
+      nights: 2,
+      guests: 4,
+      valueRating: 5,
+      comment:
+        "Stunning finish throughout and that marina view over the hot tub at dusk was worth the whole trip on its own. Felt like a boutique hotel, not a rental.",
+    },
+  ] as const;
+
   let reviewsCreated = 0;
-  const reviewedListing = createdListings.find(
-    (l) => l.title === "Seafront apartment overlooking Blackpool promenade",
-  );
-  if (reviewedListing && newlyCreatedTitles.has(reviewedListing.title)) {
-    const pastCheckIn = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
-    const pastCheckOut = new Date(Date.now() - 17 * 24 * 60 * 60 * 1000);
-    const pastNights = nightsBetween(pastCheckIn, pastCheckOut);
-    const pastPricing = computeBookingPricing({
-      nights: pastNights,
+  for (const seed of REVIEW_SEEDS) {
+    const reviewedListing = createdListings.find((l) => l.title === seed.title);
+    if (!reviewedListing || !newlyCreatedTitles.has(reviewedListing.title)) continue;
+
+    const checkIn = new Date(Date.now() - seed.checkInDaysAgo * 24 * 60 * 60 * 1000);
+    const checkOut = new Date(checkIn.getTime() + seed.nights * 24 * 60 * 60 * 1000);
+    const pricing = computeBookingPricing({
+      nights: seed.nights,
       pricePerNightCents: reviewedListing.pricePerNightCents,
       cleaningFeeCents: reviewedListing.cleaningFeeCents,
     });
-    const pastBooking = await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         reference: generateBookingReference(),
         listingId: reviewedListing.id,
         guestId: guest.id,
-        checkIn: pastCheckIn,
-        checkOut: pastCheckOut,
-        guests: 2,
-        nights: pastNights,
+        checkIn,
+        checkOut,
+        guests: seed.guests,
+        nights: seed.nights,
         nightlyPriceCents: reviewedListing.pricePerNightCents,
-        cleaningFeeCents: pastPricing.cleaningFeeCents,
-        serviceFeeCents: pastPricing.serviceFeeCents,
-        taxCents: pastPricing.taxCents,
-        totalPriceCents: pastPricing.totalPriceCents,
+        cleaningFeeCents: pricing.cleaningFeeCents,
+        serviceFeeCents: pricing.serviceFeeCents,
+        taxCents: pricing.taxCents,
+        totalPriceCents: pricing.totalPriceCents,
         status: "COMPLETED",
         paymentStatus: "PAID",
-        paidAt: pastCheckIn,
+        paidAt: checkIn,
         guestName: guest.name,
         guestEmail: guest.email,
       },
     });
     await prisma.review.create({
       data: {
-        bookingId: pastBooking.id,
+        bookingId: booking.id,
         listingId: reviewedListing.id,
         authorId: guest.id,
         rating: 5,
@@ -324,62 +421,8 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
         accuracyRating: 5,
         communicationRating: 5,
         locationRating: 5,
-        valueRating: 4,
-        comment:
-          "Wonderful stay right by the seafront. Spotless, comfortable, and the host was brilliant. Would book again in a heartbeat.",
-      },
-    });
-    reviewsCreated++;
-  }
-
-  // A second completed stay + review, specifically for the premium listing
-  // above - without one it would show no rating at all, which reads as
-  // "unproven" rather than "premium" everywhere ratings are surfaced
-  // (search sort, the homepage carousels, its own detail page).
-  const premiumListing = createdListings.find((l) => l.title.startsWith("Premium sea-view penthouse"));
-  if (premiumListing && newlyCreatedTitles.has(premiumListing.title)) {
-    const premiumCheckIn = new Date(Date.now() - 12 * 24 * 60 * 60 * 1000);
-    const premiumCheckOut = new Date(Date.now() - 9 * 24 * 60 * 60 * 1000);
-    const premiumNights = nightsBetween(premiumCheckIn, premiumCheckOut);
-    const premiumPricing = computeBookingPricing({
-      nights: premiumNights,
-      pricePerNightCents: premiumListing.pricePerNightCents,
-      cleaningFeeCents: premiumListing.cleaningFeeCents,
-    });
-    const premiumBooking = await prisma.booking.create({
-      data: {
-        reference: generateBookingReference(),
-        listingId: premiumListing.id,
-        guestId: guest.id,
-        checkIn: premiumCheckIn,
-        checkOut: premiumCheckOut,
-        guests: 4,
-        nights: premiumNights,
-        nightlyPriceCents: premiumListing.pricePerNightCents,
-        cleaningFeeCents: premiumPricing.cleaningFeeCents,
-        serviceFeeCents: premiumPricing.serviceFeeCents,
-        taxCents: premiumPricing.taxCents,
-        totalPriceCents: premiumPricing.totalPriceCents,
-        status: "COMPLETED",
-        paymentStatus: "PAID",
-        paidAt: premiumCheckIn,
-        guestName: guest.name,
-        guestEmail: guest.email,
-      },
-    });
-    await prisma.review.create({
-      data: {
-        bookingId: premiumBooking.id,
-        listingId: premiumListing.id,
-        authorId: guest.id,
-        rating: 5,
-        cleanlinessRating: 5,
-        accuracyRating: 5,
-        communicationRating: 5,
-        locationRating: 5,
-        valueRating: 5,
-        comment:
-          "Genuinely the best stay we've had on the Fylde Coast - the hot tub terrace at sunset looking over the sea was unreal, and everything felt hotel-grade. Worth every penny.",
+        valueRating: seed.valueRating,
+        comment: seed.comment,
       },
     });
     reviewsCreated++;

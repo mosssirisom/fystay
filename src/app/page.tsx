@@ -223,37 +223,12 @@ export default async function Home() {
             edge of the headline+subcopy block at every breakpoint. */}
         <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(12,9,7,0.75)_0%,rgba(12,9,7,0.75)_50%,rgba(12,9,7,0)_62%,rgba(12,9,7,0)_66%,rgba(12,9,7,0.55)_100%)]" />
 
-        {/* Headline, sitting quietly in the open sky - no card, no scrim of
-            its own beyond the section-wide one above, so it reads as part
-            of the frame rather than a text block laid over it. The search
-            bar (bottom of this section) is the next beat after it, not a
-            separate component competing with it - same reason there's no
-            button or extra ornament here, just the one line and then the
-            video leading down to the bar. */}
-        {/* lg: this block switches from centered (mobile/tablet, unchanged)
-            to left-aligned within the same max-w-6xl/px-6 container the
-            navbar's own logo sits in, so the headline lines up with it -
-            matching the desktop hero design rather than staying centered
-            over the whole viewport.
-
-            pt-20/sm:pt-24 (not the ~28-36px this used to be): the navbar
-            now overlays the top of this section at every breakpoint (see
-            the section's own -mt-[75px]/lg:-mt-[74px]) and sits above this
-            block in stacking order (z-40 vs. this block's z-30), so the
-            headline needs enough clearance to start below the navbar's own
-            ~75px row rather than right under its logo/menu button. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-20 sm:pt-24 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-28">
-          {/* Gradient text (brand-600 through the amber accent) rather than
-              a flat color - echoes the wordmark's own "FY" terracotta and
-              the "Now covering" pills' gold accent just below, instead of
-              reading as plain white like every other line in this hero.
-              bg-clip-text/text-transparent go on the h1 itself, not the
-              <em>, so the one gradient background paints across both the
-              upright and italic halves as a single continuous surface. */}
-          <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] bg-gradient-to-r from-brand-300 via-accent-400 to-brand-400 bg-clip-text text-transparent [text-shadow:0_2px_16px_rgba(0,0,0,0.35)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
-            Your stay, <em className="italic">your way.</em>
-          </h1>
-        </div>
+        {/* No visible headline in the hero itself (removed by request) -
+            this sr-only h1 keeps the page's one real heading for SEO/
+            accessibility (every page needs exactly one h1), reusing the
+            same string already in this page's own <title>/meta
+            description above rather than inventing separate copy. */}
+        <h1 className="sr-only">{title}</h1>
 
         {/* The search bar floats low over the video - close to the bottom
             edge, but with margin on every side (this wrapper's own

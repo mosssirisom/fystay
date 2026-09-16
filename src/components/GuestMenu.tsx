@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CircleUserRound, Home, Menu } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { useNavTone } from "@/components/NavTone";
 
 /**
  * A single trigger that opens a dropdown with Log in / Sign up, replacing
@@ -13,7 +12,6 @@ import { useNavTone } from "@/components/NavTone";
  */
 export function GuestMenu() {
   const [open, setOpen] = useState(false);
-  const isHero = useNavTone() === "hero";
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -52,16 +50,10 @@ export function GuestMenu() {
         aria-expanded={open}
         aria-controls="guest-menu-panel"
         aria-label="Account menu"
-        className={cn(
-          "focus-ring flex items-center gap-2 rounded-xl border border-border-subtle py-2 pl-3 pr-1.5 text-stone-600 hover:shadow-[var(--shadow-card)] active:bg-surface-muted",
-          isHero && "border-white/40 text-white hover:bg-white/10 hover:shadow-none active:bg-white/15",
-        )}
+        className="focus-ring flex items-center gap-2 rounded-xl bg-brand-600 py-2 pl-3 pr-1.5 text-white hover:bg-brand-700 active:bg-brand-800"
       >
         <Menu className="h-4 w-4" />
-        <CircleUserRound
-          className={cn("h-7 w-7 text-stone-400", isHero && "text-white/90")}
-          strokeWidth={1.5}
-        />
+        <CircleUserRound className="h-7 w-7 text-white/90" strokeWidth={1.5} />
       </button>
 
       <div

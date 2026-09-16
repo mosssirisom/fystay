@@ -243,8 +243,15 @@ export default async function Home() {
             headline needs enough clearance to start below the navbar's own
             ~75px row rather than right under its logo/menu button. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-6 pt-20 sm:pt-24 lg:mx-auto lg:max-w-6xl lg:items-start lg:px-6 lg:pt-28">
-          <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.4)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
-            Stay somewhere <em className="italic">worth staying.</em>
+          {/* Gradient text (brand-600 through the amber accent) rather than
+              a flat color - echoes the wordmark's own "FY" terracotta and
+              the "Now covering" pills' gold accent just below, instead of
+              reading as plain white like every other line in this hero.
+              bg-clip-text/text-transparent go on the h1 itself, not the
+              <em>, so the one gradient background paints across both the
+              upright and italic halves as a single continuous surface. */}
+          <h1 className="max-w-[20ch] text-balance text-center font-[family-name:var(--font-serif)] text-[1.85rem] font-normal leading-[1.1] bg-gradient-to-r from-brand-300 via-accent-400 to-brand-400 bg-clip-text text-transparent [text-shadow:0_2px_16px_rgba(0,0,0,0.35)] sm:text-4xl lg:max-w-[19ch] lg:text-left lg:text-6xl">
+            Your stay, <em className="italic">your way.</em>
           </h1>
         </div>
 

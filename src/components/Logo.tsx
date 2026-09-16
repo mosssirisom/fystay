@@ -61,7 +61,7 @@ export function Logo({
             taglineClassName,
           )}
         >
-          <span className={cn("text-brand-700", isHero && "text-brand-300")}>Hotels</span>
+          <span className={cn("text-[var(--color-ink)]", isHero && "text-white/90")}>Hotels</span>
           <span className={cn("text-stone-400", isHero && "text-white/40")} aria-hidden>
             &middot;
           </span>

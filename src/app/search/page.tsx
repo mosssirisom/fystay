@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { SearchBar } from "@/components/SearchBar";
 import { ListingsGrid } from "@/components/search/ListingsGrid";
-import { ListingsGridSkeleton } from "@/components/ListingCardSkeleton";
+import { SearchResultsLoader } from "@/components/search/SearchResultsLoader";
 import { findLandmarkByName } from "@/lib/landmarks";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -40,7 +40,7 @@ export default async function SearchPage({
             : "Refine with filters and sorting to find exactly what you're after."}
         </p>
         <div className="mt-6">
-          <Suspense fallback={<ListingsGridSkeleton />}>
+          <Suspense fallback={<SearchResultsLoader />}>
             <ListingsGrid searchParams={resolvedSearchParams} showResultsView />
           </Suspense>
         </div>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Home } from "lucide-react";
 import { BookingSummaryCard } from "@/components/BookingSummaryCard";
+import { BookingSuccessMilestones } from "@/components/BookingSuccessMilestones";
 import { ConfettiBurst } from "@/components/ConfettiBurst";
 import { SuccessCheckmark } from "@/components/SuccessCheckmark";
 import { buttonVariants } from "@/components/ui/Button";
@@ -180,6 +181,7 @@ export function BookingConfirmation({
             You&apos;re all set. A confirmation has been saved to your account under &quot;My
             trips&quot;.
           </p>
+          <BookingSuccessMilestones checkIn={checkIn} />
         </>
       ) : (
         <>

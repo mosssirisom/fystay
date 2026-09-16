@@ -1,4 +1,5 @@
 import { SearchX } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { prisma } from "@/lib/prisma";
 import {
   blockingBookingWhere,
@@ -216,7 +217,9 @@ export async function ListingsGrid({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div
+      className={cn("flex flex-col gap-5", showResultsView && "animate-search-reveal-in")}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm font-medium text-stone-500">

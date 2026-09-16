@@ -307,6 +307,122 @@ body {
   }
 }
 
+/* Search-results loading transition (SearchResultsLoader): a calm,
+   editorial hold rather than a generic spinner. Deliberately far more
+   restrained than the booking-confirmation screen above - a guest is
+   waiting on this app's own database query for a beat, not a real external
+   payment system, so the motion should barely announce itself. Pure CSS
+   (no client JS): it plays the instant the fallback streams in, before
+   hydration even finishes. */
+@keyframes search-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(240%);
+  }
+}
+.search-sweep {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brand-400),
+    var(--color-accent-400),
+    transparent
+  );
+  animation: search-sweep 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes search-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-search-caption-in {
+  animation: search-caption-in 700ms ease-out both;
+}
+/* Also used, undelayed, for the real results grid's own one-time entrance
+   once it swaps in for this fallback - so the "settling in" motion reads
+   as one continuous gesture across the handoff, not two unrelated effects. */
+@keyframes search-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-search-reveal-in {
+  animation: search-reveal-in 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-sweep {
+    animation: none;
+    width: 100%;
+    transform: none;
+    opacity: 0.4;
+  }
+  .animate-search-caption-in,
+  .animate-search-reveal-in {
+    animation: none;
+  }
+}
+
+/* Booking-confirmation success milestones (BookingSuccessMilestones): the
+   "quest complete" beat once a payment actually clears - a checklist that
+   ticks in one line at a time, then a countdown chip that pops in as its
+   own count-up (see the component) starts. Same fade/rise language as the
+   dropdown/reveal animations above, kept slow enough here to read as a
+   sequence of distinct little events rather than one paragraph.
+   milestone-chip-in's 850ms delay is intentionally the same number as
+   BookingSuccessMilestones' COUNT_UP_START_DELAY_MS, so the badge pops in
+   right as its own digits start counting. */
+@keyframes milestone-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.milestone-in {
+  animation: milestone-in 400ms ease-out both;
+}
+@keyframes milestone-chip-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(4px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04) translateY(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.milestone-chip-in {
+  animation: milestone-chip-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 850ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .milestone-in,
+  .milestone-chip-in {
+    animation: none;
+  }
+}
+
 /* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);

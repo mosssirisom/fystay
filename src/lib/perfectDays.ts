@@ -89,14 +89,14 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
     },
   ],
 
-  "lytham-st-annes": [
+  lytham: [
     {
       key: "family",
       steps: [
-        { time: "Morning", activity: "Pedal boats on Fairhaven Lake", place: "Fairhaven Lake" },
+        { time: "Morning", activity: "A family show at Lowther Pavilion, if one's on", place: "Lowther Pavilion" },
         { time: "Midday", activity: "Lunch on Clifton Street, Lytham" },
-        { time: "Afternoon", activity: "St Annes beach and the dunes" },
-        { time: "Evening", activity: "A family show at Lowther Pavilion, if one's on", place: "Lowther Pavilion" },
+        { time: "Afternoon", activity: "Lytham Hall's parkland - space to run around", place: "Lytham Hall" },
+        { time: "Evening", activity: "A slow walk around Lytham Green, watching the estuary" },
       ],
     },
     {
@@ -104,17 +104,17 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
       steps: [
         { time: "Morning", activity: "Lytham Windmill and a walk round the green", place: "Lytham Windmill" },
         { time: "Midday", activity: "Lunch at a Clifton Street bistro" },
-        { time: "Afternoon", activity: "The coastal path from Lytham Green to Fairhaven Lake", place: "Fairhaven Lake" },
-        { time: "Evening", activity: "Sunset by the windmill, then dinner at a seafront restaurant", place: "Lytham Windmill" },
+        { time: "Afternoon", activity: "Lytham Hall's parkland trails", place: "Lytham Hall" },
+        { time: "Evening", activity: "Sunset by the windmill, then dinner at The Taps", place: "Lytham Windmill" },
       ],
     },
     {
       key: "beach",
       steps: [
-        { time: "Morning", activity: "St Annes beach and the sand dunes" },
-        { time: "Midday", activity: "A seafront fish restaurant in St Annes" },
-        { time: "Afternoon", activity: "The coastal path between Lytham and St Annes" },
-        { time: "Evening", activity: "Golden hour at Fairhaven Lake", place: "Fairhaven Lake" },
+        { time: "Morning", activity: "Lytham Green at low tide, watching the estuary" },
+        { time: "Midday", activity: "Lunch on Clifton Street" },
+        { time: "Afternoon", activity: "The coastal path towards St Annes beach" },
+        { time: "Evening", activity: "Golden hour by the windmill", place: "Lytham Windmill" },
       ],
     },
     {
@@ -131,22 +131,136 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
       steps: [
         { time: "Morning", activity: "Whatever's on at Lowther Pavilion", place: "Lowther Pavilion" },
         { time: "Midday", activity: "Lunch at the Booths café, Lytham" },
-        { time: "Afternoon", activity: "Clifton Street's independent shops" },
+        { time: "Afternoon", activity: "Lytham Hall's house open day, if one's on", place: "Lytham Hall" },
         { time: "Evening", activity: "A Clifton Street pub that serves food" },
       ],
     },
     {
       key: "relaxed",
       steps: [
-        { time: "Morning", activity: "A slow lap of Ashton Gardens' lake", place: "Ashton Gardens" },
-        { time: "Midday", activity: "Coffee on Wood Street, St Annes" },
+        { time: "Morning", activity: "A slow lap of Lytham Hall's parkland", place: "Lytham Hall" },
+        { time: "Midday", activity: "Coffee on Clifton Street" },
         { time: "Afternoon", activity: "Lytham Green, watching the estuary" },
         { time: "Evening", activity: "A drink at the Clifton Arms Hotel, right on the green" },
       ],
     },
   ],
 
-  cleveleys: [
+  "st-annes": [
+    {
+      key: "family",
+      steps: [
+        { time: "Morning", activity: "Pedal boats on Fairhaven Lake", place: "Fairhaven Lake" },
+        { time: "Midday", activity: "Lunch on Wood Street" },
+        { time: "Afternoon", activity: "St Annes beach and the dunes" },
+        { time: "Evening", activity: "St Annes Pier's amusements", place: "St Annes Pier" },
+      ],
+    },
+    {
+      key: "couples",
+      steps: [
+        { time: "Morning", activity: "Ashton Gardens' lake and aviary", place: "Ashton Gardens" },
+        { time: "Midday", activity: "Lunch on Wood Street" },
+        { time: "Afternoon", activity: "The coastal path from St Annes to Fairhaven Lake", place: "Fairhaven Lake" },
+        { time: "Evening", activity: "Sunset near Fairhaven, then dinner at a seafront restaurant", place: "Fairhaven Lake" },
+      ],
+    },
+    {
+      key: "beach",
+      steps: [
+        { time: "Morning", activity: "St Annes beach and the sand dunes" },
+        { time: "Midday", activity: "A seafront fish restaurant in St Annes" },
+        { time: "Afternoon", activity: "The coastal path between St Annes and Lytham" },
+        { time: "Evening", activity: "Golden hour at Fairhaven Lake", place: "Fairhaven Lake" },
+      ],
+    },
+    {
+      key: "foodie",
+      steps: [
+        { time: "Morning", activity: "Breakfast on Wood Street" },
+        { time: "Midday", activity: "A seafront fish restaurant" },
+        { time: "Afternoon", activity: "Ashton Gardens café", place: "Ashton Gardens" },
+        { time: "Evening", activity: "Dinner on Wood Street" },
+      ],
+    },
+    {
+      key: "rainy",
+      steps: [
+        { time: "Morning", activity: "Ashton Gardens' aviary", place: "Ashton Gardens" },
+        { time: "Midday", activity: "Lunch on Wood Street" },
+        { time: "Afternoon", activity: "St Annes Pier's amusements", place: "St Annes Pier" },
+        { time: "Evening", activity: "A Wood Street pub that serves food" },
+      ],
+    },
+    {
+      key: "relaxed",
+      steps: [
+        { time: "Morning", activity: "A slow lap of Ashton Gardens' lake", place: "Ashton Gardens" },
+        { time: "Midday", activity: "Coffee on Wood Street" },
+        { time: "Afternoon", activity: "Fairhaven Lake, watching the boats", place: "Fairhaven Lake" },
+        { time: "Evening", activity: "A quiet seafront bar" },
+      ],
+    },
+  ],
+
+  "poulton-le-fylde": [
+    {
+      key: "family",
+      steps: [
+        { time: "Morning", activity: "Poulton Market's Monday stalls, if it's on" },
+        { time: "Midday", activity: "Lunch on Market Place" },
+        { time: "Afternoon", activity: "Wyre Estuary Country Park at Stanah", place: "Wyre Estuary Country Park" },
+        { time: "Evening", activity: "An easy dinner back at the Teanlowe Centre", place: "Teanlowe Centre" },
+      ],
+    },
+    {
+      key: "couples",
+      steps: [
+        { time: "Morning", activity: "The market cross, stocks and St Chad's Church", place: "St Chad's Church Poulton" },
+        { time: "Midday", activity: "Lunch at The Golden Ball, Ball Street" },
+        { time: "Afternoon", activity: "The Wyre Way to Skippool Creek", place: "Wyre Estuary Country Park" },
+        { time: "Evening", activity: "A quiet pub back in the town centre" },
+      ],
+    },
+    {
+      key: "beach",
+      steps: [
+        { time: "Morning", activity: "There isn't one here - the Wyre Way instead, towards Skippool Creek", place: "Wyre Estuary Country Park" },
+        { time: "Midday", activity: "Lunch on Market Place" },
+        { time: "Afternoon", activity: "A short train or drive to Cleveleys' beach for the afternoon" },
+        { time: "Evening", activity: "Back to Poulton for dinner on Ball Street" },
+      ],
+    },
+    {
+      key: "foodie",
+      steps: [
+        { time: "Morning", activity: "Breakfast on Market Place" },
+        { time: "Midday", activity: "Lunch at The Golden Ball, Ball Street" },
+        { time: "Afternoon", activity: "Teanlowe Centre's independent food shops", place: "Teanlowe Centre" },
+        { time: "Evening", activity: "Dinner in the town centre" },
+      ],
+    },
+    {
+      key: "rainy",
+      steps: [
+        { time: "Morning", activity: "Teanlowe Centre", place: "Teanlowe Centre" },
+        { time: "Midday", activity: "Lunch there too, out of the weather" },
+        { time: "Afternoon", activity: "St Chad's Church, if it's open", place: "St Chad's Church Poulton" },
+        { time: "Evening", activity: "A town-centre pub" },
+      ],
+    },
+    {
+      key: "relaxed",
+      steps: [
+        { time: "Morning", activity: "A slow walk along the Wyre Way to Skippool Creek", place: "Wyre Estuary Country Park" },
+        { time: "Midday", activity: "Coffee on Market Place" },
+        { time: "Afternoon", activity: "The market square and churchyard, at a slow pace" },
+        { time: "Evening", activity: "A quiet pint at The Golden Ball, Ball Street" },
+      ],
+    },
+  ],
+
+  "thornton-cleveleys": [
     {
       key: "family",
       steps: [
@@ -188,8 +302,8 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
       steps: [
         { time: "Morning", activity: "Victoria Road West's cafés and shops" },
         { time: "Midday", activity: "Lunch there too, out of the weather" },
-        { time: "Afternoon", activity: "A short tram ride into Blackpool for its indoor attractions" },
-        { time: "Evening", activity: "Whatever's on at Cleveleys Library and community centre" },
+        { time: "Afternoon", activity: "Marsh Mill Village's craft shops, Thornton", place: "Marsh Mill" },
+        { time: "Evening", activity: "Whatever's on at Thornton Little Theatre" },
       ],
     },
     {
@@ -260,60 +374,4 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
     },
   ],
 
-  bispham: [
-    {
-      key: "family",
-      steps: [
-        { time: "Morning", activity: "The clifftop lawns and paths" },
-        { time: "Midday", activity: "Lunch on Red Bank Road" },
-        { time: "Afternoon", activity: "The tram into Blackpool for Sandcastle Waterpark or SEA LIFE" },
-        { time: "Evening", activity: "The tram back to a quiet clifftop evening" },
-      ],
-    },
-    {
-      key: "couples",
-      steps: [
-        { time: "Morning", activity: "The clifftop coastal path" },
-        { time: "Midday", activity: "Lunch on Red Bank Road" },
-        { time: "Afternoon", activity: "The tram into Cleveleys or Blackpool for the afternoon" },
-        { time: "Evening", activity: "Sunset on the clifftop, looking towards Blackpool Tower" },
-      ],
-    },
-    {
-      key: "beach",
-      steps: [
-        { time: "Morning", activity: "Bispham's beach below the cliffs" },
-        { time: "Midday", activity: "A clifftop kiosk coffee and something to eat" },
-        { time: "Afternoon", activity: "The coastal path north into Cleveleys or south into Blackpool" },
-        { time: "Evening", activity: "Sunset from the clifftop path" },
-      ],
-    },
-    {
-      key: "foodie",
-      steps: [
-        { time: "Morning", activity: "Breakfast on Red Bank Road" },
-        { time: "Midday", activity: "A short tram ride into Blackpool or Cleveleys for a proper sit-down lunch" },
-        { time: "Afternoon", activity: "Back to Bispham for a clifftop coffee" },
-        { time: "Evening", activity: "A local pub on Red Bank Road" },
-      ],
-    },
-    {
-      key: "rainy",
-      steps: [
-        { time: "Morning", activity: "The tram into Blackpool" },
-        { time: "Midday", activity: "Lunch in Blackpool while you're there" },
-        { time: "Afternoon", activity: "Sandcastle Waterpark, SEA LIFE, or Madame Tussauds" },
-        { time: "Evening", activity: "The tram back to Red Bank Road's cafés" },
-      ],
-    },
-    {
-      key: "relaxed",
-      steps: [
-        { time: "Morning", activity: "The clifftop path, at a slow pace" },
-        { time: "Midday", activity: "Coffee at a clifftop kiosk" },
-        { time: "Afternoon", activity: "St Andrew's Church and the quiet streets nearby", place: "St Andrew's Church Bispham" },
-        { time: "Evening", activity: "A local pub on Red Bank Road" },
-      ],
-    },
-  ],
 };

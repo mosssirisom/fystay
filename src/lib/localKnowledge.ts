@@ -98,7 +98,7 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     },
   },
 
-  "lytham-st-annes": {
+  lytham: {
     whereLocalsGo: {
       headline: "Clifton Street and Henry Street, not the seafront hotels",
       body: "Locals in Lytham drink and eat around Clifton Street and Henry Street, a five-minute walk from the green - a genuinely different atmosphere from the seafront hotels most visitors default to.",
@@ -108,25 +108,66 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
       body: "Parking directly on Lytham Green fills quickly on any dry weekend. The streets just south of Clifton Street usually still have space, and it's actually a shorter walk to the shops from there.",
     },
     bestTimes: {
+      headline: "The green after 6pm, before dinner",
+      body: "Lytham Green empties out in the early evening as day-trippers head towards St Annes for the beach - that's when the windmill and the walk along the estuary are genuinely at their best.",
+      place: "Lytham Windmill",
+    },
+    familyBeaches: {
+      headline: "Lytham Hall's parkland over the estuary path",
+      body: "Lytham's own stretch of coast is tidal saltmarsh, not a beach for younger kids - Lytham Hall's 78 acres of parkland, a mile inland, gives them proper room to run instead.",
+      place: "Lytham Hall",
+    },
+    sunsetSpots: {
+      headline: "The windmill end of Lytham Green",
+      body: "Lytham Green faces west over the Ribble estuary, and the view from beside the windmill at sunset is, without much competition, the best on this stretch of coast. Most visitors leave before dinner and never see it.",
+      place: "Lytham Windmill",
+    },
+    quietAlternatives: {
+      headline: "The far end of the green, away from the windmill",
+      body: "When Royal Lytham & St Annes hosts a major tournament, the windmill end of the green fills with spectators passing through. The quieter far end, towards the saltmarsh, rarely feels it.",
+    },
+    shortcuts: {
+      headline: "Walk to St Annes instead of driving",
+      body: "Lytham and St Annes are connected by a flat, mostly traffic-free walk along the green and coastal path - about 25 minutes, and usually quicker than driving and parking twice.",
+    },
+    hiddenGem: {
+      headline: "Lytham Hall's parkland, a mile from the green",
+      body: "A proper Georgian country house and 78 acres of grounds that most visitors who stop at the windmill and the green never realise is a short walk inland.",
+      place: "Lytham Hall",
+    },
+  },
+
+  "st-annes": {
+    whereLocalsGo: {
+      headline: "Wood Street, not the promenade",
+      body: "St Annes locals eat and drink around Wood Street, a few minutes back from the seafront - a genuinely different atmosphere from the promenade hotels most visitors default to.",
+    },
+    parkingToAvoid: {
+      headline: "The seafront near the pier fills first",
+      body: "Pay-and-display parking right by St Annes Pier fills quickly on any dry weekend. The streets back towards Wood Street usually still have space.",
+    },
+    bestTimes: {
       headline: "Fairhaven Lake before 10am",
       body: "Fairhaven Lake fills with families from late morning onwards. Arrive before 10am if you want the model boats and the paths around the water to yourselves.",
       place: "Fairhaven Lake",
     },
     familyBeaches: {
-      headline: "St Annes' dunes over Lytham's own stretch",
-      body: "St Annes beach, particularly towards the dunes, is flatter and quieter than the stretch of coast right by Lytham itself near the estuary - better for younger kids who want space to actually run around.",
+      headline: "The dunes, not the pier end",
+      body: "St Annes beach towards the dunes is flatter and quieter than the stretch right by the pier itself - better for younger kids who want space to actually run around.",
     },
     sunsetSpots: {
-      headline: "The windmill end of Lytham Green",
-      body: "Lytham Green faces west over the Ribble estuary, and the view from beside the windmill at sunset is, without much competition, the best on this stretch of coast. Most visitors leave before dinner and never see it.",
+      headline: "The promenade near Fairhaven, looking towards Blackpool Tower",
+      body: "St Annes faces south-west across the Ribble, so the promenade near Fairhaven Lake catches a long sunset with Blackpool Tower silhouetted in the distance - with far fewer people watching it than on Blackpool's own seafront.",
+      place: "Fairhaven Lake",
     },
     quietAlternatives: {
       headline: "Fairhaven Lake and Ashton Gardens during tournament weeks",
       body: "When Royal Lytham & St Annes hosts a major tournament, the town centre gets genuinely busy. Fairhaven Lake and Ashton Gardens, both a short walk away, rarely feel it.",
+      place: "Ashton Gardens",
     },
     shortcuts: {
-      headline: "Walk the green instead of driving between the two towns",
-      body: "Lytham and St Annes are connected by a flat, mostly traffic-free walk along the green and coastal path - about 25 minutes, and usually quicker than driving and parking twice.",
+      headline: "Walk to Lytham instead of driving",
+      body: "St Annes and Lytham are connected by a flat, mostly traffic-free walk along the coastal path and the green - about 25 minutes, and usually quicker than driving and parking twice.",
     },
     hiddenGem: {
       headline: "Ashton Gardens' lake and aviary",
@@ -135,7 +176,46 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     },
   },
 
-  cleveleys: {
+  "poulton-le-fylde": {
+    whereLocalsGo: {
+      headline: "Ball Street and Market Place, not a chain café",
+      body: "Poulton residents drink and eat around Ball Street and Market Place - proper local pubs and independent cafés, rather than anywhere aimed at passing coach trips, because there aren't any.",
+    },
+    parkingToAvoid: {
+      headline: "Market Place on a Monday morning",
+      body: "Parking right by Market Square tightens up on Monday mornings when the street market is on. The Teanlowe Centre car park usually still has space.",
+      place: "Teanlowe Centre",
+    },
+    bestTimes: {
+      headline: "Monday morning for the market, any other day for the quiet",
+      body: "Poulton Market runs every Monday in Market Square - come then for the stalls, or any other day of the week if you'd rather have the market cross and the church to yourself.",
+    },
+    familyBeaches: {
+      headline: "There isn't one - Wyre Estuary Country Park instead",
+      body: "Poulton is inland, so there's genuinely no beach here. Wyre Estuary Country Park at Stanah, a walk or short drive along the Wyre Way, is the family alternative - a café, toilets and open space rather than sand.",
+      place: "Wyre Estuary Country Park",
+    },
+    sunsetSpots: {
+      headline: "Skippool Creek, looking down the Wyre",
+      body: "The old boats moored at Skippool Creek catch a quiet sunset that's genuinely worth the walk out from town - almost nobody else makes the trip.",
+    },
+    quietAlternatives: {
+      headline: "Poulton itself, if the coast feels too busy",
+      body: "On a packed summer weekend, Poulton offers the opposite of Blackpool's crowds entirely - a market square, a churchyard and a country park, all within about fifteen minutes of the seafront by train or car.",
+    },
+    shortcuts: {
+      headline: "The train beats the drive to Blackpool or Preston",
+      body: "Poulton-le-Fylde station is the coast's real rail interchange - it's often quicker to train in from here than to drive into Blackpool and find parking, especially in summer.",
+      place: "Poulton-le-Fylde",
+    },
+    hiddenGem: {
+      headline: "The stocks and whipping post, right by the church",
+      body: "Genuine 18th-century stocks still stand in Market Square, a few steps from St Chad's Church - most passing shoppers walk straight past them without a second look.",
+      place: "St Chad's Church Poulton",
+    },
+  },
+
+  "thornton-cleveleys": {
     whereLocalsGo: {
       headline: "Victoria Road West is the real high street",
       body: "Cleveleys locals treat Victoria Road West as their high street, not the Promenade - it's where the cafés and shops used day-to-day actually are, rather than the seafront aimed at passing visitors.",
@@ -169,9 +249,9 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
       body: "The Blackpool Tramway runs straight through Cleveleys and is more reliable than driving in on a busy summer weekend - it also drops you closer to the Tower and Pleasure Beach than most car parks manage.",
     },
     hiddenGem: {
-      headline: "Rossall Point Tower at low tide",
-      body: "A striking modern coastal viewpoint a short walk north of Cleveleys that most visitors to the wider coast never walk far enough to find - best at low tide, when the sands stretch out below it.",
-      place: "Rossall Point Tower",
+      headline: "Marsh Mill, a mile inland in Thornton",
+      body: "Most visitors staying near the Cleveleys seafront never realise Thornton's 18th-century windmill - the only one still working in the whole of North West England - and its craft-shop courtyard are a short drive or bus ride away.",
+      place: "Marsh Mill",
     },
   },
 
@@ -214,40 +294,4 @@ export const LOCAL_KNOWLEDGE: Record<string, TownLocalKnowledge> = {
     },
   },
 
-  bispham: {
-    whereLocalsGo: {
-      headline: "Red Bank Road is the real high street here",
-      body: "Bispham residents treat Red Bank Road as their actual high street - it's where the cafés and shops used day-to-day are, rather than anything aimed at passing tourists.",
-    },
-    parkingToAvoid: {
-      headline: "The clifftop on a sunny weekend",
-      body: "Clifftop parking fills quickly on sunny weekends. The side streets just back from Red Bank Road usually have space when the clifftop doesn't.",
-    },
-    bestTimes: {
-      headline: "Just after the morning rush for the tram into Blackpool",
-      body: "Bispham has no major attractions of its own, so timing is really about the tram into Blackpool - travelling just after the morning rush beats both the commuters and the day-trippers.",
-    },
-    familyBeaches: {
-      headline: "The beach below the cliffs suits older kids best",
-      body: "Bispham's beach, reached by steps or slopes down from the clifftop, is quieter than Blackpool's central beach - though the access suits families with older, more mobile children better than buggies.",
-    },
-    sunsetSpots: {
-      headline: "The clifftop path, uninterrupted",
-      body: "The clifftop path at Bispham has one of the best unobstructed sunset views on the whole coast, with none of the crowds you'd find on Blackpool's Promenade for the same view.",
-    },
-    quietAlternatives: {
-      headline: "Bispham's clifftop over Blackpool's Promenade",
-      body: "On a sunny day, Blackpool's central Promenade gets crowded fast. Bispham's clifftop is the same coastline and the same sunsets, a few minutes up the tram line, with far fewer people.",
-    },
-    shortcuts: {
-      headline: "Never drive into Blackpool - just take the tram",
-      body: "The tram stop at Bispham means there's rarely a reason to drive into Blackpool at all - it's usually faster than finding parking once you're there.",
-      place: "Bispham Tramway Stop",
-    },
-    hiddenGem: {
-      headline: "St Andrew's Church, just back from the cliffs",
-      body: "One of the older buildings on this stretch of coast, tucked just back from the clifftop path, that most passing visitors walk straight past without a second look.",
-      place: "St Andrew's Church Bispham",
-    },
-  },
 };

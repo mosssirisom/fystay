@@ -20,10 +20,21 @@ import {
  * ============================================================================
  * EDITORIAL CONTENT - TWO VERIFICATION PASSES DONE, FINAL HUMAN READ STILL OWED
  * ============================================================================
- * Originally written from general knowledge of these five towns, not
- * verified against a live source at publish time. Two web-search
- * verification passes (2026) have since checked essentially every specific
- * named business, venue and recurring event this file references.
+ * Originally written from general knowledge of these towns, not verified
+ * against a live source at publish time. Two web-search verification
+ * passes (2026) have since checked essentially every specific named
+ * business, venue and recurring event this file references.
+ *
+ * A later pass (2026) split the combined "Lytham St Annes" entry into
+ * separate Lytham and St Annes guides, added Poulton-le-Fylde (previously
+ * unlisted), and renamed "Cleveleys" to Thornton-Cleveleys with added
+ * Marsh Mill/Thornton content - the Bispham entry was folded into
+ * Blackpool's own listings rather than kept as a seventh town. Every new
+ * or moved named fact (Lytham Hall, the Royal Lytham & St Annes Golf
+ * Club's actual location, Poulton's market cross/stocks/St Chad's Church/
+ * Teanlowe Centre/Wyre Way, Marsh Mill) was checked against a live source
+ * at the time it was added - see the same "human read still owed" caveat
+ * below for everything else.
  *
  * Pass one found three real problems, since fixed: The Syndicate nightclub
  * (closed 2011, demolished 2015 - replaced with Viva Blackpool, a real,
@@ -307,7 +318,7 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
     ],
   },
 
-  "lytham-st-annes": {
+  lytham: {
     insiderTip:
       "Lytham Green on a summer evening, with the tide in and the windmill lit up, is this coast's best-kept secret - most visitors never get past Blackpool to see it.",
     thingsToDo: [
@@ -317,14 +328,14 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         place: "Lytham Windmill",
       },
       {
-        name: "Royal Lytham & St Annes Golf Club",
-        note: "A genuine Open Championship course - even non-golfers will recognise the name.",
-        place: "Royal Lytham & St Annes Golf Club",
-      },
-      {
         name: "Lowther Pavilion",
         note: "Lytham's own theatre, with a year-round programme of shows and touring productions.",
         place: "Lowther Pavilion",
+      },
+      {
+        name: "Lytham Hall",
+        note: "A Georgian country house a mile inland, set in 78 acres of parkland open most days - most visitors never leave the green to find it.",
+        place: "Lytham Hall",
       },
     ],
     eat: [
@@ -333,12 +344,12 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         note: "The town's main strip for independent dining, from bistros to seafood.",
       },
       {
-        name: "Seafront fish restaurants, St Annes",
-        note: "A reliable catch-of-the-day option close to the beach.",
-      },
-      {
         name: "The Taps, Henry Street, Lytham",
         note: "A well-known real ale pub that also serves food.",
+      },
+      {
+        name: "West Beach, near Lowther Gardens",
+        note: "A quieter cluster of cafés and restaurants by the theatre, a short walk from the green.",
       },
     ],
     coffeeAndBreakfast: [
@@ -347,108 +358,102 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         note: "The town's boutique-shopping-and-coffee strip - a proper morning out, not just a stop.",
       },
       {
-        name: "Wood Street, St Annes",
-        note: "A quieter, more local breakfast scene than the seafront.",
+        name: "Booths, Lytham",
+        note: "The Northern regional chain's own food hall and café - popular as a stop in its own right.",
       },
       {
-        name: "Ashton Gardens café, St Annes",
-        note: "A good stop if you're already walking the gardens.",
-        place: "Ashton Gardens",
+        name: "Lowther Gardens café",
+        note: "A good stop if you're already walking the gardens or catching a show.",
+        place: "Lowther Pavilion",
       },
     ],
     family: [
-      {
-        name: "Fairhaven Lake, St Annes",
-        note: "Pedal boats and a model boating lake, with a park alongside for a full day out.",
-        place: "Fairhaven Lake",
-      },
-      {
-        name: "St Annes beach",
-        note: "Wide, flat sand backed by dunes, generally quieter than Blackpool's.",
-      },
       {
         name: "Lowther Pavilion",
         note: "Family-friendly matinees and a pantomime season alongside its main programme.",
         place: "Lowther Pavilion",
       },
+      {
+        name: "Lytham Green",
+        note: "Wide, flat and open - safe space for younger children away from traffic, right by the windmill.",
+      },
+      {
+        name: "Lytham Hall's parkland",
+        note: "Free-roam grounds and woodland trails for a picnic or a run-around, a mile from the green.",
+        place: "Lytham Hall",
+      },
     ],
     beachesAndWalks: [
-      {
-        name: "St Annes beach and sand dunes",
-        note: "A long, quieter stretch of coast with a nature reserve behind the dunes.",
-      },
       {
         name: "Lytham Green",
         note: "A large open green running along the estuary, popular for a flat evening stroll.",
       },
       {
-        name: "The coastal path to Fairhaven Lake",
-        note: "Links the green, the lake and the beach in one easy walk.",
+        name: "The coastal path towards St Annes",
+        note: "Links the green to Fairhaven Lake and St Annes beach in one easy walk.",
+      },
+      {
+        name: "Lytham Hall's woodland trails",
+        note: "A quieter, inland alternative to the seafront walk.",
+        place: "Lytham Hall",
       },
     ],
     pubsAndNightlife: [
       { name: "The Taps, Lytham", note: "A long-standing real ale pub, popular with locals." },
       { name: "Clifton Arms Hotel, Lytham", note: "A traditional hotel bar right on the green." },
-      {
-        name: "St Annes' seafront bars",
-        note: "A calmer, more grown-up nightlife scene than Blackpool's.",
-      },
+      { name: "Clifton Street's small bars", note: "A calmer, more grown-up scene than Blackpool's." },
     ],
     shopping: [
       {
         name: "Clifton Street and Park Street, Lytham",
         note: "Independent boutiques, gift shops and delis.",
       },
-      { name: "Wood Street, St Annes", note: "Another strip of independent shops, generally quieter." },
       {
         name: "Booths, Lytham",
-        note: "The Northern regional chain's own take on a food shop - popular for something a bit more upmarket than a standard supermarket.",
+        note: "Popular for something a bit more upmarket than a standard supermarket shop.",
       },
+      { name: "Independent gift shops around the green", note: "A short browse before or after a walk." },
     ],
     amenities: [
-      { name: "Local GP surgeries and health centres", note: "Serve both Lytham and St Annes directly." },
-      {
-        name: "Pharmacies along Clifton Street and Wood Street",
-        note: "Cover both town centres.",
-      },
-      {
-        name: "Supermarkets and high-street banks",
-        note: "Lytham and St Annes each have their own.",
-      },
+      { name: "Local GP surgeries and a health centre", note: "Serve Lytham directly." },
+      { name: "Pharmacies along Clifton Street", note: "Cover the town centre." },
+      { name: "Supermarkets and high-street banks", note: "In and around the town centre." },
     ],
     transport: [
       {
         name: "Lytham and Ansdell & Fairhaven railway stations",
         note: "Connect to Preston and onward to the wider rail network.",
-      },
-      {
-        name: "St Annes-on-the-Sea railway station",
-        note: "Sits right by the town centre.",
+        place: "Ansdell & Fairhaven",
       },
       {
         name: "Coast-road bus routes",
-        note: "Regular services link Lytham and St Annes to Blackpool.",
+        note: "Regular services link Lytham to St Annes and Blackpool.",
+      },
+      {
+        name: "The walk into St Annes",
+        note: "Flat and mostly traffic-free along the green and coastal path - often quicker than driving and parking twice.",
       },
     ],
     parking: [
       {
-        name: "Pay-and-display parking along Lytham Green and the St Annes seafront",
-        note: "The main options in both towns.",
+        name: "Pay-and-display parking along Lytham Green",
+        note: "The main option in the town centre.",
       },
       {
-        name: "On-street parking away from the green",
-        note: "More available here than in central Blackpool.",
+        name: "Streets just south of Clifton Street",
+        note: "Usually has space when the green's own car park is full - and it's a shorter walk to the shops from there.",
       },
-      { name: "Fairhaven Lake car park", note: "Useful for a family day out at the lake." },
+      { name: "Lytham Hall car park", note: "Useful for a slower visit to the parkland.", place: "Lytham Hall" },
     ],
     dogFriendly: [
       {
-        name: "St Annes beach and dunes",
-        note: "A popular, spacious dog walk with year-round access on most stretches.",
-      },
-      {
         name: "Lytham Green",
         note: "Wide open space that's easy walking for dogs - check local signage for any lead-only areas.",
+      },
+      {
+        name: "Lytham Hall's parkland",
+        note: "Extensive woodland and open grounds for a longer walk.",
+        place: "Lytham Hall",
       },
       {
         name: "Cafés around Clifton Street",
@@ -461,9 +466,9 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         note: "Most visitors photograph the outside and miss it entirely.",
       },
       {
-        name: "Ashton Gardens, St Annes",
-        note: "A quiet, formal park many day-trippers never reach.",
-        place: "Ashton Gardens",
+        name: "Lytham Hall's 78 acres of parkland",
+        note: "A mile inland from the green, and most day-trippers never walk far enough to find it.",
+        place: "Lytham Hall",
       },
       {
         name: "The far end of Lytham Green",
@@ -482,22 +487,328 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       },
       {
         name: "The Open Championship",
-        note: "Royal Lytham & St Annes hosts it on rotation - a huge date for the town when it does.",
+        note: "Royal Lytham & St Annes hosts it on rotation, just along the coast in St Annes - a huge date for the whole town when it does.",
       },
       {
-        name: "St Annes Carnival",
-        note: "A long-running town carnival weekend at Ashton Gardens each July, with a parade, live music and stalls.",
+        name: "Lytham Hall's seasonal open days",
+        note: "Additional house openings and events through spring, summer and Christmas.",
+        place: "Lytham Hall",
       },
     ],
   },
 
-  cleveleys: {
+  "st-annes": {
     insiderTip:
-      "Cleveleys is what Blackpool's seafront would look like if you took away the crowds and kept the sea view - worth the short tram ride even if you're staying further south.",
+      "St Annes' pier and promenade get all the day-trippers heading for the beach - Ashton Gardens and Fairhaven Lake, both two minutes off the seafront, stay quiet even in August.",
+    thingsToDo: [
+      {
+        name: "St Annes Pier",
+        note: "A Victorian pier with amusements right on the promenade, quieter than Blackpool's piers.",
+        place: "St Annes Pier",
+      },
+      {
+        name: "Ashton Gardens",
+        note: "A formal Victorian park with a lake and aviary, a short walk back from the seafront.",
+        place: "Ashton Gardens",
+      },
+      {
+        name: "Royal Lytham & St Annes Golf Club",
+        note: "A genuine Open Championship course a mile from the town centre - even non-golfers will recognise the name.",
+        place: "Royal Lytham & St Annes Golf Club",
+      },
+    ],
+    eat: [
+      {
+        name: "Seafront fish restaurants, St Annes",
+        note: "A reliable catch-of-the-day option close to the beach.",
+      },
+      {
+        name: "Wood Street, St Annes",
+        note: "A quieter, more local dining scene than the seafront.",
+      },
+      {
+        name: "Promenade cafés near the pier",
+        note: "Straightforward food with a sea view.",
+      },
+    ],
+    coffeeAndBreakfast: [
+      {
+        name: "Wood Street, St Annes",
+        note: "A quieter, more local breakfast scene than the seafront.",
+      },
+      {
+        name: "Ashton Gardens café",
+        note: "A good stop if you're already walking the gardens.",
+        place: "Ashton Gardens",
+      },
+      {
+        name: "Promenade cafés near the pier",
+        note: "Classic seafront breakfasts, calmer than Blackpool's equivalents.",
+      },
+    ],
+    family: [
+      {
+        name: "Fairhaven Lake",
+        note: "Pedal boats and a model boating lake, with a park alongside for a full day out.",
+        place: "Fairhaven Lake",
+      },
+      {
+        name: "St Annes beach",
+        note: "Wide, flat sand backed by dunes, generally quieter than Blackpool's.",
+      },
+      {
+        name: "St Annes Pier's amusements",
+        note: "A smaller, calmer alternative to Blackpool's arcades.",
+        place: "St Annes Pier",
+      },
+    ],
+    beachesAndWalks: [
+      {
+        name: "St Annes beach and sand dunes",
+        note: "A long, quieter stretch of coast with a nature reserve behind the dunes.",
+      },
+      {
+        name: "Fairhaven Lake's lakeside path",
+        note: "An easy, flat loop popular with families and dog walkers.",
+        place: "Fairhaven Lake",
+      },
+      {
+        name: "The coastal path towards Lytham Green",
+        note: "Links the beach, the lake and the green in one easy walk.",
+      },
+    ],
+    pubsAndNightlife: [
+      {
+        name: "St Annes' seafront bars",
+        note: "A calmer, more grown-up nightlife scene than Blackpool's.",
+      },
+      { name: "Wood Street pubs", note: "A more local scene, back from the promenade." },
+      { name: "Promenade bars near the pier", note: "Straightforward seafront drinking with a sea view." },
+    ],
+    shopping: [
+      { name: "Wood Street, St Annes", note: "A strip of independent shops, generally quiet." },
+      { name: "Seafront gift shops near the pier", note: "For the usual seaside essentials." },
+      {
+        name: "Ashton Gardens' gift kiosk",
+        note: "A small stop if you're already in the gardens.",
+        place: "Ashton Gardens",
+      },
+    ],
+    amenities: [
+      { name: "Local GP surgeries and health centres", note: "Serve St Annes directly." },
+      { name: "Pharmacies along Wood Street", note: "Cover the town centre." },
+      { name: "Supermarkets and high-street banks", note: "In and around the town centre." },
+    ],
+    transport: [
+      {
+        name: "St Annes-on-the-Sea railway station",
+        note: "Sits right by the town centre, with connections to Preston and beyond.",
+      },
+      {
+        name: "Ansdell & Fairhaven railway station",
+        note: "The closer stop for Fairhaven Lake and the western end of town.",
+        place: "Ansdell & Fairhaven",
+      },
+      {
+        name: "Coast-road bus routes",
+        note: "Regular services link St Annes to Lytham and Blackpool.",
+      },
+    ],
+    parking: [
+      {
+        name: "Pay-and-display parking along the St Annes seafront",
+        note: "The main option near the beach and pier.",
+      },
+      { name: "Fairhaven Lake car park", note: "Useful for a family day out at the lake.", place: "Fairhaven Lake" },
+      {
+        name: "Streets back from the promenade",
+        note: "Usually easier to find space than right on the seafront.",
+      },
+    ],
+    dogFriendly: [
+      {
+        name: "St Annes beach and dunes",
+        note: "A popular, spacious dog walk with year-round access on most stretches.",
+      },
+      {
+        name: "Fairhaven Lake's paths",
+        note: "Flat, easy walking around the lake.",
+        place: "Fairhaven Lake",
+      },
+      {
+        name: "Ashton Gardens' outer paths",
+        note: "Some areas are lead-only - check signage on arrival.",
+        place: "Ashton Gardens",
+      },
+    ],
+    hiddenGems: [
+      {
+        name: "Ashton Gardens' lake and aviary",
+        note: "A proper formal park two minutes off the seafront that most day-trippers heading for the beach never find.",
+        place: "Ashton Gardens",
+      },
+      {
+        name: "The dunes at the western end of St Annes beach",
+        note: "A genuine nature reserve most visitors walk straight past.",
+      },
+    ],
+    rainyDay: [
+      { name: "St Annes Pier's amusements", note: "A sheltered, indoor-ish option right on the seafront.", place: "St Annes Pier" },
+      { name: "Wood Street cafés", note: "A slower-paced, indoor way to spend a wet afternoon." },
+      { name: "Ashton Gardens' aviary", note: "Covered viewing even when the weather turns.", place: "Ashton Gardens" },
+    ],
+    events: [
+      {
+        name: "St Annes Carnival",
+        note: "A long-running town carnival weekend at Ashton Gardens each July, with a parade, live music and stalls.",
+      },
+      {
+        name: "The Open Championship",
+        note: "Royal Lytham & St Annes hosts it on rotation - a huge date for the town when it does.",
+      },
+    ],
+  },
+
+  "poulton-le-fylde": {
+    insiderTip:
+      "Poulton has no seafront and isn't trying to be Blackpool - come for the market square and a proper local pub, then be on the coast in fifteen minutes when you want it.",
+    thingsToDo: [
+      {
+        name: "Poulton's Market Cross and stocks",
+        note: "An 18th-century market cross, stocks and whipping post still standing in Market Square, right outside the churchyard.",
+        place: "Poulton-le-Fylde",
+      },
+      {
+        name: "St Chad's Church",
+        note: "A church on this site dates to the 11th century; the current tower is 17th-century - one of the oldest working churches on the Fylde.",
+        place: "St Chad's Church Poulton",
+      },
+      {
+        name: "The Wyre Way to Skippool Creek",
+        note: "A waymarked footpath east from town, past the old Port of Poulton's boat-lined creek, to Wyre Estuary Country Park at Stanah.",
+        place: "Wyre Estuary Country Park",
+      },
+    ],
+    eat: [
+      { name: "The Golden Ball, Ball Street", note: "A long-standing town-centre pub." },
+      { name: "Market Place and Tithebarn Street", note: "The town's main cluster of cafés and restaurants." },
+      { name: "Independent bakeries around the town centre", note: "A good stop before a walk out to Skippool." },
+    ],
+    coffeeAndBreakfast: [
+      { name: "Market Place and Queensway", note: "The town's everyday breakfast and coffee spots." },
+      { name: "Teanlowe Centre café", note: "Handy if you're already shopping there.", place: "Teanlowe Centre" },
+      { name: "Cafés around the church and market square", note: "A quieter, more local start to the day." },
+    ],
+    family: [
+      {
+        name: "Wyre Estuary Country Park, Stanah",
+        note: "A visitor centre, café and toilets at the halfway point of the Wyre Way walk from town.",
+        place: "Wyre Estuary Country Park",
+      },
+      { name: "Teanlowe Centre", note: "An easy, sheltered stop for younger children.", place: "Teanlowe Centre" },
+      { name: "Poulton Market", note: "A proper Monday market for children to explore stalls and produce." },
+    ],
+    beachesAndWalks: [
+      {
+        name: "The Wyre Way to Wyre Estuary Country Park",
+        note: "An easy, flat walk east from town via Skippool Creek - no beach here, but a genuine country walk instead.",
+        place: "Wyre Estuary Country Park",
+      },
+      {
+        name: "Skippool Creek",
+        note: "A narrow, boat-lined creek at the old Port of Poulton - a quiet spot most visitors to the coast never see.",
+      },
+      { name: "Fields and footpaths east of town", note: "Flat, quiet walking away from the road." },
+    ],
+    pubsAndNightlife: [
+      { name: "The Golden Ball, Ball Street", note: "A genuine town-centre local." },
+      { name: "Hardhorn Road's traditional pubs", note: "Including one distinctive thatched-roof building." },
+      { name: "Market Place bars", note: "A quiet, local scene rather than a night out." },
+    ],
+    shopping: [
+      {
+        name: "Teanlowe Centre",
+        note: "A shopping centre mixing national names with independent local retailers.",
+        place: "Teanlowe Centre",
+      },
+      {
+        name: "Poulton Market, Market Square",
+        note: "A proper street market every Monday, all year round - deli, fish, fruit and veg, clothing and gifts.",
+        place: "Poulton-le-Fylde",
+      },
+      { name: "Independent shops along Market Place and Church Street", note: "A genuine local high street." },
+    ],
+    amenities: [
+      { name: "GP surgeries and a health centre", note: "Serve the town centre directly." },
+      { name: "Banks and a post office", note: "Along Market Place and Queensway." },
+      { name: "Supermarkets", note: "Within easy reach of the town centre." },
+    ],
+    transport: [
+      {
+        name: "Poulton-le-Fylde railway station",
+        note: "The coast's main rail interchange - direct trains to Preston, Manchester and beyond, not just a local stop.",
+        place: "Poulton-le-Fylde",
+      },
+      {
+        name: "Bus routes to Fleetwood, Blackpool and Cleveleys",
+        note: "Poulton sits at the hub of the coast's bus network, not just its rail line.",
+      },
+      {
+        name: "Closer to the coast than it looks",
+        note: "A short drive or bus ride reaches Blackpool, Fleetwood or Cleveleys' seafronts.",
+      },
+    ],
+    parking: [
+      { name: "Teanlowe Centre car park", note: "The main option for the town centre.", place: "Teanlowe Centre" },
+      {
+        name: "Market Place on-street parking",
+        note: "Tightest on Monday mornings during the market - arrive earlier if you can.",
+      },
+      { name: "Station car park", note: "Useful if you're arriving by train from further afield." },
+    ],
+    dogFriendly: [
+      {
+        name: "The Wyre Way and Skippool Creek",
+        note: "A genuine longer walk for well-exercised dogs, away from any seafront crowds.",
+        place: "Wyre Estuary Country Park",
+      },
+      { name: "Market Square and the town centre", note: "Easy, flat walking on the way to a coffee stop." },
+      { name: "Fields east of town", note: "Quiet, open walking away from traffic." },
+    ],
+    hiddenGems: [
+      {
+        name: "The stocks and whipping post by the church",
+        note: "Right in Market Square, and most passing visitors walk straight past without noticing.",
+        place: "Poulton-le-Fylde",
+      },
+      {
+        name: "Skippool Creek's old boats",
+        note: "A quietly atmospheric spot at the old Port of Poulton, a mile from the market square.",
+      },
+    ],
+    rainyDay: [
+      { name: "Teanlowe Centre", note: "A sheltered, indoor shopping stop.", place: "Teanlowe Centre" },
+      { name: "St Chad's Church", note: "Worth a look inside when it's open.", place: "St Chad's Church Poulton" },
+      { name: "Market Place cafés", note: "An easy, dry way to spend an hour." },
+    ],
+    events: [
+      { name: "Poulton Market", note: "Every Monday, all year round, in Market Square and outside Teanlowe Centre.", place: "Teanlowe Centre" },
+      { name: "Seasonal events at Teanlowe Centre", note: "Including Christmas and market-square gatherings.", place: "Teanlowe Centre" },
+    ],
+  },
+
+  "thornton-cleveleys": {
+    insiderTip:
+      "Cleveleys is what Blackpool's seafront would look like if you took away the crowds and kept the sea view - and Thornton, a short walk inland, adds a genuine 18th-century windmill village most coast visitors never see.",
     thingsToDo: [
       {
         name: "Cleveleys Promenade",
         note: "A striking, redesigned seafront with modern shelters and open lawns, distinct from Blackpool's.",
+      },
+      {
+        name: "Marsh Mill Village, Thornton",
+        note: "An 18th-century windmill - the only one still working in the whole of North West England - surrounded by a courtyard of independent and craft shops.",
+        place: "Marsh Mill",
       },
       {
         name: "Anchorsholme Park",
@@ -585,11 +896,12 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         name: "Victoria Road West",
         note: "The town's main shopping street, with independent shops and cafés.",
       },
-      { name: "Cleveleys Market", note: "A small local market held periodically in the town centre." },
       {
-        name: "Everyday shops around the town centre",
-        note: "A short walk from the seafront.",
+        name: "Marsh Mill Village's craft shops, Thornton",
+        note: "A courtyard of independent shops built around the windmill - a genuinely different shopping trip from the seafront.",
+        place: "Marsh Mill",
       },
+      { name: "Cleveleys Market", note: "A small local market held periodically in the town centre." },
     ],
     amenities: [
       { name: "A local health centre and pharmacy", note: "Serve the town centre directly." },
@@ -639,23 +951,23 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
         note: "A striking modern coastal observation tower most visitors never walk far enough north to find.",
         place: "Rossall Point Tower",
       },
-      { name: "Jubilee Gardens' quieter corners", note: "Away from the main Promenade benches." },
+      {
+        name: "Thornton Little Theatre",
+        note: "A community theatre inland in Thornton that most Cleveleys visitors never realise is there.",
+      },
       {
         name: "Sunset on the northern Promenade",
         note: "A clear view back towards Blackpool Tower.",
       },
     ],
     rainyDay: [
+      { name: "Marsh Mill Village's shops, Thornton", note: "A sheltered, indoor-ish craft-shopping trip whatever the weather.", place: "Marsh Mill" },
       { name: "Victoria Road West cafés and shops", note: "An easy indoor afternoon." },
       { name: "A short tram ride into Blackpool", note: "For its indoor attractions." },
-      {
-        name: "Cleveleys Library and community centre",
-        note: "Occasionally host events worth checking ahead of a wet day.",
-      },
     ],
     events: [
       { name: "Cleveleys Car Show", note: "An annual show bringing hundreds of vehicles to Victoria Road West and the seafront each June, with live entertainment and stalls." },
-      { name: "Seasonal markets", note: "Held on Victoria Road West through the year." },
+      { name: "Thornton Little Theatre's programme", note: "A year-round schedule of community and touring shows inland in Thornton." },
       {
         name: "Illuminations",
         note: "Extend along parts of the Cleveleys seafront in autumn, an extension of Blackpool's main display.",
@@ -843,158 +1155,6 @@ export const LOCAL_GUIDES: Record<string, TownGuide> = {
       {
         name: "Illuminations",
         note: "Extend along parts of the Fleetwood seafront, continuing the main Blackpool display north.",
-      },
-    ],
-  },
-
-  bispham: {
-    insiderTip:
-      "Stay in Bispham if you want Blackpool's attractions without Blackpool's noise - the tram gets you there in minutes, but you come home to a quiet clifftop.",
-    thingsToDo: [
-      {
-        name: "Bispham cliffs and coastal path",
-        note: "One of the higher points on this stretch of coast, with long sea views.",
-      },
-      {
-        name: "St Andrew's Church, Bispham",
-        note: "One of the older buildings on the Fylde Coast, worth a look if you're passing.",
-        place: "St Andrew's Church Bispham",
-      },
-      {
-        name: "Easy tram access to Blackpool",
-        note: "Bispham's tram stop puts the Tower, Pleasure Beach and Illuminations a few minutes away.",
-      },
-    ],
-    eat: [
-      {
-        name: "Red Bank Road",
-        note: "A small cluster of cafés and takeaways forming Bispham's local high street.",
-      },
-      {
-        name: "Clifftop path kiosks",
-        note: "For a quick coffee or ice cream on a walk.",
-      },
-      {
-        name: "For a bigger meal out",
-        note: "Most sit-down dining is a short tram ride into Blackpool or Cleveleys.",
-      },
-    ],
-    coffeeAndBreakfast: [
-      { name: "Cafés along Red Bank Road", note: "Bispham's own small breakfast scene." },
-      {
-        name: "Clifftop café stops",
-        note: "Popular with dog walkers and runners on the coastal path.",
-      },
-      {
-        name: "A short tram ride",
-        note: "Reaches a much wider choice in Cleveleys or Blackpool.",
-      },
-    ],
-    family: [
-      {
-        name: "The clifftop lawns and paths",
-        note: "Safe, open space for younger children away from traffic.",
-      },
-      {
-        name: "Blackpool's family attractions",
-        note: "Sandcastle Waterpark, the Zoo and SEA LIFE Centre are all a short tram ride away.",
-      },
-      {
-        name: "Anchorsholme Park splash park",
-        note: "A short walk or drive north into Cleveleys.",
-        place: "Anchorsholme Park",
-      },
-    ],
-    beachesAndWalks: [
-      {
-        name: "Bispham's beach, below the cliffs",
-        note: "Quieter than central Blackpool, reached by steps or slopes down from the clifftop.",
-      },
-      {
-        name: "The clifftop coastal path",
-        note: "One of the more scenic stretches of the whole Fylde Coast walk.",
-      },
-      {
-        name: "Continue further",
-        note: "The path runs south into Blackpool or north into Cleveleys for a longer walk.",
-      },
-    ],
-    pubsAndNightlife: [
-      { name: "Local pubs around Red Bank Road", note: "A small, genuinely local selection." },
-      {
-        name: "For nightlife",
-        note: "Bispham is a quiet residential base - most nightlife is a short tram ride into Blackpool.",
-      },
-    ],
-    shopping: [
-      { name: "Everyday shops along Red Bank Road", note: "Cover day-to-day essentials." },
-      {
-        name: "Bigger shopping trips",
-        note: "Head into Blackpool's Houndshill Centre or Cleveleys' Victoria Road West, both a short tram ride away.",
-      },
-    ],
-    amenities: [
-      { name: "A local pharmacy and shops", note: "Serve Red Bank Road." },
-      {
-        name: "Larger amenities",
-        note: "Supermarkets, GP surgeries and the hospital are a short tram or drive into Blackpool.",
-      },
-    ],
-    transport: [
-      {
-        name: "Bispham tram stop",
-        note: "On the main Blackpool Tramway, with frequent services in both directions.",
-      },
-      {
-        name: "Coast-road bus routes",
-        note: "Connect Bispham to Blackpool and Cleveleys.",
-      },
-    ],
-    parking: [
-      {
-        name: "On-street and pay-and-display parking",
-        note: "Near the clifftop and Red Bank Road, generally easier than central Blackpool.",
-      },
-      {
-        name: "Clifftop car parks",
-        note: "Fill up on sunny weekends - arrive earlier for a sea-view space.",
-      },
-    ],
-    dogFriendly: [
-      {
-        name: "The clifftop path",
-        note: "One of the most popular dog walks on this stretch of coast, with sea views the whole way.",
-      },
-      {
-        name: "Bispham's beach below the cliffs",
-        note: "Generally quieter and easier for dogs than central Blackpool.",
-      },
-    ],
-    hiddenGems: [
-      {
-        name: "The clifftop path at sunset",
-        note: "Looking north over Cleveleys and south towards Blackpool Tower.",
-      },
-      {
-        name: "Bispham's relative quiet",
-        note: "Most visitors pass straight through on the tram without ever stopping.",
-      },
-    ],
-    rainyDay: [
-      {
-        name: "A short tram ride into Blackpool",
-        note: "Reaches Sandcastle Waterpark, SEA LIFE and Madame Tussauds.",
-      },
-      { name: "Cafés along Red Bank Road", note: "A slower, indoor pace close to home." },
-    ],
-    events: [
-      {
-        name: "Blackpool Illuminations",
-        note: "Extend along parts of Bispham's clifftop stretch.",
-      },
-      {
-        name: "Larger events",
-        note: "Carnivals, air shows and markets are mostly a short tram ride away in Blackpool, Cleveleys or Fleetwood.",
       },
     ],
   },

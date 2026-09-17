@@ -2,26 +2,36 @@ import { cn } from "@/lib/cn";
 import { DESTINATION_PHOTOS } from "@/lib/destinationPhotos";
 
 /**
- * A generated, on-brand coastal scene per town, used as the hero backdrop
- * for any town FYStay hasn't been supplied real photography of yet - the
- * same reasoning as HeroBanner.tsx (this codebase's homepage hero): never a
+ * A generated, on-brand scene per town, used as the hero backdrop for any
+ * town FYStay hasn't been supplied real photography of yet - the same
+ * reasoning as HeroBanner.tsx (this codebase's homepage hero): never a
  * hotlinked or unlicensed stock photo standing in for a real place. Each
  * town gets a distinct, recognisable silhouette (Blackpool Tower and
- * illuminations, Lytham's windmill, Fleetwood's lighthouse, Cleveleys' open
- * coast, Bispham's clifftop) drawn as a golden-hour scene in the same warm
- * terracotta/sand palette as the rest of the site (globals.css), rather
- * than a daytime teal sea, so every town's page still reads as one brand.
- * A town with real, licensed photography (see DESTINATION_PHOTOS) uses that
- * instead - see the early return below.
+ * illuminations, Lytham's windmill, St Annes' pier, Fleetwood's lighthouse,
+ * Thornton-Cleveleys' open coast) drawn as a golden-hour scene in the same
+ * warm terracotta/sand palette as the rest of the site (globals.css),
+ * rather than a daytime teal sea, so every town's page still reads as one
+ * brand. A town with real, licensed photography (see DESTINATION_PHOTOS)
+ * uses that instead - see the early return below.
+ *
+ * Poulton-le-Fylde is the one genuinely inland town FYStay covers, and it
+ * gets a different bottom half entirely - fields and a market-square
+ * silhouette instead of sea, waves and sand (see INLAND_SLUGS below). A
+ * real tourist site would slap the same beach photo on every town page;
+ * deliberately not doing that for the one town that isn't on the coast is
+ * a small, honest signal that FYStay actually knows the difference.
  */
 
 const SKY_TOP: Record<string, string> = {
   blackpool: "#2a1410",
-  "lytham-st-annes": "#241812",
-  cleveleys: "#221510",
+  lytham: "#241812",
+  "st-annes": "#241511",
+  "poulton-le-fylde": "#221a10",
   fleetwood: "#281712",
-  bispham: "#251411",
+  "thornton-cleveleys": "#221510",
 };
+
+const INLAND_SLUGS = new Set(["poulton-le-fylde"]);
 
 function Sky({ slug }: { slug: string }) {
   const top = SKY_TOP[slug] ?? "#2a1410";
@@ -62,6 +72,17 @@ function Waves() {
         strokeWidth="3"
       />
     </>
+  );
+}
+
+/** The inland equivalent of Waves() - a hedgerow/treeline silhouette along
+ * the horizon instead of ripples, for Poulton-le-Fylde's fields rather than
+ * a coastline. */
+function Hedgerow() {
+  return (
+    <g fill="none" stroke="#e4b1a0" strokeOpacity="0.22" strokeWidth="3" strokeLinecap="round">
+      <path d="M0 306q40-18 80 0t80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0 80 0" />
+    </g>
   );
 }
 
@@ -141,6 +162,39 @@ function LythamScene() {
   );
 }
 
+function StAnnesScene() {
+  return (
+    <>
+      {/* A longer, more prominent pier than Lytham's few posts - St Annes' own landmark */}
+      <g stroke="#22130f" strokeWidth="3.5" strokeLinecap="round">
+        <line x1="820" y1="296" x2="1440" y2="296" />
+        {Array.from({ length: 10 }, (_, i) => 860 + i * 58).map((x) => (
+          <line key={x} x1={x} y1="296" x2={x - 18} y2="336" strokeWidth="3" />
+        ))}
+        {/* A small pavilion at the pier head */}
+        <path d="M1300 296V266h60v30" fill="none" />
+      </g>
+      {/* Ashton Gardens' bandstand, a domed cupola on the green */}
+      <g stroke="#22130f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M240 296V246" />
+        <path d="M210 246h60" />
+        <path d="M205 246q30-26 70 0" />
+        <line x1="240" y1="220" x2="240" y2="206" />
+      </g>
+      {/* Dune grass tufts */}
+      <g stroke="#4a3220" strokeWidth="2.5" strokeLinecap="round" fill="none">
+        {[420, 470, 520, 600, 650].map((x) => (
+          <g key={x}>
+            <path d={`M${x} 318q-6-14 0-22`} />
+            <path d={`M${x + 8} 318q2-16 10-22`} />
+            <path d={`M${x + 16} 318q10-10 8-20`} />
+          </g>
+        ))}
+      </g>
+    </>
+  );
+}
+
 function CleveleysScene() {
   return (
     <>
@@ -194,23 +248,35 @@ function FleetwoodScene() {
   );
 }
 
-function BisphamScene() {
+/** Poulton-le-Fylde's own market square instead of a coastline - the
+ * church tower, the market cross and stocks, and a row of market-town
+ * gables where every other town's scene has a pier or a lighthouse. */
+function PoultonScene() {
   return (
     <>
-      {/* Cliff edge silhouette rising toward the right */}
-      <path d="M0 320 L 500 320 L 620 250 L 900 250 L 1440 250 L 1440 420 L 0 420 Z" fill="#22130f" fillOpacity="0.55" />
-      {/* Garden shrubs along the clifftop */}
-      <g fill="#4a3220" fillOpacity="0.7">
-        {[660, 720, 780, 840].map((x) => (
-          <ellipse key={x} cx={x} cy="244" rx="22" ry="14" />
+      {/* Terraced shopfront gables along the market square */}
+      <g stroke="#22130f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {[880, 970, 1060, 1150].map((x) => (
+          <path key={x} d={`M${x} 296V246l45-30 45 30v50`} />
         ))}
       </g>
-      {/* A single bench, looking out */}
+      {/* St Chad's church tower, crenellated */}
+      <g stroke="#22130f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M260 296V140h80V296" />
+        <path d="M260 140v-16M282 140v-16M304 140v-16M326 140v-16M340 140v-16" />
+        <path d="M285 296V220h30v76" />
+      </g>
+      {/* The market cross, with stocks alongside */}
+      <g stroke="#22130f" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M470 296V190" />
+        <path d="M450 190h40l-20-24z" />
+        <line x1="450" y1="296" x2="490" y2="296" />
+      </g>
       <g stroke="#22130f" strokeWidth="3" strokeLinecap="round">
-        <line x1="960" y1="248" x2="960" y2="264" />
-        <line x1="1000" y1="248" x2="1000" y2="264" />
-        <line x1="955" y1="248" x2="1005" y2="248" />
-        <line x1="955" y1="234" x2="1005" y2="234" />
+        <line x1="540" y1="296" x2="540" y2="266" />
+        <line x1="600" y1="296" x2="600" y2="266" />
+        <line x1="534" y1="266" x2="606" y2="266" />
+        <line x1="534" y1="278" x2="606" y2="278" />
       </g>
     </>
   );
@@ -218,14 +284,16 @@ function BisphamScene() {
 
 const SCENES: Record<string, () => React.ReactNode> = {
   blackpool: BlackpoolScene,
-  "lytham-st-annes": LythamScene,
-  cleveleys: CleveleysScene,
+  lytham: LythamScene,
+  "st-annes": StAnnesScene,
+  "poulton-le-fylde": PoultonScene,
   fleetwood: FleetwoodScene,
-  bispham: BisphamScene,
+  "thornton-cleveleys": CleveleysScene,
 };
 
 export function TownHeroArt({ slug, className }: { slug: string; className?: string }) {
   const Scene = SCENES[slug] ?? BlackpoolScene;
+  const isInland = INLAND_SLUGS.has(slug);
 
   const photo = DESTINATION_PHOTOS[slug]?.hero;
   if (photo) {
@@ -259,6 +327,10 @@ export function TownHeroArt({ slug, className }: { slug: string; className?: str
           <stop offset="0%" stopColor="#4a3220" />
           <stop offset="100%" stopColor="#22130f" />
         </linearGradient>
+        <linearGradient id="town-fields" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#7a5a1f" />
+          <stop offset="100%" stopColor="#2a2410" />
+        </linearGradient>
       </defs>
 
       <rect width="1440" height="420" fill="url(#town-sky)" />
@@ -271,10 +343,19 @@ export function TownHeroArt({ slug, className }: { slug: string; className?: str
         <ellipse cx="1220" cy="70" rx="110" ry="24" />
       </g>
 
-      <Gulls x={520} y={130} />
+      {!isInland && <Gulls x={520} y={130} />}
 
-      <rect y="300" width="1440" height="120" fill="url(#town-sea)" />
-      <Waves />
+      {isInland ? (
+        <>
+          <rect y="300" width="1440" height="120" fill="url(#town-fields)" />
+          <Hedgerow />
+        </>
+      ) : (
+        <>
+          <rect y="300" width="1440" height="120" fill="url(#town-sea)" />
+          <Waves />
+        </>
+      )}
 
       <rect y="392" width="1440" height="28" fill="url(#town-sand)" />
 

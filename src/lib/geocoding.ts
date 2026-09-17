@@ -10,10 +10,11 @@ import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
  */
 export const TOWN_COORDINATES: Record<string, { latitude: number; longitude: number }> = {
   blackpool: { latitude: 53.8175, longitude: -3.0357 },
-  "lytham st annes": { latitude: 53.7519, longitude: -2.9622 },
-  cleveleys: { latitude: 53.8767, longitude: -3.0472 },
+  lytham: { latitude: 53.7423, longitude: -2.9583 },
+  "st annes": { latitude: 53.7519, longitude: -2.9622 },
+  "poulton-le-fylde": { latitude: 53.8483, longitude: -2.9883 },
   fleetwood: { latitude: 53.9231, longitude: -3.0122 },
-  bispham: { latitude: 53.8459, longitude: -3.0453 },
+  "thornton-cleveleys": { latitude: 53.8767, longitude: -3.0472 },
 };
 
 // Every known town's coordinates are within this radius, so a search-page

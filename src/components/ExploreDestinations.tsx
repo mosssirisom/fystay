@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Anchor, FerrisWheel, Waves, Wind, type LucideIcon } from "lucide-react";
+import { Anchor, FerrisWheel, TrainFront, Umbrella, Waves, Wind, type LucideIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
@@ -7,24 +7,26 @@ import { DESTINATION_PHOTOS } from "@/lib/destinationPhotos";
 
 export const DESTINATION_ART: Record<string, { icon: LucideIcon; gradient: string }> = {
   blackpool: { icon: FerrisWheel, gradient: "from-brand-600 via-brand-700 to-brand-900" },
-  "lytham-st-annes": { icon: Wind, gradient: "from-brand-500 to-ink" },
-  cleveleys: { icon: Waves, gradient: "from-sky-500 to-brand-800" },
+  lytham: { icon: Wind, gradient: "from-brand-500 to-ink" },
+  "st-annes": { icon: Umbrella, gradient: "from-brand-400 to-brand-900" },
+  "poulton-le-fylde": { icon: TrainFront, gradient: "from-amber-700 to-ink" },
   fleetwood: { icon: Anchor, gradient: "from-ink to-brand-950" },
+  "thornton-cleveleys": { icon: Waves, gradient: "from-sky-500 to-brand-800" },
 };
 
 /**
- * Only the towns with real, licensed photography lead this section - it's
- * the homepage's shop window, not the full coverage index (that's what
- * every /destinations/[slug] page and the footer's town links are for).
- * Bispham and the "more of the coast" catch-all stay reachable there, just
- * not competing for space in a section meant to look its best.
+ * Every town FYStay covers, not a curated subset - since the 2026 local-
+ * knowledge push cut the roster down to six deliberately-chosen towns (see
+ * destinations.ts), there's no longer a "the best four" to lead with
+ * versus a long tail to hide; featuring all six is what makes the
+ * homepage's coverage claim genuinely checkable at a glance.
  */
-const FEATURED_SLUGS = ["blackpool", "lytham-st-annes", "cleveleys", "fleetwood"];
+const FEATURED_SLUGS = FYLDE_COAST_DESTINATIONS.map((d) => d.slug);
 
 export function ExploreDestinationsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-6">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
+      {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-surface-muted sm:aspect-[5/4]" />
       ))}
     </div>
@@ -100,7 +102,7 @@ export async function ExploreDestinations() {
   const featured = FYLDE_COAST_DESTINATIONS.filter((d) => FEATURED_SLUGS.includes(d.slug));
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-6">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
       {featured.map((destination) => {
         const art = DESTINATION_ART[destination.slug];
         const count = countByCity.get(destination.searchCity) ?? 0;

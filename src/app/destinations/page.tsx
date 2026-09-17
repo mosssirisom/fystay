@@ -8,20 +8,23 @@ import { cn } from "@/lib/cn";
 
 export const metadata = pageMetadata({
   title: "Destinations",
-  description: "Every Fylde Coast town FYStay covers - Blackpool, Lytham St Annes, Cleveleys, Fleetwood and Bispham.",
+  description:
+    "Every Fylde Coast town FYStay covers - Blackpool, Lytham, St Annes, Poulton-le-Fylde, Fleetwood and Thornton-Cleveleys - each with real local stays and its own Local Guide.",
   path: "/destinations",
 });
 
-/** Fallback look for a town with no bespoke icon/gradient in DESTINATION_ART yet (currently just Bispham) - a generic pin on a neutral ink gradient, rather than skipping it from this, the one page meant to list every town FYStay covers. */
+/** Fallback look for a town with no bespoke icon/gradient in DESTINATION_ART - none currently, since all six towns FYStay covers have their own, but kept so a future addition to destinations.ts fails gracefully rather than crashing this page. */
 const FALLBACK_ART = { icon: MapPin, gradient: "from-stone-500 to-ink" };
 
 export default function DestinationsIndexPage() {
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Destinations</h1>
+      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Six towns, not a search filter</h1>
       <p className="mt-2 max-w-2xl text-sm text-stone-500 sm:text-base">
-        Every Fylde Coast town FYStay covers, from Blackpool&rsquo;s promenade to Fleetwood&rsquo;s
-        fishing port - pick a town for local stays, a Local Guide and what&rsquo;s on nearby.
+        FYStay covers the Fylde Coast and nowhere else - Blackpool&rsquo;s promenade, Lytham and St
+        Annes&rsquo; two different seafronts, Poulton-le-Fylde&rsquo;s market square, Fleetwood&rsquo;s
+        fishing port and Thornton-Cleveleys&rsquo; open coast. Pick a town for real local stays and its
+        own Local Guide - not a generic city page.
       </p>
 
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">

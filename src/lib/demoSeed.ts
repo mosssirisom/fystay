@@ -176,10 +176,10 @@ export const DEMO_LISTINGS = [
     cancellationPolicy: "FLEXIBLE" as const,
   },
   {
-    title: "Elegant Victorian townhouse in Lytham St Annes",
+    title: "Elegant Victorian townhouse in Lytham",
     description:
       "A beautifully restored townhouse two streets back from Lytham Green. High ceilings, a walled garden, and a five-minute stroll to the shops and windmill.",
-    city: "Lytham St Annes",
+    city: "Lytham",
     country: "England",
     propertyType: "HOUSE" as const,
     pricePerNightCents: 14500,
@@ -213,7 +213,7 @@ export const DEMO_LISTINGS = [
     title: "Beachfront studio in Cleveleys",
     description:
       "A bright, compact studio right on Cleveleys' open seafront - wake up to the tide out the window and walk straight onto the beach. A short tram ride from Blackpool without the crowds.",
-    city: "Cleveleys",
+    city: "Thornton-Cleveleys",
     country: "England",
     propertyType: "STUDIO" as const,
     pricePerNightCents: 4200,
@@ -229,7 +229,7 @@ export const DEMO_LISTINGS = [
     title: "Clifftop garden apartment in Bispham",
     description:
       "A quiet ground-floor apartment with its own garden, set back from Bispham's clifftop gardens and coastal views. Blackpool's attractions and Cleveleys' seafront are both a short drive away.",
-    city: "Bispham",
+    city: "Blackpool",
     country: "England",
     propertyType: "APARTMENT" as const,
     pricePerNightCents: 8900,
@@ -269,10 +269,10 @@ export const DEMO_LISTINGS = [
     cancellationPolicy: "MODERATE" as const,
   },
   {
-    title: "Signature villa with private pool near Lytham St Annes",
+    title: "Signature villa with private pool near St Annes",
     description:
       "A gated four-bedroom villa moments from the town's famous golf links, built around a heated pool and private hot tub terrace. Interior-designed throughout, with a chef's kitchen and a walled garden made for evenings outside.",
-    city: "Lytham St Annes",
+    city: "St Annes",
     country: "England",
     propertyType: "VILLA" as const,
     pricePerNightCents: 39000,
@@ -328,7 +328,7 @@ export const DEMO_LISTINGS = [
     title: "Family-run B&B room in Bispham",
     description:
       "A warm, traditionally furnished double room in a small family-run B&B two streets back from Bispham's clifftop gardens. Cooked breakfast included, with the tram stop and coastal path both a short walk away.",
-    city: "Bispham",
+    city: "Blackpool",
     country: "England",
     propertyType: "HOUSE" as const,
     pricePerNightCents: 6800,
@@ -344,7 +344,7 @@ export const DEMO_LISTINGS = [
     title: "Modern one-bed flat near Cleveleys tram stop",
     description:
       "A practical, recently refitted one-bedroom flat two minutes from the Cleveleys tram stop. No sea view, but everything you need for an easy, well-connected stay along the coast.",
-    city: "Cleveleys",
+    city: "Thornton-Cleveleys",
     country: "England",
     propertyType: "APARTMENT" as const,
     pricePerNightCents: 6200,
@@ -357,10 +357,10 @@ export const DEMO_LISTINGS = [
     cancellationPolicy: "FLEXIBLE" as const,
   },
   {
-    title: "Garden cottage retreat in Lytham St Annes",
+    title: "Garden cottage retreat in Lytham",
     description:
       "A single-storey cottage built around its own private garden, tucked down a quiet lane a short walk from Lytham Green. A peaceful, low-key base rather than a seafront address - ideal for a slower coastal break.",
-    city: "Lytham St Annes",
+    city: "Lytham",
     country: "England",
     propertyType: "COTTAGE" as const,
     pricePerNightCents: 9500,
@@ -386,6 +386,38 @@ export const DEMO_LISTINGS = [
     bathrooms: 1,
     amenities: ["Wifi", "Kitchen", "Heating"],
     placeholderIcon: "waves" as const,
+    cancellationPolicy: "FLEXIBLE" as const,
+  },
+  {
+    title: "Townhouse two minutes from Poulton's market square",
+    description:
+      "A renovated townhouse two minutes' walk from the market cross and St Chad's Church. No sea view here, but the coast's best rail and bus connections are right on your doorstep - the beach is fifteen minutes away when you want it.",
+    city: "Poulton-le-Fylde",
+    country: "England",
+    propertyType: "HOUSE" as const,
+    pricePerNightCents: 9200,
+    maxGuests: 4,
+    bedrooms: 2,
+    beds: 2,
+    bathrooms: 1,
+    amenities: ["Wifi", "Kitchen", "Washer", "Free parking"],
+    placeholderIcon: "house" as const,
+    cancellationPolicy: "MODERATE" as const,
+  },
+  {
+    title: "Studio flat by Poulton-le-Fylde station",
+    description:
+      "A compact, well-priced studio two minutes from the railway station - the coast's own rail interchange. Handy for exploring Blackpool, Fleetwood and the whole Fylde Coast without needing a car.",
+    city: "Poulton-le-Fylde",
+    country: "England",
+    propertyType: "STUDIO" as const,
+    pricePerNightCents: 4600,
+    maxGuests: 2,
+    bedrooms: 1,
+    beds: 1,
+    bathrooms: 1,
+    amenities: ["Wifi", "Kitchen", "Heating"],
+    placeholderIcon: "house" as const,
     cancellationPolicy: "FLEXIBLE" as const,
   },
 ];
@@ -485,7 +517,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
         "Genuinely the best stay we've had on the Fylde Coast - the hot tub terrace at sunset looking over the sea was unreal, and everything felt hotel-grade. Worth every penny.",
     },
     {
-      title: "Signature villa with private pool near Lytham St Annes",
+      title: "Signature villa with private pool near St Annes",
       checkInDaysAgo: 8,
       nights: 4,
       guests: 6,

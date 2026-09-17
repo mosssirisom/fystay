@@ -12,7 +12,7 @@ import type { Landmark } from "./landmarks";
 
 const cities: CityAggregate[] = [
   { city: "Blackpool", country: "United Kingdom", count: 5 },
-  { city: "Lytham St Annes", country: "United Kingdom", count: 3 },
+  { city: "Lytham", country: "United Kingdom", count: 3 },
   { city: "Fleetwood", country: "United Kingdom", count: 1 },
   { city: "Orlando", country: "United States", count: 2 },
 ];
@@ -42,7 +42,7 @@ describe("rankDestinations", () => {
 
   it("matches case-insensitively and by partial substring", () => {
     const results = rankDestinations(cities, "lytham");
-    expect(results.map((r) => r.city)).toEqual(["Lytham St Annes"]);
+    expect(results.map((r) => r.city)).toEqual(["Lytham"]);
   });
 
   it("matches on country too", () => {
@@ -79,7 +79,7 @@ describe("popularDestinations", () => {
 
   it("ranks by listing count, largest first", () => {
     const results = popularDestinations(cities, { minPerSection: 2 });
-    expect(results.map((r) => r.city)).toEqual(["Blackpool", "Lytham St Annes", "Orlando"]);
+    expect(results.map((r) => r.city)).toEqual(["Blackpool", "Lytham", "Orlando"]);
   });
 });
 

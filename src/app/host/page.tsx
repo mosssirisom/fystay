@@ -15,7 +15,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const title = "List your property on the Fylde Coast";
 const description =
-  "List your Blackpool, Lytham St Annes, Fleetwood, Cleveleys or Bispham property on FYStay. Reach local guests directly, manage bookings from one dashboard, and see exactly what you earn - no unsupported promises, just how it actually works.";
+  "List your Blackpool, Lytham, St Annes, Poulton-le-Fylde, Fleetwood or Thornton-Cleveleys property on FYStay. Reach local guests directly, manage bookings from one dashboard, and see exactly what you earn - no unsupported promises, just how it actually works.";
 
 export const metadata: Metadata = {
   title,
@@ -44,7 +44,7 @@ const REASONS = [
     icon: Users,
     title: "A genuinely local customer base",
     description:
-      "Every search on FYStay is already scoped to Blackpool, Lytham St Annes, Fleetwood, Cleveleys or Bispham - you're reaching people who've chosen this coast, not hoping to be noticed inside a worldwide catalogue.",
+      "Every search on FYStay is already scoped to Blackpool, Lytham, St Annes, Poulton-le-Fylde, Fleetwood or Thornton-Cleveleys - you're reaching people who've chosen this coast, not hoping to be noticed inside a worldwide catalogue.",
   },
   {
     icon: LayoutDashboard,

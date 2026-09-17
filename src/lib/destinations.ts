@@ -7,6 +7,15 @@
  * `searchCity` is the exact `city` value used elsewhere (seed data, search
  * filtering) so a tile or landing page genuinely filters to that town's
  * listings, not a placeholder link.
+ *
+ * Lytham and St Annes get separate entries rather than one combined
+ * "Lytham St Annes" - they're two distinct towns with their own high
+ * street, station and character (see localGuide.ts), and a Local Guide
+ * written for both at once inevitably flattens into generic "the area"
+ * copy. Poulton-le-Fylde is the sixth: not a seaside town at all, but the
+ * coast's rail interchange and its market square is worth a stay in its
+ * own right - see its own Local Guide entry for why that's a real
+ * distinction FYStay makes rather than padding the list.
  */
 export type FyldeCoastDestination = {
   slug: string;
@@ -25,17 +34,25 @@ export const FYLDE_COAST_DESTINATIONS: FyldeCoastDestination[] = [
     searchCity: "Blackpool",
   },
   {
-    slug: "lytham-st-annes",
-    name: "Lytham St Annes",
+    slug: "lytham",
+    name: "Lytham",
     description:
-      "A quieter stretch of coast with a windmill green, sand dunes and a traditional pier.",
-    searchCity: "Lytham St Annes",
+      "A windmill on the green, a championship golf course nearby and a Georgian hall inland - the quieter, more grown-up end of this coast.",
+    searchCity: "Lytham",
   },
   {
-    slug: "cleveleys",
-    name: "Cleveleys",
-    description: "Open beaches and a laid-back seafront just north of Blackpool.",
-    searchCity: "Cleveleys",
+    slug: "st-annes",
+    name: "St Annes",
+    description:
+      "A Victorian pier, wide dune beaches and Ashton Gardens' formal park - St Annes' own stretch of coast, a short walk from Lytham.",
+    searchCity: "St Annes",
+  },
+  {
+    slug: "poulton-le-fylde",
+    name: "Poulton-le-Fylde",
+    description:
+      "The coast's inland market town and rail gateway - a working market square, not a seafront, but the best-connected base on the Fylde.",
+    searchCity: "Poulton-le-Fylde",
   },
   {
     slug: "fleetwood",
@@ -45,9 +62,10 @@ export const FYLDE_COAST_DESTINATIONS: FyldeCoastDestination[] = [
     searchCity: "Fleetwood",
   },
   {
-    slug: "bispham",
-    name: "Bispham",
-    description: "Clifftop gardens and coastal views between Blackpool and Cleveleys.",
-    searchCity: "Bispham",
+    slug: "thornton-cleveleys",
+    name: "Thornton-Cleveleys",
+    description:
+      "Cleveleys' open, redesigned seafront and Thornton's 18th-century windmill village a short walk inland - two halves of one town.",
+    searchCity: "Thornton-Cleveleys",
   },
 ];

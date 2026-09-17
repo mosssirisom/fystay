@@ -17,9 +17,9 @@ export type Landmark = {
   name: string;
   category: LandmarkCategory;
   /** The real town this landmark is in, matching the exact city string
-   * listings are stored under (e.g. "Lytham St Annes") - lets a landmark
-   * search scope straight to that town's listings, not just the whole
-   * coast, the same way picking that town by name already does. */
+   * listings are stored under (e.g. "Lytham") - lets a landmark search
+   * scope straight to that town's listings, not just the whole coast, the
+   * same way picking that town by name already does. */
   town: string;
   latitude: number;
   longitude: number;
@@ -37,21 +37,45 @@ export const LANDMARKS: Landmark[] = [
   { name: "North Pier", category: "attraction", town: "Blackpool", ...PLACE_COORDINATES["North Pier"] },
   { name: "Blackpool North", category: "station", town: "Blackpool", ...PLACE_COORDINATES["Blackpool North"] },
 
-  // Lytham St Annes
+  // Lytham
   {
     name: "Lytham Windmill",
     category: "attraction",
-    town: "Lytham St Annes",
+    town: "Lytham",
     ...PLACE_COORDINATES["Lytham Windmill"],
   },
-  { name: "St Annes Pier", category: "attraction", town: "Lytham St Annes", ...PLACE_COORDINATES["St Annes Pier"] },
-  { name: "Fairhaven Lake", category: "attraction", town: "Lytham St Annes", ...PLACE_COORDINATES["Fairhaven Lake"] },
-  { name: "Lytham", category: "station", town: "Lytham St Annes", ...PLACE_COORDINATES.Lytham },
+  { name: "Lytham Hall", category: "attraction", town: "Lytham", ...PLACE_COORDINATES["Lytham Hall"] },
+  { name: "Lytham", category: "station", town: "Lytham", ...PLACE_COORDINATES.Lytham },
+
+  // St Annes
+  { name: "St Annes Pier", category: "attraction", town: "St Annes", ...PLACE_COORDINATES["St Annes Pier"] },
+  { name: "Fairhaven Lake", category: "attraction", town: "St Annes", ...PLACE_COORDINATES["Fairhaven Lake"] },
+  { name: "Ashton Gardens", category: "attraction", town: "St Annes", ...PLACE_COORDINATES["Ashton Gardens"] },
   {
     name: "Ansdell & Fairhaven",
     category: "station",
-    town: "Lytham St Annes",
+    town: "St Annes",
     ...PLACE_COORDINATES["Ansdell & Fairhaven"],
+  },
+
+  // Poulton-le-Fylde
+  {
+    name: "St Chad's Church, Poulton",
+    category: "attraction",
+    town: "Poulton-le-Fylde",
+    ...PLACE_COORDINATES["St Chad's Church Poulton"],
+  },
+  {
+    name: "Teanlowe Centre",
+    category: "attraction",
+    town: "Poulton-le-Fylde",
+    ...PLACE_COORDINATES["Teanlowe Centre"],
+  },
+  {
+    name: "Poulton-le-Fylde railway station",
+    category: "station",
+    town: "Poulton-le-Fylde",
+    ...PLACE_COORDINATES["Poulton-le-Fylde"],
   },
 
   // Fleetwood
@@ -62,31 +86,21 @@ export const LANDMARKS: Landmark[] = [
     ...PLACE_COORDINATES["Fleetwood Pharos Lighthouse"],
   },
   { name: "Fleetwood Ferry", category: "attraction", town: "Fleetwood", ...PLACE_COORDINATES["Fleetwood Ferry"] },
-  // Fleetwood's own passenger line closed decades ago - Poulton-le-Fylde
-  // is genuinely the nearest working station, not a stand-in for one.
-  {
-    name: "Poulton-le-Fylde",
-    category: "station",
-    town: "Fleetwood",
-    ...PLACE_COORDINATES["Poulton-le-Fylde"],
-  },
 
-  // Cleveleys
+  // Thornton-Cleveleys
   {
     name: "Rossall Point Tower",
     category: "attraction",
-    town: "Cleveleys",
+    town: "Thornton-Cleveleys",
     ...PLACE_COORDINATES["Rossall Point Tower"],
   },
-  { name: "Anchorsholme Park", category: "attraction", town: "Cleveleys", ...PLACE_COORDINATES["Anchorsholme Park"] },
-
-  // Bispham
   {
-    name: "Bispham Tramway Stop",
+    name: "Anchorsholme Park",
     category: "attraction",
-    town: "Bispham",
-    ...PLACE_COORDINATES["Bispham Tramway Stop"],
+    town: "Thornton-Cleveleys",
+    ...PLACE_COORDINATES["Anchorsholme Park"],
   },
+  { name: "Marsh Mill", category: "attraction", town: "Thornton-Cleveleys", ...PLACE_COORDINATES["Marsh Mill"] },
 ];
 
 /** Case-insensitive exact lookup by name - the id a landmark search

@@ -29,30 +29,35 @@ export const PLACE_COORDINATES: Record<string, { latitude: number; longitude: nu
   "Stanley Park Blackpool": { latitude: 53.8087, longitude: -3.0225 },
   "Comedy Carpet": { latitude: 53.8146, longitude: -3.0558 },
 
-  // Lytham St Annes
+  // Lytham
   "Lytham Windmill": { latitude: 53.7423, longitude: -2.9611 },
+  Lytham: { latitude: 53.7423, longitude: -2.9583 },
+  "Lowther Pavilion": { latitude: 53.7443, longitude: -2.9633 },
+  "Lytham Hall": { latitude: 53.7565, longitude: -2.9505 },
+
+  // St Annes
   "St Annes Pier": { latitude: 53.7529, longitude: -3.0335 },
   "Fairhaven Lake": { latitude: 53.7469, longitude: -3.0035 },
-  Lytham: { latitude: 53.7423, longitude: -2.9583 },
   "Ansdell & Fairhaven": { latitude: 53.7457, longitude: -2.9814 },
-  "Lowther Pavilion": { latitude: 53.7443, longitude: -2.9633 },
   "Ashton Gardens": { latitude: 53.7508, longitude: -3.0289 },
   "Royal Lytham & St Annes Golf Club": { latitude: 53.7398, longitude: -3.0074 },
+
+  // Poulton-le-Fylde
+  "Poulton-le-Fylde": { latitude: 53.8483, longitude: -2.9883 },
+  "St Chad's Church Poulton": { latitude: 53.848, longitude: -2.9877 },
+  "Teanlowe Centre": { latitude: 53.8481, longitude: -2.9899 },
+  "Wyre Estuary Country Park": { latitude: 53.8804, longitude: -2.9646 },
 
   // Fleetwood
   "Fleetwood Pharos Lighthouse": { latitude: 53.9256, longitude: -3.0113 },
   "Fleetwood Ferry": { latitude: 53.9268, longitude: -3.0068 },
-  "Poulton-le-Fylde": { latitude: 53.8483, longitude: -2.9883 },
   "Fleetwood Museum": { latitude: 53.9236, longitude: -3.0084 },
   "Marine Hall": { latitude: 53.9203, longitude: -3.0097 },
   "Fleetwood Market": { latitude: 53.9224, longitude: -3.0117 },
 
-  // Cleveleys
+  // Thornton-Cleveleys
   "Rossall Point Tower": { latitude: 53.9021, longitude: -3.0247 },
   "Anchorsholme Park": { latitude: 53.8654, longitude: -3.0472 },
   "Jubilee Gardens Cleveleys": { latitude: 53.8767, longitude: -3.0507 },
-
-  // Bispham
-  "Bispham Tramway Stop": { latitude: 53.8459, longitude: -3.0453 },
-  "St Andrew's Church Bispham": { latitude: 53.8453, longitude: -3.0417 },
+  "Marsh Mill": { latitude: 53.8679, longitude: -2.9975 },
 };

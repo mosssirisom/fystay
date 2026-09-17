@@ -11,9 +11,8 @@ import { cn } from "@/lib/cn";
  * or star rating in any one category.
  *
  * Seaside Escape (amenities=sea_view) was dropped: too few listings tag a
- * sea view yet for the filter to feel worth a whole tile - matches the
- * same "only show what's actually worth showing" call as the Explore
- * section above dropping Bispham/"more of the coast".
+ * sea view yet for the filter to feel worth a whole tile - the same "only
+ * show what's actually worth showing" call this section has always made.
  */
 const TRIP_TYPES: { name: string; description: string; icon: LucideIcon; href: string }[] = [
   {

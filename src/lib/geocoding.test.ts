@@ -20,14 +20,14 @@ describe("geocodeListing", () => {
   });
 
   it("is deterministic - the same id and city always jitters to the same point", () => {
-    const first = geocodeListing({ id: "listing-42", city: "Cleveleys" });
-    const second = geocodeListing({ id: "listing-42", city: "Cleveleys" });
+    const first = geocodeListing({ id: "listing-42", city: "Thornton-Cleveleys" });
+    const second = geocodeListing({ id: "listing-42", city: "Thornton-Cleveleys" });
     expect(first).toEqual(second);
   });
 
   it("jitters different listings in the same town to different points", () => {
-    const a = geocodeListing({ id: "listing-a", city: "Bispham" });
-    const b = geocodeListing({ id: "listing-b", city: "Bispham" });
+    const a = geocodeListing({ id: "listing-a", city: "St Annes" });
+    const b = geocodeListing({ id: "listing-b", city: "St Annes" });
     expect(a).not.toEqual(b);
   });
 });
@@ -35,7 +35,7 @@ describe("geocodeListing", () => {
 describe("fyldeCoastCenter", () => {
   it("returns a point roughly in the middle of FYStay's coverage area", () => {
     const center = fyldeCoastCenter();
-    // All five towns sit within this rough box - a loose bound, just to
+    // All six towns sit within this rough box - a loose bound, just to
     // catch a badly broken average rather than pin an exact value.
     expect(center.latitude).toBeGreaterThan(53.7);
     expect(center.latitude).toBeLessThan(53.95);

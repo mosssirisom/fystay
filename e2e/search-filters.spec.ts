@@ -55,7 +55,7 @@ test("Blackpool + under £150 + parking genuinely narrows results to matching li
   });
   const cheapWrongCity = await fixtureListing({
     title: "E2E fixture: cheap Lytham flat with parking",
-    city: "Lytham St Annes",
+    city: "Lytham",
     pricePerNightCents: 6000,
     amenities: ["Wifi", "Free parking"],
   });
@@ -123,7 +123,7 @@ test("minimum rating filter excludes listings with no qualifying reviews", async
   await expect(
     page.getByText("Seafront apartment overlooking Blackpool promenade"),
   ).toBeVisible();
-  await expect(page.getByText("Elegant Victorian townhouse in Lytham St Annes")).toHaveCount(0);
+  await expect(page.getByText("Elegant Victorian townhouse in Lytham")).toHaveCount(0);
   await expect(page.getByText("Cosy cottage near Fleetwood Marina")).toHaveCount(0);
 });
 
@@ -147,11 +147,11 @@ test("sorting by price low to high genuinely reorders results", async ({ page })
   await assertPriceOrder("/search?sort=price_asc", [
     "Cosy cottage near Fleetwood Marina",
     "Seafront apartment overlooking Blackpool promenade",
-    "Elegant Victorian townhouse in Lytham St Annes",
+    "Elegant Victorian townhouse in Lytham",
   ]);
 
   await assertPriceOrder("/search?sort=price_desc", [
-    "Elegant Victorian townhouse in Lytham St Annes",
+    "Elegant Victorian townhouse in Lytham",
     "Seafront apartment overlooking Blackpool promenade",
     "Cosy cottage near Fleetwood Marina",
   ]);

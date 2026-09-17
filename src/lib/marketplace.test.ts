@@ -48,7 +48,7 @@ describe("groupByCity", () => {
     const listings = [
       listing({ id: "1", city: "Blackpool" }),
       listing({ id: "2", city: "Fleetwood" }),
-      listing({ id: "3", city: "Lytham St Annes" }),
+      listing({ id: "3", city: "Lytham" }),
     ];
 
     expect(groupByCity(listings)).toEqual([]);

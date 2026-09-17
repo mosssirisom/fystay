@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Home as HomeIcon, Lock, MapPin, MessageCircle, Star, Users } from "lucide-react";
+import { Compass, Home as HomeIcon, Lock, MapPin, MessageCircle, Star, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
@@ -30,10 +30,16 @@ const TRUST_POINTS = [
       "Every stay is listed and managed by an individual host based on the Fylde Coast - never a resold listing or an absent management company.",
   },
   {
+    icon: Compass,
+    title: "A real Local Guide with every stay",
+    description:
+      "Live weather, where locals actually eat, hidden gems and what's on nearby - a genuine concierge brief on the town itself, not four sentences the host wrote once and forgot about.",
+  },
+  {
     icon: MapPin,
     title: "Genuinely local properties",
     description:
-      "Apartments, cottages and guest houses across Blackpool, Lytham St Annes, Fleetwood, Cleveleys and Bispham - real places on this coast, not imported inventory.",
+      "Apartments, cottages and guest houses across Blackpool, Lytham, St Annes, Poulton-le-Fylde, Fleetwood and Thornton-Cleveleys - real places on this coast, not imported inventory.",
   },
   {
     icon: MessageCircle,
@@ -345,7 +351,7 @@ export default async function Home() {
             render at each breakpoint.
 
             Deliberately plainer here than the pill/icon treatment above:
-            five bordered, icon-carrying badges in a row read as a
+            six bordered, icon-carrying badges in a row read as a
             directory footer next to the search bar's own restraint - an
             inline index line (name, name, name) reads as an editorial
             "we cover these towns" note instead. */}
@@ -432,7 +438,8 @@ export default async function Home() {
         <Reveal className="mt-14">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Explore the Fylde Coast</h2>
           <p className="mt-1 text-sm text-stone-500">
-            Every FYStay town, one tap away from its own local stays.
+            Six towns we actually know - each with real local stays and its own Local Guide, not a
+            search filter with a photo on it.
           </p>
           <div className="mt-6">
             <Suspense fallback={<ExploreDestinationsSkeleton />}>

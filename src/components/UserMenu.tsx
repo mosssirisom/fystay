@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { signOutAction } from "@/actions/auth";
 import { cn } from "@/lib/cn";
 import { useNavTone } from "@/components/NavTone";
+import { PRIMARY_NAV_LINKS } from "@/lib/primaryNav";
 
 type Props = {
   name: string;
@@ -76,7 +77,7 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
         ref={menuRef}
         id="user-menu-panel"
         className={cn(
-          "absolute right-0 z-20 mt-2 w-56 origin-top-right rounded-xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)]",
+          "absolute right-0 z-20 mt-2 max-h-[70vh] w-56 origin-top-right overflow-y-auto rounded-xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)]",
           "transition-all duration-150",
           open
             ? "scale-100 opacity-100"
@@ -88,6 +89,23 @@ export function UserMenu({ name, role, unreadMessageCount = 0 }: Props) {
           <Badge variant="brand" className="mt-1">
             {role === "HOST" ? "Host" : "Guest"}
           </Badge>
+        </div>
+
+        {/* Stays/Destinations/About - lg:hidden because DesktopNavLinks
+            already renders these in the navbar itself from lg: up. Below
+            lg, this was this site's *only* route to Destinations for a
+            signed-in guest too - nothing else on a phone links to it. */}
+        <div className="border-b border-border-subtle py-1 lg:hidden">
+          {PRIMARY_NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setOpen(false)}
+              className="block rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-surface-muted"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         <div className="flex flex-col py-1">

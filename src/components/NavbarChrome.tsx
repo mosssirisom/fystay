@@ -24,20 +24,31 @@ export function NavbarChrome({ children }: { children: React.ReactNode }) {
         className={cn(
           "sticky top-0 z-30 border-b border-border-subtle bg-surface/90 backdrop-blur",
           // On the homepage this drops out of "sticky, opaque, its own
-          // height" into "static, transparent, a fixed height with a
-          // matching negative margin pulled onto the hero section right
-          // after it" (see that section's -mt-[75px]/lg:-mt-[74px] in
-          // page.tsx) - a negative-margin overlap rather than
-          // position:absolute, so this still renders in normal document
-          // flow right after whatever the cookie consent banner (a
-          // sibling, in-flow block above this) currently occupies, instead
-          // of pinning to the literal top of the page and overlapping the
-          // banner when it's showing. Applies at every breakpoint, not
-          // just lg: - the header's own rendered height is ~74-75px
-          // everywhere (measured directly), so the same trick works
-          // whether the mobile icon-only layout or the desktop
+          // height" into "relative (not static - see below), transparent,
+          // a fixed height with a matching negative margin pulled onto the
+          // hero section right after it" (see that section's
+          // -mt-[75px]/lg:-mt-[74px] in page.tsx) - a negative-margin
+          // overlap rather than position:absolute, so this still renders in
+          // normal document flow right after whatever the cookie consent
+          // banner (a sibling, in-flow block above this) currently
+          // occupies, instead of pinning to the literal top of the page and
+          // overlapping the banner when it's showing. Applies at every
+          // breakpoint, not just lg: - the header's own rendered height is
+          // ~74-75px everywhere (measured directly), so the same trick
+          // works whether the mobile icon-only layout or the desktop
           // logo/links/menu layout is what's actually rendering inside.
-          isHome && "static z-40 border-none bg-transparent shadow-none backdrop-blur-none",
+          //
+          // relative, not static: z-index has no effect on a statically
+          // positioned element, so a plain "static z-50" here is silently
+          // a no-op - the account-menu dropdown (UserMenu/GuestMenu, opened
+          // from inside this header) would then stack by DOM-order z:auto
+          // against the hero's own absolutely-positioned, explicitly
+          // z-indexed layers (the z-40 search bar wrapper, z-30 "now
+          // covering" pills), which paint over it. "relative" with no
+          // offset keeps the exact same in-flow box as "static" but lets
+          // z-50 genuinely apply, so the open dropdown always wins against
+          // every hero layer (max z-40) without changing layout.
+          isHome && "relative z-50 border-none bg-transparent shadow-none backdrop-blur-none",
         )}
       >
         {children}

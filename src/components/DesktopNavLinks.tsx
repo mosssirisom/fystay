@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { useNavTone } from "@/components/NavTone";
-
-const LINKS = [
-  { href: "/search", label: "Stays" },
-  { href: "/destinations", label: "Destinations" },
-  { href: "/about", label: "About" },
-];
+import { PRIMARY_NAV_LINKS } from "@/lib/primaryNav";
 
 /**
  * Desktop-only (lg:) nav links, hidden below that breakpoint where the
@@ -22,7 +17,7 @@ export function DesktopNavLinks() {
 
   return (
     <nav className="relative z-10 hidden items-center gap-7 text-sm font-medium lg:flex">
-      {LINKS.map((link) => (
+      {PRIMARY_NAV_LINKS.map((link) => (
         <Link
           key={link.href}
           href={link.href}

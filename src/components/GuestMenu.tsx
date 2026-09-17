@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CircleUserRound, Home, Menu } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { PRIMARY_NAV_LINKS } from "@/lib/primaryNav";
 
 /**
  * A single trigger that opens a dropdown with Log in / Sign up, replacing
@@ -73,7 +74,26 @@ export function GuestMenu() {
           className="h-1 w-full bg-gradient-to-r from-brand-600 via-brand-400 to-accent-400"
           aria-hidden
         />
-        <div className="p-1.5">
+        <div className="max-h-[70vh] overflow-y-auto p-1.5">
+          {/* Stays/Destinations/About - lg:hidden because DesktopNavLinks
+              already renders these in the navbar itself from lg: up.
+              Below lg, this was this site's *only* route to Destinations -
+              nothing else on a phone links to it at all, not even the
+              footer - so a mobile visitor genuinely could not reach that
+              page before this existed. */}
+          <div className="lg:hidden">
+            {PRIMARY_NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-stone-700 hover:bg-brand-50"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="my-1 border-t border-border-subtle" />
+          </div>
           <Link
             href="/register"
             onClick={() => setOpen(false)}

@@ -26,10 +26,39 @@ export default async function BookingConfirmationPage({
     notFound();
   }
 
+  // Same eligibility as tripExtraPurchaseError: only worth querying once
+  // the stay is actually confirmed, and only the one AIRPORT_TRANSFER
+  // offering - this nudge names one thing, not a whole "Complete your
+  // trip" catalogue (that's what the booking detail page's TripExtrasCard
+  // is for).
+  const isConfirmed = booking.status === "CONFIRMED" || booking.status === "COMPLETED";
+  const airportTransferOffering = isConfirmed
+    ? await prisma.extraOffering.findFirst({
+        where: { category: "AIRPORT_TRANSFER", active: true, provider: { active: true } },
+        include: { provider: { select: { name: true } } },
+        orderBy: { createdAt: "asc" },
+      })
+    : null;
+  const alreadyAddedTransfer = airportTransferOffering
+    ? await prisma.bookingExtra.findFirst({
+        where: { bookingId: booking.id, offeringId: airportTransferOffering.id, status: "PAID" },
+        select: { id: true },
+      })
+    : null;
+
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-8">
       <BookingConfirmation
         bookingId={booking.id}
+        airportTransfer={
+          airportTransferOffering && !alreadyAddedTransfer
+            ? {
+                offeringId: airportTransferOffering.id,
+                providerName: airportTransferOffering.provider.name,
+                priceCents: airportTransferOffering.priceCents,
+              }
+            : null
+        }
         initialStatus={booking.status}
         initialPaymentStatus={booking.paymentStatus}
         reference={booking.reference}

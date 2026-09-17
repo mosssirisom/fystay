@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import { BookingSummaryCard } from "@/components/BookingSummaryCard";
 import { BookingSuccessMilestones } from "@/components/BookingSuccessMilestones";
+import { AirportTransferNudge } from "@/components/AirportTransferNudge";
 import { ConfettiBurst } from "@/components/ConfettiBurst";
 import { SuccessCheckmark } from "@/components/SuccessCheckmark";
 import { buttonVariants } from "@/components/ui/Button";
@@ -30,6 +31,7 @@ type PaymentStatus = "UNPAID" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
 
 export function BookingConfirmation({
   bookingId,
+  airportTransfer,
   initialStatus,
   initialPaymentStatus,
   reference,
@@ -52,6 +54,7 @@ export function BookingConfirmation({
   guestPhone,
 }: {
   bookingId: string;
+  airportTransfer: { offeringId: string; providerName: string; priceCents: number } | null;
   initialStatus: BookingStatus;
   initialPaymentStatus: PaymentStatus;
   reference: string;
@@ -215,6 +218,15 @@ export function BookingConfirmation({
           paymentStatus={paymentStatus}
         />
       </div>
+
+      {isConfirmed && airportTransfer && (
+        <AirportTransferNudge
+          bookingId={bookingId}
+          offeringId={airportTransfer.offeringId}
+          providerName={airportTransfer.providerName}
+          priceCents={airportTransfer.priceCents}
+        />
+      )}
 
       <div className="mt-6 flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
         <Link href="/bookings" className={cn(buttonVariants(), "w-full sm:w-auto")}>

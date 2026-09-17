@@ -15,7 +15,6 @@ import {
   ExploreDestinationsSkeleton,
 } from "@/components/ExploreDestinations";
 import { TripTypeCategories } from "@/components/TripTypeCategories";
-import { AirportTransferPromo } from "@/components/AirportTransferPromo";
 import { Reveal } from "@/components/Reveal";
 import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
@@ -412,10 +411,6 @@ export default async function Home() {
             </Suspense>
           </div>
         </div>
-
-        <Suspense fallback={null}>
-          <AirportTransferPromo />
-        </Suspense>
 
         <div className="mt-14">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Find your perfect stay</h2>

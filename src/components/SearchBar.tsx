@@ -188,7 +188,9 @@ export function SearchBar({
         // considered, tighter curve reads as a deliberate design rather
         // than a borrowed one, without changing anything about the bar's
         // actual layout or fields.
-        "mx-auto flex w-full flex-col gap-1 rounded-2xl border shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0",
+        // relative: the search-in-progress sweep below is absolutely
+        // positioned against this form, not any one field inside it.
+        "relative mx-auto flex w-full flex-col gap-1 rounded-2xl border shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0",
         isHero
           ? // Frosted glass rather than the solid card below: this is the
             // one instance of SearchBar that floats directly over the hero
@@ -228,14 +230,43 @@ export function SearchBar({
             // radius included: a fixed rounded-2xl rather than flattening
             // into a full pill at lg:, matching the default variant's own
             // move away from that shape above.
-            "w-full gap-0.5 rounded-2xl border-white/15 bg-ink/40 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
+            //
+            // gap-1/p-1.5 below sm: (not gap-0.5/p-1, which this used to
+            // carry at every breakpoint) - the hero fields' own touch
+            // targets get more breathing room on mobile below (see their
+            // triggerClassName props), and this bar's own outer spacing
+            // needed to grow slightly along with them rather than leaving
+            // the extra padding looking cramped against a tighter card.
+            // sm:/lg: revert to the original tighter values, since desktop
+            // hero is mouse-driven and was already comfortable.
+            "w-full gap-1 rounded-2xl border-white/15 bg-ink/40 p-1.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:gap-0.5 sm:p-1 lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
+      {/* Ambient "search in progress" sweep - the same soft brand/accent
+          shimmer already used for the results-page loading state (see
+          globals.css's .search-sweep), reused here rather than inventing a
+          second loading language, so pressing Search feels like the start
+          of that same motion instead of a jump-cut into it. Its own
+          overflow-hidden (not the form's) clips it to the bar's shape
+          without touching the form itself - the date/guest popovers below
+          are positioned relative to their own field, and clipping *this*
+          element only never affects them. pointer-events-none/aria-hidden:
+          purely decorative, and the button's own spinner + "Searching…"
+          text (below) remain the actual accessible status. z-0, with the
+          real content given z-10 just below - so the shimmer plays behind
+          the fields' own text/icons rather than smearing across them,
+          reading as a glow under the glass rather than a wipe over it. */}
+      {isSearching && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
+          <div className="search-sweep opacity-70" />
+        </div>
+      )}
+
       <div
         className={cn(
-          "flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle",
-          isHero && "divide-white/15",
+          "relative z-10 flex flex-1 flex-col divide-y divide-border-subtle sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-border-subtle",
+          isHero && "divide-white/10",
         )}
       >
         <DestinationAutocomplete
@@ -258,7 +289,7 @@ export function SearchBar({
             }
           }}
           className="sm:flex-[1.15]"
-          triggerClassName={isHero ? "px-2 py-1" : undefined}
+          triggerClassName={isHero ? "px-3 py-2.5 sm:px-2 sm:py-1" : undefined}
           variant={isHero ? "hero" : "default"}
         />
 
@@ -273,7 +304,7 @@ export function SearchBar({
           range={range}
           onChange={setRange}
           className="sm:flex-[1.6]"
-          triggerClassName={isHero ? "px-2 py-1" : undefined}
+          triggerClassName={isHero ? "px-3 py-2.5 sm:px-2 sm:py-1" : undefined}
           variant={isHero ? "hero" : "default"}
         />
 
@@ -293,7 +324,7 @@ export function SearchBar({
           triggerClassName={cn(
             "[&>svg]:text-brand-600",
             isHero && "[&>svg]:text-accent-400",
-            isHero ? "px-2 py-1" : "px-3 py-2.5 sm:py-1.5",
+            isHero ? "px-3 py-2.5 sm:px-2 sm:py-1" : "px-3 py-2.5 sm:py-1.5",
           )}
           variant={isHero ? "hero" : "default"}
         />
@@ -311,7 +342,9 @@ export function SearchBar({
           // search bar" silhouette. lg: below is the one legitimate
           // exception: once this collapses into a small square icon-only
           // button, it should actually be circular, not a rounded square.
-          "focus-ring flex w-full items-center justify-center gap-2 rounded-xl font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
+          // relative z-10: stays above the search-in-progress sweep above,
+          // same reason as the field row.
+          "relative z-10 flex w-full items-center justify-center gap-2 rounded-xl font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0 focus-ring",
           isHero
             ? // At lg: this collapses from the pill-with-label below into a
               // circular icon-only button (the mockup's arrow button) - the

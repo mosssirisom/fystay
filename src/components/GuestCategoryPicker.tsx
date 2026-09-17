@@ -128,7 +128,7 @@ export function GuestCategoryPicker({
           <span
             className={cn(
               "block text-[11px] font-semibold text-foreground",
-              variant === "hero" && "text-white",
+              variant === "hero" && "text-accent-400/90 uppercase tracking-wide",
             )}
           >
             Guests

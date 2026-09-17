@@ -96,7 +96,9 @@ export function SearchDateRangeField({
           <span
             className={cn(
               "block text-[11px] font-semibold text-foreground",
-              variant === "hero" && "text-white",
+              // Same small-caps champagne-gold treatment as the Where
+              // field's own label - see its comment.
+              variant === "hero" && "text-accent-400/90 uppercase tracking-wide",
             )}
           >
             Check-in
@@ -113,7 +115,7 @@ export function SearchDateRangeField({
         </span>
       </button>
 
-      <div className={cn("my-2 w-px shrink-0 bg-border-subtle", variant === "hero" && "bg-white/25")} aria-hidden />
+      <div className={cn("my-2 w-px shrink-0 bg-border-subtle", variant === "hero" && "bg-white/15")} aria-hidden />
 
       <button
         type="button"
@@ -130,7 +132,7 @@ export function SearchDateRangeField({
           <span
             className={cn(
               "block text-[11px] font-semibold text-foreground",
-              variant === "hero" && "text-white",
+              variant === "hero" && "text-accent-400/90 uppercase tracking-wide",
             )}
           >
             Check-out

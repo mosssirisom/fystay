@@ -255,7 +255,13 @@ export function DestinationAutocomplete({
           <span
             className={cn(
               "block text-[11px] font-semibold text-foreground",
-              variant === "hero" && "text-white",
+              // Uppercase + tracked-out champagne-gold in hero, matching
+              // the "NOW COVERING" label and this field's own icon just
+              // above/left (already accent-400 in hero) - one small-caps
+              // accent voice for every label floating over the video,
+              // rather than this field alone reading as a plain white
+              // form control dropped on top of it.
+              variant === "hero" && "text-accent-400/90 uppercase tracking-wide",
             )}
           >
             Where

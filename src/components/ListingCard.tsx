@@ -127,8 +127,11 @@ export function ListingCard({
     // to devices with a real hover-capable pointer). transition-transform
     // is separate from the image's own transition so the two don't fight
     // over timing.
-    <div className="group flex flex-col gap-3 transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1 active:scale-[0.98]">
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-brand-50 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)] group-hover:ring-brand-200">
+    <div className="group flex flex-col gap-3.5 transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1 active:scale-[0.98]">
+      {/* aspect-[5/4] (not the old 4/3) - a touch taller and closer to
+          square, the crop a considered property brochure uses rather
+          than a wide filmstrip thumbnail. */}
+      <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl bg-brand-50 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-shadow duration-300 group-hover:shadow-[var(--shadow-card-hover)] group-hover:ring-brand-200">
         <Link
           href={`/listings/${listing.id}`}
           className="focus-ring absolute inset-0 block rounded-2xl"
@@ -206,13 +209,13 @@ export function ListingCard({
           className="absolute right-2.5 top-2.5 z-10 h-10 w-10 bg-white/80 shadow-[var(--shadow-card)] backdrop-blur-sm hover:bg-white active:scale-90"
         />
       </div>
-      <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-1.5 rounded-xl">
+      <Link href={`/listings/${listing.id}`} className="focus-ring flex flex-col gap-2 rounded-xl">
         {/* min-h keeps this row the same height whether the title wraps to
             one line or two, so price/rating rows still line up across a
             row of cards regardless of title length. */}
         <p
           data-testid="listing-card-title"
-          className="line-clamp-2 min-h-[2.5rem] text-[15px] font-semibold leading-snug text-foreground transition-colors duration-200 group-hover:text-brand-800"
+          className="line-clamp-2 min-h-[2.75rem] text-base font-semibold leading-snug tracking-tight text-foreground transition-colors duration-200 group-hover:text-brand-800"
         >
           {listing.title}
         </p>
@@ -230,7 +233,7 @@ export function ListingCard({
           {listing.bedrooms} bedroom{listing.bedrooms === 1 ? "" : "s"}
         </p>
         {keyAmenities.length > 0 && (
-          <ul className="flex items-center gap-2.5">
+          <ul className="flex items-center gap-3">
             {keyAmenities.map((category) => (
               <li key={category.key} className="flex items-center gap-1 text-xs text-stone-500">
                 <category.icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -239,17 +242,36 @@ export function ListingCard({
             ))}
           </ul>
         )}
-        <div className="mt-1 flex items-end justify-between gap-2">
-          <p className="flex flex-wrap items-baseline gap-x-1">
-            <span className="text-base font-bold text-brand-800">{formattedNightlyPrice}</span>
-            <span className="text-xs text-stone-500">/ night</span>
+        {/* items-start (not items-end, this used to be a single price
+            line) - the rating/New chip now aligns with the top of the
+            price block, which reads correctly whether or not the second
+            "total" line below it is present. */}
+        <div className="mt-2.5 flex items-start justify-between gap-2">
+          <div className="flex flex-col gap-0.5">
+            {/* The nightly rate in the site's own display serif, the same
+                face every page heading uses (see globals.css) - a
+                deliberate "rate card" numeral instead of the bold sans
+                figure Airbnb/Booking both use, so the price reads as this
+                platform's own voice rather than a copy of theirs. No
+                font-weight utility here on purpose: DM Serif Display only
+                ships one real weight, and combining it with a bold/
+                semibold class would make the browser fake one (the same
+                synthetic-bold issue globals.css's h1/h2 rule exists to
+                prevent - this element isn't an h1/h2, so nothing catches
+                that mistake for it automatically). */}
+            <p className="flex items-baseline gap-1">
+              <span className="font-serif text-xl tabular-nums text-brand-800">
+                {formattedNightlyPrice}
+              </span>
+              <span className="text-xs text-stone-500">/ night</span>
+            </p>
             {totalPriceCents !== null && (
-              <span className="text-xs text-stone-500">· {formattedTotal} total</span>
+              <span className="text-xs text-stone-500">{formattedTotal} total</span>
             )}
-          </p>
+          </div>
           {rating !== null ? (
-            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-stone-600">
-              <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" />
+            <span className="flex shrink-0 items-center gap-1 rounded-full border border-border-subtle bg-surface px-2 py-1 text-xs font-medium text-stone-700">
+              <Star className="h-3.5 w-3.5 fill-accent-500 text-accent-500" aria-hidden />
               {rating.toFixed(1)}
               {reviewCount > 0 && <span className="text-stone-500">({reviewCount})</span>}
             </span>
@@ -258,8 +280,11 @@ export function ListingCard({
             // or missing data next to cards that do have a rating in the
             // same grid - and every listing starts with zero reviews, so
             // this isn't a rare case. "New" reframes it as a fact about
-            // the listing instead of an absence.
-            <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+            // the listing instead of an absence. Bordered, like the rating
+            // chip above, so the two states share one visual weight in a
+            // mixed grid - filled rather than outlined so it still reads
+            // as a small status flag, not just another data chip.
+            <span className="shrink-0 rounded-full border border-brand-200 bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700">
               New
             </span>
           )}

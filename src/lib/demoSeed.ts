@@ -43,10 +43,16 @@ function hashCode(input: string): number {
 
 // Line-art glyphs (24x24 viewBox, same stroke language as the lucide icons
 // used everywhere else in the app) standing in for a property's photos.
-// "house" reuses the brand mark itself for city apartments/lofts.
+// "house" reuses the brand mark itself for city apartments/lofts. The
+// first four are each listing's own "exterior" signature (picked per
+// listing below); the last four are generic room glyphs used to give a
+// listing's later photos their own subject instead of repeating the
+// exterior glyph on every tile - see ROOM_SEQUENCE and iconForPhotoIndex.
 type PlaceholderIcon = "house" | "lighthouse" | "waves" | "star";
+type RoomIcon = "sofa" | "bed" | "bath" | "window";
+type IconKey = PlaceholderIcon | RoomIcon;
 
-const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
+const ICON_PATHS: Record<IconKey, string[]> = {
   house: [
     "M3 11.5L12 4l9 7.5",
     "M5.5 10v9a1 1 0 0 0 1 1H17.5a1 1 0 0 0 1-1v-9",
@@ -66,34 +72,90 @@ const ICON_PATHS: Record<PlaceholderIcon, string[]> = {
   star: [
     "M12 3l2.6 5.8 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 20l1.4-6.3-4.8-4.3 6.4-.6z",
   ],
+  sofa: [
+    "M4 17v-4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4",
+    "M2 17h20",
+    "M4 17v2",
+    "M20 17v2",
+    "M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3",
+  ],
+  bed: [
+    "M4 19v-8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8",
+    "M2 19h20",
+    "M4 19v2",
+    "M20 19v2",
+    "M4 13h16",
+    "M7 13V9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4",
+  ],
+  bath: [
+    "M3 12v4a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4v-4",
+    "M3 12h18",
+    "M6 12V8a2 2 0 0 1 2-2h1",
+    "M9 20v1",
+    "M15 20v1",
+  ],
+  window: ["M4 4h16v16H4Z", "M4 12h16", "M12 4v16"],
 };
 
-function iconMarkup(icon: PlaceholderIcon): string {
-  const size = 320; // rendered icon box, in canvas pixels
-  const scale = size / 24;
-  const tx = 600 - size / 2;
-  const ty = 450 - size / 2;
-  const paths = ICON_PATHS[icon]
-    .map((d) => `<path d="${d}" />`)
-    .join("");
-  return `<g transform="translate(${tx} ${ty}) scale(${scale})" fill="none" stroke="white" stroke-opacity="0.28" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${paths}</g>`;
+// A listing's own exterior glyph (its placeholderIcon below) always opens
+// the carousel; every photo after that cycles through these room glyphs
+// instead of repeating the exterior on every tile, so a listing's four
+// photos read as a short room tour rather than four re-tinted duplicates
+// of the same icon.
+const ROOM_SEQUENCE: RoomIcon[] = ["sofa", "bed", "bath", "window"];
+
+function iconForPhotoIndex(exterior: PlaceholderIcon, index: number): IconKey {
+  return index === 0 ? exterior : ROOM_SEQUENCE[(index - 1) % ROOM_SEQUENCE.length];
 }
 
-function placeholderPhoto(seedText: string, index: number, icon: PlaceholderIcon): string {
+function iconMarkup(icon: IconKey, size: number, marginRight: number, marginBottom: number): string {
+  const scale = size / 24;
+  const tx = 1200 - marginRight - size;
+  const ty = 900 - marginBottom - size;
+  const paths = ICON_PATHS[icon].map((d) => `<path d="${d}" />`).join("");
+  return `<g transform="translate(${tx} ${ty}) scale(${scale})" fill="none" stroke="white" stroke-opacity="0.3" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${paths}</g>`;
+}
+
+// A believable coastal-light composition - a darker "sky" tone settling
+// into the palette's warmer tone toward the bottom, the same top-dark/
+// bottom-warm read as the homepage hero video's own scrim - rather than
+// the flat corner-to-corner swatch this used to be. A soft radial vignette
+// and a faint grain layer (a standard feTurbulence trick: the noise
+// primitive generates its own pixels regardless of the rect's own fill,
+// so its alpha channel becomes a subtle procedural texture) keep a large
+// flat gradient from reading as an obviously-vector fill up close. The
+// room glyph moves from a giant centered icon to a small, low-opacity
+// corner mark - a watermark cue for "this is a placeholder", not the
+// dominant thing in the frame.
+function placeholderPhoto(seedText: string, index: number, exteriorIcon: PlaceholderIcon): string {
   const [from, to] = PALETTES[(hashCode(seedText) + index) % PALETTES.length];
-  const angle = index % 2 === 0 ? "x1='0' y1='0' x2='1' y2='1'" : "x1='1' y1='0' x2='0' y2='1'";
+  const icon = iconForPhotoIndex(exteriorIcon, index);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">
-    <defs><linearGradient id="g" ${angle}>
-      <stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/>
-    </linearGradient></defs>
-    <rect width="100%" height="100%" fill="url(#g)"/>
-    ${iconMarkup(icon)}
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${to}"/>
+        <stop offset="0.55" stop-color="${from}"/>
+        <stop offset="1" stop-color="${from}" stop-opacity="0.88"/>
+      </linearGradient>
+      <radialGradient id="vignette" cx="0.5" cy="0.45" r="0.75">
+        <stop offset="0.6" stop-color="#000" stop-opacity="0"/>
+        <stop offset="1" stop-color="#000" stop-opacity="0.22"/>
+      </radialGradient>
+      <filter id="grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise"/>
+        <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0"/>
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#sky)"/>
+    <rect width="100%" height="100%" filter="url(#grain)"/>
+    <rect width="100%" height="100%" fill="url(#vignette)"/>
+    ${iconMarkup(icon, 108, 56, 56)}
   </svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-function placeholderPhotos(seedText: string, count: number, icon: PlaceholderIcon): string[] {
-  return Array.from({ length: count }, (_, i) => placeholderPhoto(seedText, i, icon));
+function placeholderPhotos(seedText: string, count: number, exteriorIcon: PlaceholderIcon): string[] {
+  return Array.from({ length: count }, (_, i) => placeholderPhoto(seedText, i, exteriorIcon));
 }
 
 export const DEMO_LISTINGS = [
@@ -261,6 +323,70 @@ export const DEMO_LISTINGS = [
     ],
     placeholderIcon: "star" as const,
     cancellationPolicy: "MODERATE" as const,
+  },
+  {
+    title: "Family-run B&B room in Bispham",
+    description:
+      "A warm, traditionally furnished double room in a small family-run B&B two streets back from Bispham's clifftop gardens. Cooked breakfast included, with the tram stop and coastal path both a short walk away.",
+    city: "Bispham",
+    country: "England",
+    propertyType: "HOUSE" as const,
+    pricePerNightCents: 6800,
+    maxGuests: 2,
+    bedrooms: 1,
+    beds: 1,
+    bathrooms: 1,
+    amenities: ["Wifi", "Free parking", "Heating", "TV"],
+    placeholderIcon: "house" as const,
+    cancellationPolicy: "MODERATE" as const,
+  },
+  {
+    title: "Modern one-bed flat near Cleveleys tram stop",
+    description:
+      "A practical, recently refitted one-bedroom flat two minutes from the Cleveleys tram stop. No sea view, but everything you need for an easy, well-connected stay along the coast.",
+    city: "Cleveleys",
+    country: "England",
+    propertyType: "APARTMENT" as const,
+    pricePerNightCents: 6200,
+    maxGuests: 3,
+    bedrooms: 1,
+    beds: 2,
+    bathrooms: 1,
+    amenities: ["Wifi", "Kitchen", "Washer", "Heating"],
+    placeholderIcon: "house" as const,
+    cancellationPolicy: "FLEXIBLE" as const,
+  },
+  {
+    title: "Garden cottage retreat in Lytham St Annes",
+    description:
+      "A single-storey cottage built around its own private garden, tucked down a quiet lane a short walk from Lytham Green. A peaceful, low-key base rather than a seafront address - ideal for a slower coastal break.",
+    city: "Lytham St Annes",
+    country: "England",
+    propertyType: "COTTAGE" as const,
+    pricePerNightCents: 9500,
+    maxGuests: 4,
+    bedrooms: 2,
+    beds: 2,
+    bathrooms: 1,
+    amenities: ["Wifi", "Kitchen", "Garden", "Free parking", "Pet friendly"],
+    placeholderIcon: "lighthouse" as const,
+    cancellationPolicy: "MODERATE" as const,
+  },
+  {
+    title: "Compact harbourside studio in Fleetwood",
+    description:
+      "A snug, well-priced studio overlooking Fleetwood's working harbour rather than the marina's newer apartments - a quieter, more local side of the town, five minutes from the Knott End ferry.",
+    city: "Fleetwood",
+    country: "England",
+    propertyType: "STUDIO" as const,
+    pricePerNightCents: 4800,
+    maxGuests: 2,
+    bedrooms: 1,
+    beds: 1,
+    bathrooms: 1,
+    amenities: ["Wifi", "Kitchen", "Heating"],
+    placeholderIcon: "waves" as const,
+    cancellationPolicy: "FLEXIBLE" as const,
   },
 ];
 

@@ -32,7 +32,7 @@ export function TodayInTown({
   if (!weather && recommended.length === 0) return null;
 
   return (
-    <section className="mt-10 overflow-hidden rounded-3xl border border-brand-100 bg-gradient-to-br from-brand-900 to-brand-950 text-white">
+    <section className="mt-10 overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-900 to-brand-950 text-white">
       <div className="p-6 sm:p-8">
         <div className="flex items-center gap-2 text-brand-200">
           <Sparkles className="h-4 w-4" aria-hidden />

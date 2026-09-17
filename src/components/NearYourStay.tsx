@@ -36,7 +36,7 @@ export function NearYourStay({
 }) {
   if (!fromListing) {
     return (
-      <section className="mt-10 rounded-3xl border border-dashed border-border-subtle bg-surface-muted p-6">
+      <section className="mt-10 rounded-2xl border border-dashed border-border-subtle bg-surface-muted p-6">
         <SectionHeading icon={MapPinned}>Near Your Stay</SectionHeading>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
           Come back here from one of our {destinationName} listings and this section shows real walking and

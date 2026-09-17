@@ -35,7 +35,7 @@ export default function DestinationsIndexPage() {
               key={destination.slug}
               href={`/destinations/${destination.slug}`}
               className={cn(
-                "focus-ring group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-3xl bg-gradient-to-br p-5 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card-hover)] active:scale-[0.98]",
+                "focus-ring group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-2xl bg-gradient-to-br p-5 shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card-hover)] active:scale-[0.98]",
                 art.gradient,
               )}
             >

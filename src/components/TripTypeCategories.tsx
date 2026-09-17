@@ -50,7 +50,7 @@ export function TripTypeCategories() {
           key={name}
           href={href}
           className={cn(
-            "focus-ring group flex flex-col items-start gap-3 rounded-3xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-[var(--shadow-card-hover)] active:scale-[0.98] active:border-brand-200 sm:p-6",
+            "focus-ring group flex flex-col items-start gap-3 rounded-2xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-[var(--shadow-card-hover)] active:scale-[0.98] active:border-brand-200 sm:p-6",
           )}
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100 sm:h-14 sm:w-14">

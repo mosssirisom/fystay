@@ -39,7 +39,7 @@ export function LocalKnowledge({
         actually turn up, and where to go instead of the obvious choice in {destinationName}.
       </p>
 
-      <ul className="mt-5 divide-y divide-border-subtle rounded-3xl border border-border-subtle bg-surface px-6 sm:px-8">
+      <ul className="mt-5 divide-y divide-border-subtle rounded-2xl border border-border-subtle bg-surface px-6 sm:px-8">
         {LOCAL_KNOWLEDGE_CATEGORIES.map(({ key, label, icon: Icon }) => {
           const entry = knowledge[key];
           const location = locateEntry(fromListing, entry.place);

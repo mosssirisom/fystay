@@ -22,7 +22,15 @@ export function SectionHeading({
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
         <Icon className="h-4 w-4" aria-hidden />
       </span>
-      <span className="text-lg font-semibold text-foreground">{children}</span>
+      {/* No font-semibold here - globals.css forces every h1/h2 to DM
+          Serif Display's one real weight (400) specifically so the
+          browser never fakes a bold face for it, but that override only
+          reaches this h2's own computed style. A font-semibold class on
+          this span would set its own 600 right back, which the browser
+          then has no real 600 glyphs for and synthesizes (the "chunky,
+          uneven" look that override exists to prevent) - so this just
+          inherits the h2's true weight like every other heading does. */}
+      <span className="text-lg text-foreground">{children}</span>
     </h2>
   );
 }

@@ -174,12 +174,21 @@ export function SearchBar({
       onSubmit={handleSubmit}
       className={cn(
         // The outer shape carries most of the "premium" weight here: a
-        // generous rounded card that flattens into a full pill once there's
-        // room (sm+), a soft resting shadow that lifts on hover, and a
-        // brand-teal focus ring when any field inside is focused - so the
-        // whole bar reads as one cohesive, interactive surface rather than
-        // four unrelated inputs sitting next to each other.
-        "mx-auto flex w-full flex-col gap-1 rounded-[28px] border shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0 sm:rounded-full",
+        // generous rounded card, a soft resting shadow that lifts on
+        // hover, and a brand-teal focus ring when any field inside is
+        // focused - so the whole bar reads as one cohesive, interactive
+        // surface rather than four unrelated inputs sitting next to each
+        // other. rounded-2xl - the same large-card radius Card.tsx and
+        // every other big surface on the site now share - rather than a
+        // stadium/full pill once there's room (this used to flatten into
+        // one at sm+, and at this bar's actual single-row height a radius
+        // as large as 28px is close enough to half that height to still
+        // read as one anyway): a full pill is the single most recognizable
+        // "Airbnb search bar" silhouette, and this platform's own
+        // considered, tighter curve reads as a deliberate design rather
+        // than a borrowed one, without changing anything about the bar's
+        // actual layout or fields.
+        "mx-auto flex w-full flex-col gap-1 rounded-2xl border shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-popover)] focus-within:shadow-[var(--shadow-popover)] focus-within:ring-2 focus-within:ring-brand-600/25 sm:flex-row sm:items-stretch sm:gap-0",
         isHero
           ? // Frosted glass rather than the solid card below: this is the
             // one instance of SearchBar that floats directly over the hero
@@ -215,8 +224,11 @@ export function SearchBar({
             // this still reads as part of this site's warm palette instead
             // of a generic dark-UI slab. lg: only deepens the same tint
             // toward fully solid - one continuous treatment across
-            // breakpoints, not two different personalities.
-            "w-full gap-0.5 rounded-2xl border-white/15 bg-ink/40 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:rounded-full lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
+            // breakpoints, not two different personalities - the corner
+            // radius included: a fixed rounded-2xl rather than flattening
+            // into a full pill at lg:, matching the default variant's own
+            // move away from that shape above.
+            "w-full gap-0.5 rounded-2xl border-white/15 bg-ink/40 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:max-w-4xl sm:p-1 lg:border-white/10 lg:bg-ink/80 lg:p-1.5 lg:shadow-[0_16px_36px_-18px_rgba(48,26,19,0.55)]"
           : "max-w-4xl border-border-subtle bg-surface p-2 sm:p-2",
       )}
     >
@@ -293,7 +305,13 @@ export function SearchBar({
         aria-busy={isSearching}
         aria-label={isHero ? (isSearching ? "Searching…" : "Search") : undefined}
         className={cn(
-          "focus-ring flex w-full items-center justify-center gap-2 rounded-full font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
+          // rounded-xl (the same radius every other button on the site
+          // uses, see ui/Button.tsx), not rounded-full - a wide pill-
+          // shaped submit button is its own small piece of the "Airbnb
+          // search bar" silhouette. lg: below is the one legitimate
+          // exception: once this collapses into a small square icon-only
+          // button, it should actually be circular, not a rounded square.
+          "focus-ring flex w-full items-center justify-center gap-2 rounded-xl font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-800 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-90 disabled:active:scale-100 sm:w-auto sm:shrink-0",
           isHero
             ? // At lg: this collapses from the pill-with-label below into a
               // circular icon-only button (the mockup's arrow button) - the
@@ -304,7 +322,7 @@ export function SearchBar({
               // one-off amber picked to match a reference screenshot -
               // brand-500 is this design system's own version of that
               // exact terracotta.
-              "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1 lg:aspect-square lg:h-11 lg:w-11 lg:shrink-0 lg:bg-brand-500 lg:px-0 lg:py-0 lg:hover:bg-brand-600"
+              "bg-brand-700/90 px-4 py-1 text-xs sm:ml-1 sm:py-1 lg:aspect-square lg:h-11 lg:w-11 lg:shrink-0 lg:rounded-full lg:bg-brand-500 lg:px-0 lg:py-0 lg:hover:bg-brand-600"
             : "mt-1 bg-brand-700 px-6 py-3.5 text-sm sm:ml-1 sm:mt-0 sm:py-3",
         )}
       >

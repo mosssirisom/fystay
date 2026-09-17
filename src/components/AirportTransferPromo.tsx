@@ -26,7 +26,7 @@ export async function AirportTransferPromo() {
   if (!offering) return null;
 
   return (
-    <div className="mt-14 overflow-hidden rounded-3xl bg-gradient-to-br from-ink via-brand-900 to-brand-700 shadow-[var(--shadow-popover)]">
+    <div className="mt-14 overflow-hidden rounded-2xl bg-gradient-to-br from-ink via-brand-900 to-brand-700 shadow-[var(--shadow-popover)]">
       <div className="flex flex-col items-center gap-6 px-6 py-10 text-center sm:flex-row sm:justify-between sm:px-10 sm:text-left">
         <div className="flex items-start gap-4">
           <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white sm:flex">

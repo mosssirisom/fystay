@@ -1,7 +1,17 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Compass, Home as HomeIcon, Lock, MapPin, MessageCircle, Star, Users } from "lucide-react";
+import {
+  Compass,
+  Home as HomeIcon,
+  Lock,
+  MapPin,
+  MessageCircle,
+  RotateCcw,
+  Star,
+  Users,
+  Zap,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { SearchBar } from "@/components/SearchBar";
@@ -18,10 +28,24 @@ import { TripTypeCategories } from "@/components/TripTypeCategories";
 import { TravelAddonsSection } from "@/components/TravelAddonsSection";
 import { Reveal } from "@/components/Reveal";
 import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
-import { getActiveOfferingByCategory } from "@/lib/travelAddons";
+import { getActiveOfferingByCategory, travelAddonHref } from "@/lib/travelAddons";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/seo";
 import { cn } from "@/lib/cn";
+
+// A condensed, single-line read of four facts already true site-wide
+// (Listing.instantBook defaults to true, Stripe checkout, every listing is
+// a real Fylde Coast host, cancellation policies exist on every listing) -
+// the value-proposition strip Jet2/Virgin Atlantic lead their own
+// homepages with, right under the hero rather than buried in the full
+// "Why FYStay?" section further down (see TRUST_POINTS below, which this
+// doesn't replace - that section keeps its own full descriptions).
+const TRUST_STRIP = [
+  { icon: Zap, label: "Instant Book on most stays" },
+  { icon: Lock, label: "Secure Stripe checkout" },
+  { icon: Users, label: "Local Fylde Coast hosts" },
+  { icon: RotateCcw, label: "Free cancellation available" },
+];
 
 const TRUST_POINTS = [
   {
@@ -274,6 +298,34 @@ export default async function Home() {
               this row allows, rather than only ever rendering as wide as
               its fields' own natural size. */}
           <div className="pointer-events-auto w-full max-w-4xl lg:max-w-none">
+            {/* A tab row above the search panel - the "Stays / Airport
+                transfer" split several holiday-booking sites (Jet2, Virgin
+                Atlantic) lead with on their own homepages, rather than a
+                single undifferentiated search box. "Stays" is this bar
+                itself (already selected - there's nothing else to search
+                yet); "Airport transfer" is a plain link into the real
+                EV Exec cross-sell flow already built (see
+                src/lib/travelAddons.ts), not a second search form - there's
+                only one thing to configure for that add-on today. Same
+                dark-glass tokens as the search panel below (bg-ink/*,
+                border-white/*) so the two read as one attached unit rather
+                than a different visual language bolted on top. */}
+            {airportTransferOffering && (
+              <div className="mb-2 flex justify-center gap-1.5 lg:justify-start">
+                <span
+                  aria-current="true"
+                  className="rounded-full border border-white/15 bg-ink/40 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-xl lg:border-white/10 lg:bg-ink/80"
+                >
+                  Stays
+                </span>
+                <Link
+                  href={travelAddonHref(airportTransferOffering.category)}
+                  className="focus-ring rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-medium text-white/70 backdrop-blur-xl transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Airport transfer
+                </Link>
+              </div>
+            )}
             <Suspense>
               <SearchBar liveUpdate={false} variant="hero" />
             </Suspense>
@@ -404,6 +456,15 @@ export default async function Home() {
           below is the only top spacing this section needs. */}
       <div className="relative z-50 -mt-5 rounded-t-[28px] bg-background pt-px sm:-mt-6 sm:rounded-t-[36px] lg:-mt-3">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-b border-border-subtle pb-6 text-sm text-stone-600 sm:justify-start">
+          {TRUST_STRIP.map(({ icon: Icon, label }) => (
+            <span key={label} className="flex items-center gap-1.5">
+              <Icon className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+              {label}
+            </span>
+          ))}
+        </div>
+
         <div className="mt-10">
           <h2 className="text-xl font-bold text-foreground sm:text-2xl">Hand-picked stays</h2>
           <p className="mt-1 text-sm text-stone-500">

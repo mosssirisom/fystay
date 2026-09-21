@@ -74,6 +74,19 @@ export function ListingCard({
     category.test(listing.amenities),
   ).slice(0, MAX_AMENITY_ICONS);
 
+  // A deal-style ribbon (the "SALE"/"% OFF" tag airline sites lead their
+  // own deal tiles with) for a listing that actually has a real length-of-
+  // stay discount configured - never fabricated, just a more visible read
+  // of a real Listing.weeklyDiscountPercent/monthlyDiscountPercent value
+  // that otherwise only surfaces once a guest has picked dates long enough
+  // to trigger it (see computeBookingPricing). Monthly takes priority when
+  // both are set - it's the larger saving a host is offering.
+  const dealLabel = listing.monthlyDiscountPercent
+    ? `${listing.monthlyDiscountPercent}% off monthly`
+    : listing.weeklyDiscountPercent
+      ? `${listing.weeklyDiscountPercent}% off weekly`
+      : null;
+
   const photoCount = listing.photos.length;
   const [photoIndex, setPhotoIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -200,6 +213,12 @@ export function ListingCard({
               ))}
             </div>
           </>
+        )}
+
+        {dealLabel && (
+          <span className="absolute left-2.5 top-2.5 z-10 rounded-full bg-accent-500 px-2.5 py-1 text-xs font-semibold text-white shadow-[var(--shadow-card)]">
+            {dealLabel}
+          </span>
         )}
 
         <SaveButton

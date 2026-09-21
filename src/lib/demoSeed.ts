@@ -190,6 +190,7 @@ export const DEMO_LISTINGS = [
     amenities: ["Wifi", "Kitchen", "Garden", "Washer", "Free parking"],
     placeholderIcon: "house" as const,
     cancellationPolicy: "STRICT" as const,
+    monthlyDiscountPercent: 20,
   },
   {
     title: "Cosy cottage near Fleetwood Marina",
@@ -203,6 +204,7 @@ export const DEMO_LISTINGS = [
     bedrooms: 1,
     beds: 2,
     bathrooms: 1,
+    weeklyDiscountPercent: 15,
     amenities: ["Wifi", "Kitchen", "Washer", "Pet friendly"],
     placeholderIcon: "lighthouse" as const,
     cancellationPolicy: "CUSTOM" as const,
@@ -371,6 +373,7 @@ export const DEMO_LISTINGS = [
     amenities: ["Wifi", "Kitchen", "Garden", "Free parking", "Pet friendly"],
     placeholderIcon: "lighthouse" as const,
     cancellationPolicy: "MODERATE" as const,
+    weeklyDiscountPercent: 10,
   },
   {
     title: "Compact harbourside studio in Fleetwood",

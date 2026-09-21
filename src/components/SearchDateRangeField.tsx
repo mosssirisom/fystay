@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useAnchoredPortalPosition } from "@/lib/useAnchoredPortalPosition";
 
 export function SearchDateRangeField({
   range,
@@ -30,10 +32,19 @@ export function SearchDateRangeField({
   const [draftRange, setDraftRange] = useState(range);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const position = useAnchoredPortalPosition(containerRef, open);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // The panel is portaled to document.body, so it's no longer a DOM
+      // descendant of containerRef - it needs its own check here too.
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     }
@@ -149,33 +160,38 @@ export function SearchDateRangeField({
         </span>
       </button>
 
-      {open && (
-        <div
-          id="date-range-panel"
-          role="dialog"
-          aria-label="Choose check-in and check-out dates"
-          className="animate-dropdown-in absolute left-1/2 top-full z-[60] mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
-        >
-          <DayPicker
-            mode="range"
-            min={1}
-            selected={draftRange}
-            onSelect={setDraftRange}
-            disabled={{ before: new Date() }}
-            numberOfMonths={1}
-            startMonth={new Date()}
-          />
-          <div className="flex justify-end border-t border-border-subtle pt-2">
-            <button
-              type="button"
-              onClick={confirm}
-              className="focus-ring rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
+      {open &&
+        position &&
+        createPortal(
+          <div
+            ref={panelRef}
+            id="date-range-panel"
+            role="dialog"
+            aria-label="Choose check-in and check-out dates"
+            style={{ top: position.top + 8, left: position.left + position.width / 2 }}
+            className="animate-dropdown-in absolute z-[60] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
+          >
+            <DayPicker
+              mode="range"
+              min={1}
+              selected={draftRange}
+              onSelect={setDraftRange}
+              disabled={{ before: new Date() }}
+              numberOfMonths={1}
+              startMonth={new Date()}
+            />
+            <div className="flex justify-end border-t border-border-subtle pt-2">
+              <button
+                type="button"
+                onClick={confirm}
+                className="focus-ring rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
+              >
+                Done
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

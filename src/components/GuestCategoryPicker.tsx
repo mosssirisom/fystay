@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Minus, Plus, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { summarizeGuests, type GuestCounts } from "@/lib/search";
+import { useAnchoredPortalPosition } from "@/lib/useAnchoredPortalPosition";
 
 const ROWS: {
   key: keyof GuestCounts;
@@ -50,6 +52,8 @@ export function GuestCategoryPicker({
   // instead of calling onChange, so nothing is confirmed until Done.
   const [draft, setDraft] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const position = useAnchoredPortalPosition(containerRef, open);
 
   // Only while open, and only in requireDoneToConfirm mode: closing without
   // pressing Done (clicking outside, Escape) must fall back to the last
@@ -66,7 +70,14 @@ export function GuestCategoryPicker({
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // The panel is portaled to document.body, so it's no longer a DOM
+      // descendant of containerRef - it needs its own check here too.
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     }
@@ -143,11 +154,15 @@ export function GuestCategoryPicker({
         </span>
       </button>
 
-      {open && (
-        <div
-          id="guest-picker-panel"
-          className="absolute left-0 top-full z-[60] mt-2 w-72 rounded-2xl border border-border-subtle bg-surface p-4 shadow-[var(--shadow-popover)]"
-        >
+      {open &&
+        position &&
+        createPortal(
+          <div
+            ref={panelRef}
+            id="guest-picker-panel"
+            style={{ top: position.top + 8, left: position.left }}
+            className="absolute z-[60] w-72 rounded-2xl border border-border-subtle bg-surface p-4 shadow-[var(--shadow-popover)]"
+          >
           <div className="flex flex-col divide-y divide-border-subtle">
             {rows.map((row) => {
               const rowMax = maxFor(row.key, row.max);
@@ -211,8 +226,9 @@ export function GuestCategoryPicker({
               </button>
             </div>
           )}
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

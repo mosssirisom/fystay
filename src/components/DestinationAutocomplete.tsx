@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Building2, History, Landmark, Loader2, MapPin, SearchX, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { DestinationSuggestion, HotelSuggestion, LandmarkSuggestion } from "@/lib/searchSuggestions";
+import { useAnchoredPortalPosition } from "@/lib/useAnchoredPortalPosition";
 
 // Deliberately shorter than the search-results debounce (350ms): suggestions
 // are a lightweight local query and should feel closer to instant as-you-type
@@ -76,13 +78,22 @@ export function DestinationAutocomplete({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestIdRef = useRef(0);
+  const position = useAnchoredPortalPosition(containerRef, open);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // The panel is portaled to document.body, so it's no longer a DOM
+      // descendant of containerRef - it needs its own check here too.
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     }
@@ -299,12 +310,17 @@ export function DestinationAutocomplete({
         </span>
       </label>
 
-      {open && !hasNothingToShow && (
+      {open &&
+        !hasNothingToShow &&
+        position &&
+        createPortal(
         <div
+          ref={panelRef}
           id={`${id}-listbox`}
           role="listbox"
           aria-label="Destination and hotel suggestions"
-          className="animate-dropdown-in absolute left-0 top-full z-[60] mt-2 max-h-[70vh] w-full min-w-[280px] overflow-y-auto rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)] sm:w-96"
+          style={{ top: position.top + 8, left: position.left, width: position.width }}
+          className="animate-dropdown-in absolute z-[60] max-h-[70vh] min-w-[280px] overflow-y-auto rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)]"
         >
           {loading && (
             <div className="flex items-center gap-2 px-3 py-3 text-sm text-stone-500">
@@ -439,7 +455,8 @@ export function DestinationAutocomplete({
               })}
             </ul>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

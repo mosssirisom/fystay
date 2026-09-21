@@ -3,7 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff } from "lucide-react";
+import { Check, ImageOff } from "lucide-react";
+import { trackAddonEvent } from "@/lib/analytics";
+import { useViewOnce } from "@/hooks/useViewOnce";
+import { travelAddonHref } from "@/lib/travelAddons";
 import { formatPrice } from "@/lib/format";
 import { canReviewBooking } from "@/lib/reviews";
 import { canCancelBooking, canRequestBookingChange } from "@/lib/changeRequests";
@@ -79,9 +82,13 @@ export type BookingCardBooking = {
 export function BookingCard({
   booking,
   latestChangeRequest,
+  hasAirportTransfer,
+  airportTransferProviderName,
 }: {
   booking: BookingCardBooking;
   latestChangeRequest: BookingCardChangeRequest | undefined;
+  hasAirportTransfer: boolean;
+  airportTransferProviderName: string | null;
 }) {
   // Optimistic overrides: reflect a guest action instantly, before the
   // background request (and the eventual router.refresh()) confirms it.
@@ -111,6 +118,31 @@ export function BookingCard({
   // links were "View details" and (once available) "Cancel" - no way back
   // to checkout for a reservation that's simply sitting unpaid.
   const needsPayment = status === "PENDING" && effectiveBooking.approvalStatus !== "AWAITING";
+
+  // "Your journey" (item 5 of the cross-sell brief in
+  // docs/trip-extras-roadmap.md) only makes sense once the stay itself is
+  // actually going ahead - the same CONFIRMED/COMPLETED gate
+  // tripExtraPurchaseError applies to buying a transfer at all - and only
+  // when there's a real, active offering to point the CTA at.
+  const showJourney =
+    airportTransferProviderName !== null && (status === "CONFIRMED" || status === "COMPLETED");
+  const journeyViewRef = useViewOnce<HTMLDivElement>(() => {
+    trackAddonEvent({
+      name: "transfer_offer_viewed",
+      category: "AIRPORT_TRANSFER",
+      surface: "account",
+      bookingId: booking.id,
+    });
+  });
+
+  function handleBookTransferClick() {
+    trackAddonEvent({
+      name: "transfer_offer_clicked",
+      category: "AIRPORT_TRANSFER",
+      surface: "account",
+      bookingId: booking.id,
+    });
+  }
 
   return (
     <Card className="flex flex-col gap-3 p-4">
@@ -184,6 +216,42 @@ export function BookingCard({
           onWithdrawn={() => setChangeRequestWithdrawn(true)}
           onWithdrawFailed={() => setChangeRequestWithdrawn(false)}
         />
+      )}
+
+      {showJourney && (
+        <div ref={journeyViewRef} className="rounded-xl border border-border-subtle p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+            Your journey
+          </p>
+          <div className="mt-2 flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm text-stone-700">
+              <Check className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
+              Stay
+            </div>
+            {hasAirportTransfer ? (
+              <div className="flex items-center gap-2 text-sm text-stone-700">
+                <Check className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
+                Airport transfer
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 rounded-lg bg-surface-muted p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Airport transfer not booked</p>
+                  <p className="text-xs text-stone-500">
+                    Need a ride from the airport? Arrange your {airportTransferProviderName} transfer.
+                  </p>
+                </div>
+                <Link
+                  href={travelAddonHref("AIRPORT_TRANSFER")}
+                  onClick={handleBookTransferClick}
+                  className="focus-ring shrink-0 self-start rounded-lg border border-border-subtle px-3 py-1.5 text-sm font-medium text-foreground hover:bg-surface sm:self-auto"
+                >
+                  Book {airportTransferProviderName} transfer
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle pt-3">

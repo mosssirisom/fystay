@@ -6,8 +6,14 @@ import {
   REVIEW_REQUEST_DELAY_DAYS,
   needsArrivalReminder,
   needsReviewRequest,
+  needsTransferUpsellEmail,
 } from "@/lib/bookingLifecycleEmails";
-import { sendArrivalReminderEmail, sendReviewRequestEmail } from "@/lib/notificationEmails";
+import {
+  sendArrivalReminderEmail,
+  sendReviewRequestEmail,
+  sendTransferUpsellEmail,
+} from "@/lib/notificationEmails";
+import { getActiveOfferingByCategory } from "@/lib/travelAddons";
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
@@ -138,7 +144,70 @@ async function getHandler(request: Request) {
     }
   }
 
-  return NextResponse.json({ ranAt: now.toISOString(), arrivalRemindersSent, reviewRequestsSent });
+  let transferUpsellEmailsSent = 0;
+  const transferOffering = await getActiveOfferingByCategory("AIRPORT_TRANSFER");
+  if (transferOffering) {
+    const transferCandidates = await prisma.booking.findMany({
+      where: { status: "CONFIRMED", paymentStatus: "PAID", transferUpsellEmailSentAt: null },
+      include: { listing: { include: { host: true } } },
+    });
+
+    const bookingIdsWithTransfer = new Set(
+      (
+        await prisma.bookingExtra.findMany({
+          where: {
+            bookingId: { in: transferCandidates.map((b) => b.id) },
+            offeringId: transferOffering.id,
+            status: "PAID",
+          },
+          select: { bookingId: true },
+        })
+      ).map((extra) => extra.bookingId),
+    );
+
+    for (const booking of transferCandidates) {
+      const hasAirportTransfer = bookingIdsWithTransfer.has(booking.id);
+      if (!needsTransferUpsellEmail(booking, hasAirportTransfer, now)) continue;
+      try {
+        await sendTransferUpsellEmail(
+          {
+            reference: booking.reference,
+            listingTitle: booking.listing.title,
+            city: booking.listing.city,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            nights: booking.nights,
+            guests: booking.guests,
+            totalPriceCents: booking.totalPriceCents,
+            guestName: booking.guestName,
+            guestEmail: booking.guestEmail,
+            hostName: booking.listing.host.name,
+            hostEmail: booking.listing.host.email,
+            bookingUrl: `${baseUrl}/bookings/${booking.id}`,
+          },
+          {
+            providerName: transferOffering.providerName,
+            priceCents: transferOffering.priceCents,
+            transferUrl: `${baseUrl}/bookings/${booking.id}#trip-extras`,
+          },
+        );
+        await prisma.booking.update({
+          where: { id: booking.id },
+          data: { transferUpsellEmailSentAt: now },
+        });
+        transferUpsellEmailsSent += 1;
+      } catch (error) {
+        console.error(`transfer upsell email failed for booking ${booking.id}:`, error);
+      }
+    }
+  }
+
+  return NextResponse.json({
+    ranAt: now.toISOString(),
+    arrivalRemindersSent,
+    reviewRequestsSent,
+    transferUpsellEmailsSent,
+  });
 }
 
 export const GET = withApiErrorHandling(getHandler);

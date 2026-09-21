@@ -323,6 +323,39 @@ export async function sendReviewRequestEmail(ctx: BookingEmailContext, reviewUrl
 }
 
 /**
+ * The post-booking upsell email (item 6 of the cross-sell brief in
+ * docs/trip-extras-roadmap.md) - sent once per booking (see
+ * needsTransferUpsellEmail in src/lib/bookingLifecycleEmails.ts) to a guest
+ * who hasn't already added an airport transfer. `providerName`/
+ * `offeringPriceCents` are passed in rather than hardcoded so this stays
+ * correct if EV Exec's own name or price ever changes, and generic enough
+ * to describe whichever provider is actually active for this category.
+ */
+export async function sendTransferUpsellEmail(
+  ctx: BookingEmailContext,
+  transfer: { providerName: string; priceCents: number; transferUrl: string },
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend || !ctx.guestEmail) return;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ctx.guestEmail,
+    subject: "One less thing to arrange",
+    html: `
+      <p>Hi ${ctx.guestName ?? "there"},</p>
+      <p>Your stay at <strong>${ctx.listingTitle}</strong> is booked. If you're flying in, why not
+      arrange your airport transfer at the same time?</p>
+      <p>${transfer.providerName} provides premium Tesla transfers directly to your accommodation,
+      from ${formatPrice(transfer.priceCents)}.</p>
+      <p>${stayLine(ctx)}<br>
+      Booking reference: ${ctx.reference}</p>
+      <p><a href="${transfer.transferUrl}">Arrange my transfer</a></p>
+    `,
+  });
+}
+
+/**
  * Sent to the guest once a host has resolved an AUTHORIZED deposit hold -
  * either released (nothing claimed) or captured (a real charge for
  * something the host says went wrong, so the guest gets the reason, not

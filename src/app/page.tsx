@@ -15,8 +15,10 @@ import {
   ExploreDestinationsSkeleton,
 } from "@/components/ExploreDestinations";
 import { TripTypeCategories } from "@/components/TripTypeCategories";
+import { TravelAddonsSection } from "@/components/TravelAddonsSection";
 import { Reveal } from "@/components/Reveal";
 import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
+import { getActiveOfferingByCategory } from "@/lib/travelAddons";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/seo";
 import { cn } from "@/lib/cn";
@@ -124,6 +126,8 @@ async function MarketplaceSections() {
 }
 
 export default async function Home() {
+  const airportTransferOffering = await getActiveOfferingByCategory("AIRPORT_TRANSFER");
+
   // WebSite + SearchAction tells Google this site has an internal search it
   // can offer directly in results (a "sitelinks search box"), targeting the
   // real /search?city= URL the homepage's own search bar already uses -
@@ -442,6 +446,19 @@ export default async function Home() {
             </Suspense>
           </div>
         </Reveal>
+
+        {/* A single, quiet travel add-on cross-sell (see item 1 of
+            docs/trip-extras-roadmap.md's cross-sell brief) - one compact
+            card, not another hero banner, so accommodation stays the
+            obvious point of this page. Renders nothing if there's no
+            active offering for this category (same "don't show a promise
+            with nothing behind it" rule every other conditional section
+            on this page already follows). */}
+        {airportTransferOffering && (
+          <Reveal className="mt-14">
+            <TravelAddonsSection offering={airportTransferOffering} />
+          </Reveal>
+        )}
 
         <Reveal className="mt-14 border-t border-border-subtle pt-10">
           <div className="mx-auto max-w-2xl text-center">

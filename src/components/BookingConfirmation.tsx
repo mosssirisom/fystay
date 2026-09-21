@@ -54,7 +54,12 @@ export function BookingConfirmation({
   guestPhone,
 }: {
   bookingId: string;
-  airportTransfer: { offeringId: string; providerName: string; priceCents: number } | null;
+  airportTransfer: {
+    offeringId: string;
+    providerName: string;
+    priceCents: number;
+    features: string[];
+  } | null;
   initialStatus: BookingStatus;
   initialPaymentStatus: PaymentStatus;
   reference: string;
@@ -225,6 +230,7 @@ export function BookingConfirmation({
           offeringId={airportTransfer.offeringId}
           providerName={airportTransfer.providerName}
           priceCents={airportTransfer.priceCents}
+          features={airportTransfer.features}
         />
       )}
 

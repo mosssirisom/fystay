@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { BookingConfirmation } from "@/components/BookingConfirmation";
+import { getActiveOfferingByCategory } from "@/lib/travelAddons";
 
 export const metadata: Metadata = { title: "Booking confirmed", robots: { index: false } };
 
@@ -33,11 +34,7 @@ export default async function BookingConfirmationPage({
   // is for).
   const isConfirmed = booking.status === "CONFIRMED" || booking.status === "COMPLETED";
   const airportTransferOffering = isConfirmed
-    ? await prisma.extraOffering.findFirst({
-        where: { category: "AIRPORT_TRANSFER", active: true, provider: { active: true } },
-        include: { provider: { select: { name: true } } },
-        orderBy: { createdAt: "asc" },
-      })
+    ? await getActiveOfferingByCategory("AIRPORT_TRANSFER")
     : null;
   const alreadyAddedTransfer = airportTransferOffering
     ? await prisma.bookingExtra.findFirst({
@@ -54,8 +51,9 @@ export default async function BookingConfirmationPage({
           airportTransferOffering && !alreadyAddedTransfer
             ? {
                 offeringId: airportTransferOffering.id,
-                providerName: airportTransferOffering.provider.name,
+                providerName: airportTransferOffering.providerName,
                 priceCents: airportTransferOffering.priceCents,
+                features: airportTransferOffering.features,
               }
             : null
         }

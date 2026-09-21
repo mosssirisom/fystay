@@ -9,6 +9,7 @@ import { completePastBookings } from "@/lib/bookingLifecycle";
 import { Card } from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
 import { BookingsTabs } from "@/components/BookingsTabs";
+import { getActiveOfferingByCategory } from "@/lib/travelAddons";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "My trips", robots: { index: false } };
@@ -36,22 +37,44 @@ export default async function BookingsPage() {
 
   await completePastBookings(prisma, session.user.id);
 
-  const bookings = await prisma.booking.findMany({
-    where: { guestId: session.user.id },
-    include: {
-      listing: {
-        include: {
-          bookings: {
-            where: blockingBookingWhere(),
-            select: { id: true, checkIn: true, checkOut: true },
+  const [bookings, airportTransferOffering] = await Promise.all([
+    prisma.booking.findMany({
+      where: { guestId: session.user.id },
+      include: {
+        listing: {
+          include: {
+            bookings: {
+              where: blockingBookingWhere(),
+              select: { id: true, checkIn: true, checkOut: true },
+            },
           },
         },
+        review: true,
+        changeRequests: { orderBy: { createdAt: "desc" }, take: 1 },
       },
-      review: true,
-      changeRequests: { orderBy: { createdAt: "desc" }, take: 1 },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    }),
+    getActiveOfferingByCategory("AIRPORT_TRANSFER"),
+  ]);
+
+  // "Your journey" (item 5 of the cross-sell brief) only ever needs to
+  // know whether *a* paid airport transfer exists per booking, not which
+  // offering - a guest could in principle have bought more than one over
+  // time, but this only ever needs a yes/no per booking.
+  const bookingIdsWithTransfer = airportTransferOffering
+    ? new Set(
+        (
+          await prisma.bookingExtra.findMany({
+            where: {
+              bookingId: { in: bookings.map((b) => b.id) },
+              offering: { category: "AIRPORT_TRANSFER" },
+              status: "PAID",
+            },
+            select: { bookingId: true },
+          })
+        ).map((extra) => extra.bookingId),
+      )
+    : new Set<string>();
 
   if (bookings.length === 0) {
     return (
@@ -71,13 +94,17 @@ export default async function BookingsPage() {
   // completePastBookings above already keeps status truthful against the
   // current date, so bucketing by status alone (no extra date math here) is
   // enough to sort these into the right section.
-  const upcoming = bookings
+  const withJourney = bookings.map((b) => ({
+    ...b,
+    hasAirportTransfer: bookingIdsWithTransfer.has(b.id),
+  }));
+  const upcoming = withJourney
     .filter((b) => b.status === "PENDING" || b.status === "CONFIRMED")
     .sort((a, b) => a.checkIn.getTime() - b.checkIn.getTime());
-  const past = bookings
+  const past = withJourney
     .filter((b) => b.status === "COMPLETED")
     .sort((a, b) => b.checkOut.getTime() - a.checkOut.getTime());
-  const cancelled = bookings
+  const cancelled = withJourney
     .filter((b) => b.status === "CANCELLED" || b.status === "REFUNDED")
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
@@ -85,7 +112,12 @@ export default async function BookingsPage() {
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
       <h1 className="text-2xl font-bold">My trips</h1>
 
-      <BookingsTabs upcoming={upcoming} past={past} cancelled={cancelled} />
+      <BookingsTabs
+        upcoming={upcoming}
+        past={past}
+        cancelled={cancelled}
+        airportTransferProviderName={airportTransferOffering?.providerName ?? null}
+      />
     </div>
   );
 }

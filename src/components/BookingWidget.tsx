@@ -240,7 +240,7 @@ export function BookingWidget({
         toast.success("Request sent - the host has 24 hours to respond.");
         router.push(`/bookings/${bookingData.booking.id}`);
       } else {
-        router.push(`/checkout/${bookingData.booking.id}`);
+        router.push(`/checkout/${bookingData.booking.id}/transfer`);
       }
     } catch {
       setError("Something went wrong. Please try again.");

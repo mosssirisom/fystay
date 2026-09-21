@@ -15,6 +15,7 @@ const updateOfferingSchema = z.object({
   description: z.string().trim().max(1000).nullable().optional(),
   priceCents: z.number().int().min(1, "Price must be more than £0").optional(),
   active: z.boolean().optional(),
+  features: z.array(z.string().trim().min(1).max(80)).max(10).optional(),
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -62,6 +63,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }),
       ...(parsed.data.priceCents !== undefined && { priceCents: parsed.data.priceCents }),
       ...(parsed.data.active !== undefined && { active: parsed.data.active }),
+      ...(parsed.data.features !== undefined && { features: parsed.data.features }),
     },
   });
 

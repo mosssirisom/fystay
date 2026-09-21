@@ -272,7 +272,7 @@ export default async function BookingDetailPage({
       )}
 
       {extraOfferings.length > 0 && (
-        <div className="mt-4">
+        <div id="trip-extras" className="mt-4 scroll-mt-24">
           <TripExtrasCard
             bookingId={booking.id}
             offerings={extraOfferings.map((offering) => ({

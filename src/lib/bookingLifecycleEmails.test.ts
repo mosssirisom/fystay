@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   ARRIVAL_REMINDER_WINDOW_DAYS,
   REVIEW_REQUEST_DELAY_DAYS,
+  TRANSFER_UPSELL_DELAY_DAYS,
   needsArrivalReminder,
   needsReviewRequest,
+  needsTransferUpsellEmail,
 } from "./bookingLifecycleEmails";
 
 const d = (s: string) => new Date(s);
@@ -86,5 +88,51 @@ describe("needsReviewRequest", () => {
   it("is false for a booking that was never confirmed", () => {
     const eligibleFrom = new Date(base.checkOut.getTime() + REVIEW_REQUEST_DELAY_DAYS * 24 * 60 * 60 * 1000);
     expect(needsReviewRequest({ ...base, status: "CANCELLED" }, eligibleFrom)).toBe(false);
+  });
+});
+
+describe("needsTransferUpsellEmail", () => {
+  const base = {
+    status: "CONFIRMED",
+    paymentStatus: "PAID",
+    paidAt: d("2026-06-01T00:00:00Z"),
+    transferUpsellEmailSentAt: null,
+  };
+
+  it("is false right at payment - the delay hasn't elapsed yet", () => {
+    expect(needsTransferUpsellEmail(base, false, base.paidAt)).toBe(false);
+  });
+
+  it("is true once the delay has elapsed", () => {
+    const eligibleFrom = new Date(base.paidAt.getTime() + TRANSFER_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000);
+    expect(needsTransferUpsellEmail(base, false, eligibleFrom)).toBe(true);
+  });
+
+  it("is false when the guest already has an airport transfer", () => {
+    const eligibleFrom = new Date(base.paidAt.getTime() + TRANSFER_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000);
+    expect(needsTransferUpsellEmail(base, true, eligibleFrom)).toBe(false);
+  });
+
+  it("is false once an upsell email has already been sent", () => {
+    const eligibleFrom = new Date(base.paidAt.getTime() + TRANSFER_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000);
+    expect(
+      needsTransferUpsellEmail(
+        { ...base, transferUpsellEmailSentAt: d("2026-06-02T00:00:00Z") },
+        false,
+        eligibleFrom,
+      ),
+    ).toBe(false);
+  });
+
+  it("is false when the booking isn't CONFIRMED", () => {
+    const eligibleFrom = new Date(base.paidAt.getTime() + TRANSFER_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000);
+    expect(needsTransferUpsellEmail({ ...base, status: "CANCELLED" }, false, eligibleFrom)).toBe(false);
+  });
+
+  it("is false when the booking hasn't been paid", () => {
+    const eligibleFrom = new Date(base.paidAt.getTime() + TRANSFER_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000);
+    expect(
+      needsTransferUpsellEmail({ ...base, paymentStatus: "UNPAID" }, false, eligibleFrom),
+    ).toBe(false);
   });
 });

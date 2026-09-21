@@ -363,4 +363,33 @@ export async function notifyTripExtraPaid(bookingExtraId: string): Promise<void>
       data: { sentToProviderAt: new Date() },
     });
   }
+
+  // The one point both the dev-mode fallback and the real Stripe webhook
+  // funnel through on a successful purchase (see this function's own doc
+  // comment above) - the right place to record the "added"/"completed"
+  // cross-sell events (item 10 of the cross-sell brief), since a client-
+  // side trackAddonEvent call would never fire for the Stripe redirect
+  // path (the browser navigates away before payment succeeds). Scoped to
+  // AIRPORT_TRANSFER since those are the specific event names the brief
+  // asks for; a future add-on category would get its own analogous names.
+  if (bookingExtra.offering.category === "AIRPORT_TRANSFER") {
+    await prisma.analyticsEvent.createMany({
+      data: [
+        {
+          name: "transfer_added",
+          category: bookingExtra.offering.category,
+          surface: "server",
+          bookingId: bookingExtra.bookingId,
+          offeringId: bookingExtra.offeringId,
+        },
+        {
+          name: "transfer_booking_completed",
+          category: bookingExtra.offering.category,
+          surface: "server",
+          bookingId: bookingExtra.bookingId,
+          offeringId: bookingExtra.offeringId,
+        },
+      ],
+    });
+  }
 }

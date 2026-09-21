@@ -664,7 +664,7 @@ model Booking {
   // cancelled, previously-paid booking was refunded in full.
   refundedAmountCents   Int?
 
-  // Idempotency for the two automated lifecycle emails in
+  // Idempotency for the automated lifecycle emails in
   // src/app/api/cron/booking-lifecycle-emails/route.ts - each is sent at
   // most once per booking, so the cron can run daily without re-notifying
   // a guest it already reached. Null means "not sent yet", not "N/A" -
@@ -672,6 +672,11 @@ model Booking {
   // never reaches either window.
   arrivalReminderSentAt DateTime?
   reviewRequestSentAt   DateTime?
+  // The one-time "did you want an airport transfer?" nudge (see
+  // needsTransferUpsellEmail) - sent once per booking regardless of
+  // whether a transfer is ever added, so this stays null forever only for
+  // a booking that never reached CONFIRMED at all.
+  transferUpsellEmailSentAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1478,6 +1483,13 @@ model ExtraOffering {
   category    ExtraCategory
   priceCents  Int
   active      Boolean       @default(true)
+  // Short marketing bullets ("Fixed pricing", "Tesla / fully electric",
+  // "Meet & greet"...), shown identically wherever this offering is cross-
+  // sold (homepage, property page, booking flow, confirmation, account) -
+  // one place to edit copy that appears in five surfaces, rather than each
+  // surface hardcoding its own list. Empty for a category that doesn't
+  // need them; never required.
+  features    String[]      @default([])
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -1661,4 +1673,33 @@ model SupportTicketMessage {
   sender   User   @relation("SupportTicketMessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
+}
+
+// A generic, append-only event log for measuring cross-sell/add-on
+// conversion (see src/lib/analytics.ts) - "genuine" per the product brief
+// in the sense that it's real, queryable data rather than a call into a
+// third-party provider that isn't configured yet (there is no GA/PostHog/
+// Segment key anywhere in this app). `name` is a plain string, not an
+// enum, deliberately: a new event for a future add-on category should
+// never need a migration just to be recorded. `category`/`surface` are
+// free-text dimensions (e.g. "AIRPORT_TRANSFER" / "property_page") so the
+// same table serves every current and future add-on without a schema
+// change per category. No foreign keys to User/Booking/ExtraOffering -
+// this table must keep recording events for a booking or offering that's
+// since been deleted, and a logged-out visitor viewing a homepage promo
+// has no userId at all.
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  name       String
+  category   String?
+  surface    String?
+  userId     String?
+  bookingId  String?
+  offeringId String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([userId])
+  @@index([bookingId])
 }

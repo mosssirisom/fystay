@@ -36,6 +36,7 @@ import { WhatGuestsLove } from "@/components/WhatGuestsLove";
 import { GoodToKnow, type GoodToKnowRow } from "@/components/GoodToKnow";
 import { HouseRules } from "@/components/HouseRules";
 import { WhyBookWithFYStay } from "@/components/WhyBookWithFYStay";
+import { PropertyTransferPromo } from "@/components/PropertyTransferPromo";
 import { TrustLine } from "@/components/TrustLine";
 import { ListingsMap } from "@/components/ListingsMap";
 import { ReviewSummary } from "@/components/ReviewSummary";
@@ -48,6 +49,7 @@ import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { computeRatingBreakdown } from "@/lib/reviews";
 import { computeHostResponseStats, isGreatHost } from "@/lib/hostStats";
 import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
+import { getActiveOfferingByCategory } from "@/lib/travelAddons";
 import { formatPrice } from "@/lib/format";
 import { isSuspended } from "@/lib/suspension";
 
@@ -116,7 +118,11 @@ export default async function ListingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [listing, session] = await Promise.all([getListing(id), auth()]);
+  const [listing, session, airportTransferOffering] = await Promise.all([
+    getListing(id),
+    auth(),
+    getActiveOfferingByCategory("AIRPORT_TRANSFER"),
+  ]);
 
   if (!listing || !listing.published) {
     notFound();
@@ -485,6 +491,8 @@ export default async function ListingDetailPage({
               instantBook={listing.instantBook}
             />
           )}
+
+          {airportTransferOffering && <PropertyTransferPromo offering={airportTransferOffering} />}
         </div>
       </div>
 

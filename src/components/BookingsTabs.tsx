@@ -21,6 +21,7 @@ const BOOKINGS_PAGE_SIZE = 10;
 
 export type TabBooking = BookingCardBooking & {
   changeRequests: BookingCardChangeRequest[];
+  hasAirportTransfer: boolean;
 };
 
 function EmptySection({
@@ -53,6 +54,7 @@ function TabSection({
   emptyMessage,
   emptyHint,
   showCta,
+  airportTransferProviderName,
 }: {
   bookings: TabBooking[];
   page: number;
@@ -60,6 +62,7 @@ function TabSection({
   emptyMessage: string;
   emptyHint: string;
   showCta?: boolean;
+  airportTransferProviderName: string | null;
 }) {
   if (bookings.length === 0) {
     return <EmptySection message={emptyMessage} hint={emptyHint} showCta={showCta} />;
@@ -72,7 +75,12 @@ function TabSection({
       <ul className="flex flex-col gap-4">
         {paginated.items.map((booking) => (
           <li key={booking.id}>
-            <BookingCard booking={booking} latestChangeRequest={booking.changeRequests[0]} />
+            <BookingCard
+              booking={booking}
+              latestChangeRequest={booking.changeRequests[0]}
+              hasAirportTransfer={booking.hasAirportTransfer}
+              airportTransferProviderName={airportTransferProviderName}
+            />
           </li>
         ))}
       </ul>
@@ -141,10 +149,12 @@ export function BookingsTabs({
   upcoming,
   past,
   cancelled,
+  airportTransferProviderName,
 }: {
   upcoming: TabBooking[];
   past: TabBooking[];
   cancelled: TabBooking[];
+  airportTransferProviderName: string | null;
 }) {
   const counts = { upcoming: upcoming.length, past: past.length, cancelled: cancelled.length };
   const initialTab: TabKey =
@@ -219,6 +229,7 @@ export function BookingsTabs({
           emptyMessage={sections[tab].emptyMessage}
           emptyHint={sections[tab].emptyHint}
           showCta={sections[tab].showCta}
+          airportTransferProviderName={airportTransferProviderName}
         />
       </div>
     </div>

@@ -30,6 +30,7 @@ function emptyForm(providers: ExtraProviderOption[]) {
     name: "",
     description: "",
     priceCents: "",
+    features: "",
   };
 }
 
@@ -72,6 +73,10 @@ export function ExtraOfferingForm({ providers }: { providers: ExtraProviderOptio
         description: values.description.trim() || undefined,
         category: selectedProvider.category,
         priceCents: Math.round(Number(values.priceCents) * 100),
+        features: values.features
+          .split(",")
+          .map((feature) => feature.trim())
+          .filter(Boolean),
       }),
     });
     const data = await res.json();
@@ -155,6 +160,20 @@ export function ExtraOfferingForm({ providers }: { providers: ExtraProviderOptio
               onChange={(e) => update("priceCents", e.target.value)}
             />
             <FieldHint>What FYStay charges the guest - see the roadmap doc&apos;s payment model.</FieldHint>
+          </Field>
+
+          <Field>
+            <Label htmlFor="offeringFeatures">Marketing bullets (optional)</Label>
+            <Input
+              id="offeringFeatures"
+              value={values.features}
+              onChange={(e) => update("features", e.target.value)}
+              placeholder="Tesla / fully electric, Fixed pricing, Meet & greet"
+            />
+            <FieldHint>
+              Comma-separated. Shown identically wherever this offering is cross-sold - homepage,
+              property page, booking flow, confirmation, account.
+            </FieldHint>
           </Field>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

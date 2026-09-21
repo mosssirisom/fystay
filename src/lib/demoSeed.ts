@@ -601,9 +601,14 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
       bookingFormUrl: process.env.EV_EXEC_BOOKING_FORM_URL ?? null,
     },
   });
+  const evExecFeatures = ["Tesla / fully electric", "Fixed pricing", "Meet & greet"];
   await prisma.extraOffering.upsert({
     where: { providerId_name: { providerId: evExec.id, name: "Return airport transfer" } },
-    update: {},
+    // update (not just create) so re-seeding an existing database picks up
+    // the marketing bullets shown across the cross-sell surfaces (homepage,
+    // property page, booking flow, confirmation, account) - without this,
+    // an already-seeded EV Exec offering would keep an empty features[].
+    update: { features: evExecFeatures },
     create: {
       providerId: evExec.id,
       name: "Return airport transfer",
@@ -611,6 +616,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
         "Door-to-door executive transfer between the airport and your stay, both ways - booked and confirmed by EV Exec.",
       category: "AIRPORT_TRANSFER",
       priceCents: 4500,
+      features: evExecFeatures,
     },
   });
 

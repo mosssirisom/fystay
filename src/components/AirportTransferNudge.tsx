@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plane } from "lucide-react";
+import { Check, Plane } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { formatPrice } from "@/lib/format";
+import { trackAddonEvent } from "@/lib/analytics";
+import { useViewOnce } from "@/hooks/useViewOnce";
 
 // Same reasoning as TripExtrasCard's own redirectTo: a plain module-level
 // function sidesteps a React Compiler false positive about mutating
@@ -15,31 +17,48 @@ function redirectTo(url: string) {
 }
 
 /**
- * A single, quiet line on the booking confirmation page - not a homepage
- * banner. This is the one moment in the whole journey where "arriving by
- * air?" is genuinely relevant (a guest who's just paid for their stay,
- * still on the page), so it earns a mention here without needing to sell
- * itself anywhere else. Deliberately undersized next to the booking
- * summary above it: no gradient, no shadow, no second brand's name in the
- * headline - EV Exec is FYStay's own transfer arm, not a sponsor, and
- * reads that way (small print only), the same restraint TripExtrasCard
- * already applies to every other extra.
+ * The confirmation-page upsell (item 4 of the cross-sell brief in
+ * docs/trip-extras-roadmap.md) - a prominent-but-premium card, not a
+ * homepage banner and not the single quiet line this used to be: this is
+ * the one moment in the journey where a guest who's just paid for their
+ * stay is still on the page and "arriving by air?" is unambiguously
+ * relevant. Still restrained per item 8 - a plain brand-tinted card, no
+ * gradient, no second logo, EV Exec named once in the body copy rather
+ * than the headline.
  */
 export function AirportTransferNudge({
   bookingId,
   offeringId,
   providerName,
   priceCents,
+  features,
 }: {
   bookingId: string;
   offeringId: string;
   providerName: string;
   priceCents: number;
+  features: string[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const viewRef = useViewOnce<HTMLDivElement>(() => {
+    trackAddonEvent({
+      name: "transfer_offer_viewed",
+      category: "AIRPORT_TRANSFER",
+      surface: "confirmation",
+      offeringId,
+      bookingId,
+    });
+  });
 
   async function addTransfer() {
+    trackAddonEvent({
+      name: "transfer_offer_clicked",
+      category: "AIRPORT_TRANSFER",
+      surface: "confirmation",
+      offeringId,
+      bookingId,
+    });
     setLoading(true);
     try {
       const res = await fetch(`/api/bookings/${bookingId}/extras`, {
@@ -66,24 +85,43 @@ export function AirportTransferNudge({
   }
 
   return (
-    <div className="mt-4 flex w-full flex-col items-start gap-3 rounded-xl border border-border-subtle px-4 py-3.5 text-left sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex gap-3">
-        <Plane className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+    <div
+      ref={viewRef}
+      className="mt-6 w-full rounded-2xl border border-brand-100 bg-brand-50/60 p-5 text-left"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
+          <Plane className="h-5 w-5" aria-hidden />
+        </span>
         <div>
-          <p className="text-sm font-semibold text-foreground">Arriving by air?</p>
-          <p className="text-sm text-stone-500">
-            Complete your journey with a private electric transfer.
+          <p className="font-semibold text-foreground">
+            Your stay is booked. Now complete your journey.
           </p>
-          <p className="mt-1 text-xs text-stone-400">Operated by {providerName}</p>
+          <p className="mt-1 text-sm text-stone-600">
+            Add a private {providerName} airport transfer and travel from the airport to your
+            FYStay accommodation in comfort.
+          </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3 self-stretch sm:self-auto">
+
+      {features.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 pl-[52px]">
+          {features.map((feature) => (
+            <li key={feature} className="flex items-center gap-1.5 text-xs text-stone-600">
+              <Check className="h-3.5 w-3.5 shrink-0 text-brand-600" aria-hidden />
+              {feature}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-4 flex items-center gap-3 pl-[52px]">
+        <Button onClick={addTransfer} loading={loading}>
+          Add airport transfer
+        </Button>
         <p className="text-xs text-stone-500">
           From <span className="font-semibold text-foreground">{formatPrice(priceCents)}</span>
         </p>
-        <Button variant="outline" size="sm" onClick={addTransfer} loading={loading}>
-          Add transfer
-        </Button>
       </div>
     </div>
   );

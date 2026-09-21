@@ -369,17 +369,32 @@ export default async function Home() {
               aria-hidden
             />
           </div>
-          <div className="relative w-full max-w-md">
-            <div className="pointer-events-auto flex snap-x snap-mandatory justify-start gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {FYLDE_COAST_DESTINATIONS.map((destination) => (
-                <Link
-                  key={destination.slug}
-                  href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
-                  className="focus-ring flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-amber-200/30 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-200/60 hover:bg-white/10 active:scale-95 active:bg-white/10"
+          {/* Auto-drifting marquee, not a manual swipe strip - the
+              destination list is rendered twice back to back so
+              translating the track by exactly one copy's width (-50%,
+              see .animate-marquee in globals.css) loops seamlessly. The
+              second copy is aria-hidden and untabbable so a screen reader
+              or keyboard user only ever encounters each town once. */}
+          <div className="relative w-full max-w-md overflow-hidden">
+            <div className="flex w-max items-center gap-2 px-6 pb-1 animate-marquee">
+              {[0, 1].map((copy) => (
+                <div
+                  key={copy}
+                  className="flex shrink-0 items-center gap-2"
+                  aria-hidden={copy === 1}
                 >
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden />
-                  {destination.name}
-                </Link>
+                  {FYLDE_COAST_DESTINATIONS.map((destination) => (
+                    <Link
+                      key={destination.slug}
+                      href={`/search?city=${encodeURIComponent(destination.searchCity)}`}
+                      tabIndex={copy === 1 ? -1 : undefined}
+                      className="focus-ring pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full border border-amber-200/30 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-200/60 hover:bg-white/10 active:scale-95 active:bg-white/10"
+                    >
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden />
+                      {destination.name}
+                    </Link>
+                  ))}
+                </div>
               ))}
             </div>
             <div

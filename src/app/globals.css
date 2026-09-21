@@ -442,6 +442,34 @@ body {
   }
 }
 
+/* Homepage hero's mobile/tablet "Now covering" pill row: a slow, continuous
+   drift through every Fylde Coast town instead of a manual swipe-to-see-more
+   strip - the list is rendered twice back to back (see page.tsx) and this
+   translates the track exactly one copy's width (-50%) so the loop point is
+   invisible. 36s/linear reads as ambient movement, not something drawing
+   attention away from the search bar above it. Paused on hover/focus so a
+   pointer user can actually read and click a pill instead of chasing it. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 36s linear infinite;
+}
+.animate-marquee:hover,
+.animate-marquee:focus-within {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
 /* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);

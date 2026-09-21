@@ -450,7 +450,7 @@ export default async function Home() {
           below is the only top spacing this section needs. */}
       <div className="relative z-50 -mt-5 rounded-t-[28px] bg-background pt-px sm:-mt-6 sm:rounded-t-[36px] lg:-mt-3">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-8">
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-b border-border-subtle pb-6 text-sm text-stone-600 sm:justify-start">
+        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-3 border-b border-border-subtle pb-6 text-sm text-stone-600 sm:flex sm:flex-wrap sm:items-center sm:justify-start sm:gap-x-6 sm:gap-y-2">
           {TRUST_STRIP.map(({ icon: Icon, label }) => (
             <span key={label} className="flex items-center gap-1.5">
               <Icon className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />

@@ -227,25 +227,19 @@ export default async function Home() {
           desktop logo/links layout) - if the navbar's own padding/content
           ever changes height, this needs to move with it.
 
-          h-[100svh] on desktop (small viewport height, not dvh - a hero
-          shouldn't resize itself while the user is mid-scroll as mobile
-          browser chrome collapses) - the negative margin above already
-          cancels out the navbar's own in-flow height, so this makes the
-          video fill exactly the first screenful on a laptop/desktop
-          instead of stopping short of the fold. lg:max-h-[860px] stops it
-          growing unbounded on a very tall desktop window.
-
-          Below lg, shorter on purpose (h-[62svh], not 100svh): on a phone
-          the full-height version left literally nothing else on screen at
-          first load - the "Hand-picked stays" carousel started well past
-          the fold. 62svh keeps the hero exactly as designed (same video,
-          logo, search bar and "Now covering" row, just less of the open
-          sky above them) while leaving enough of the screen for that
-          carousel's heading and a row of cards to already be visible
-          without scrolling. min-h-[480px] is the floor for the shortest
-          real phones (a landscape phone, or a small-screen device) so the
-          search bar and pills never get cramped. */}
-      <section className="relative -mt-[75px] h-[62svh] min-h-[480px] w-full lg:-mt-[74px] lg:h-[100svh] lg:max-h-[860px]">
+          h-[100svh] (small viewport height, not dvh - a hero shouldn't
+          resize itself while the user is mid-scroll as mobile browser
+          chrome collapses) rather than a fixed pixel height per breakpoint
+          - the negative margin above already cancels out the navbar's own
+          in-flow height, so this makes the video fill exactly the first
+          screenful on any device instead of stopping ~150-200px short of
+          the fold, which read as the hero being "tucked up" into a band at
+          the top rather than a full-bleed moment. min-h-[560px] guards the
+          shortest real viewports (a landscape phone); lg:max-h-[860px]
+          stops it growing unbounded on a very tall desktop window, where a
+          hero taller than that starts to feel like its own page rather
+          than an opener. */}
+      <section className="relative -mt-[75px] h-[100svh] min-h-[560px] w-full lg:-mt-[74px] lg:max-h-[860px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens the sky band (behind the

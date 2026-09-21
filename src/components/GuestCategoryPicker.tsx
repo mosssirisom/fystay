@@ -146,7 +146,7 @@ export function GuestCategoryPicker({
       {open && (
         <div
           id="guest-picker-panel"
-          className="absolute left-0 top-full z-20 mt-2 w-72 rounded-2xl border border-border-subtle bg-surface p-4 shadow-[var(--shadow-popover)]"
+          className="absolute left-0 top-full z-[60] mt-2 w-72 rounded-2xl border border-border-subtle bg-surface p-4 shadow-[var(--shadow-popover)]"
         >
           <div className="flex flex-col divide-y divide-border-subtle">
             {rows.map((row) => {

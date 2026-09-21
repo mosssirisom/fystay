@@ -154,7 +154,7 @@ export function SearchDateRangeField({
           id="date-range-panel"
           role="dialog"
           aria-label="Choose check-in and check-out dates"
-          className="animate-dropdown-in absolute left-1/2 top-full z-20 mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
+          className="animate-dropdown-in absolute left-1/2 top-full z-[60] mt-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-border-subtle bg-surface p-3 shadow-[var(--shadow-popover)]"
         >
           <DayPicker
             mode="range"

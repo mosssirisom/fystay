@@ -304,7 +304,7 @@ export function DestinationAutocomplete({
           id={`${id}-listbox`}
           role="listbox"
           aria-label="Destination and hotel suggestions"
-          className="animate-dropdown-in absolute left-0 top-full z-20 mt-2 max-h-[70vh] w-full min-w-[280px] overflow-y-auto rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)] sm:w-96"
+          className="animate-dropdown-in absolute left-0 top-full z-[60] mt-2 max-h-[70vh] w-full min-w-[280px] overflow-y-auto rounded-2xl border border-border-subtle bg-surface p-2 shadow-[var(--shadow-popover)] sm:w-96"
         >
           {loading && (
             <div className="flex items-center gap-2 px-3 py-3 text-sm text-stone-500">

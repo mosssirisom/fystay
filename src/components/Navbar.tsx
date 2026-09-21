@@ -40,22 +40,22 @@ export async function Navbar() {
           lg:hidden / hidden lg:flex pairs below), matching the transparent
           hero nav design without touching how every other page's desktop
           nav, or any page's mobile nav, already looks. */}
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Link
           href="/"
           aria-label="FYStay home"
-          className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white lg:hidden"
+          className="relative z-10 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white lg:hidden"
         >
-          <Home className="h-5 w-5" strokeWidth={2.5} />
+          <Home className="h-6 w-6" strokeWidth={2.5} />
         </Link>
 
         <Link href="/" className="relative z-10 hidden items-center gap-2 lg:flex">
-          <Logo size="sm" withTagline taglineClassName="mt-0 leading-tight" />
+          <Logo size="md" withTagline taglineClassName="mt-0.5 text-[9px] leading-tight" />
         </Link>
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center lg:hidden">
           <Link href="/" className="pointer-events-auto flex items-center gap-2">
-            <Logo size="sm" withTagline taglineClassName="mt-0 leading-tight" />
+            <Logo size="md" withTagline taglineClassName="mt-0.5 text-[9px] leading-tight" />
           </Link>
         </div>
 

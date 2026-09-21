@@ -18,12 +18,25 @@ import { generateReferralCode } from "@/lib/referral";
  * data.
  */
 
-// Seed listings ship with generated placeholder art instead of hotlinked
-// stock photos: it renders instantly with zero external requests, so the
-// demo never depends on a third-party image host being reachable. Every
-// entry stays in the same warm terracotta/amber/rust/umber/wine family as
-// the brand palette (globals.css) - no green or blue, which read as an
-// off-brand cold contrast against the site's warm parchment background.
+// A handful of towns have one real, licensed cover photo (self-hosted under
+// public/images/listings/ - same "real, licensed media only" rule as the
+// homepage hero video) used as every listing's first photo in that town,
+// swapped in ahead of the generated placeholder art below. Deliberately not
+// per-listing (only one photo per town, shared across that town's listings)
+// - this is demo-catalogue dressing, not real per-property photography, and
+// should be replaced with actual host-uploaded photos before go-live.
+const TOWN_COVER_PHOTOS: Partial<Record<string, string>> = {
+  Fleetwood: "/images/listings/fleetwood-cover.jpg",
+  "Poulton-le-Fylde": "/images/listings/poulton-cover.jpg",
+  "St Annes": "/images/listings/st-annes-cover.jpg",
+};
+
+// The remaining photos ship as generated placeholder art instead of
+// hotlinked stock photos: it renders instantly with zero external requests,
+// so the demo never depends on a third-party image host being reachable.
+// Every entry stays in the same warm terracotta/amber/rust/umber/wine
+// family as the brand palette (globals.css) - no green or blue, which read
+// as an off-brand cold contrast against the site's warm parchment background.
 const PALETTES: [string, string][] = [
   ["#d97757", "#954328"],
   ["#f59e0b", "#b45309"],
@@ -156,6 +169,12 @@ function placeholderPhoto(seedText: string, index: number, exteriorIcon: Placeho
 
 function placeholderPhotos(seedText: string, count: number, exteriorIcon: PlaceholderIcon): string[] {
   return Array.from({ length: count }, (_, i) => placeholderPhoto(seedText, i, exteriorIcon));
+}
+
+function listingPhotos(city: string, count: number, exteriorIcon: PlaceholderIcon): string[] {
+  const cover = TOWN_COVER_PHOTOS[city];
+  if (!cover) return placeholderPhotos(city, count, exteriorIcon);
+  return [cover, ...placeholderPhotos(city, count - 1, exteriorIcon)];
 }
 
 export const DEMO_LISTINGS = [
@@ -574,7 +593,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
     const created = await prisma.listing.create({
       data: {
         ...listing,
-        photos: placeholderPhotos(listing.city, 4, placeholderIcon),
+        photos: listingPhotos(listing.city, 4, placeholderIcon),
         hostId: host.id,
       },
     });

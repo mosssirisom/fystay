@@ -540,6 +540,53 @@ export const DEMO_LISTINGS = [
   },
 ];
 
+// A HOTEL listing - deliberately kept separate from DEMO_LISTINGS above,
+// since a HOTEL has no price/capacity of its own (RoomType does - see
+// roomTypeAggregates.ts) and this needs its own room-type rows created
+// alongside it, not just a flat Listing insert. Without at least one seeded
+// hotel, the entire multi-room-type feature (search, booking, change
+// requests - see isRoomTypeRangeAvailable and its callers) is never
+// actually exercised by anyone browsing the seeded catalogue, which is
+// also literally the first word of the site's own "Hotels · B&Bs ·
+// Apartments" tagline.
+export const DEMO_HOTEL_LISTING = {
+  title: "The Promenade Hotel, Blackpool",
+  description:
+    "A traditional seafront hotel two minutes' walk from Blackpool Tower, with a choice of room types from a cosy standard double to a sea-view suite. Staffed reception, lift to every floor, and breakfast included.",
+  city: "Blackpool",
+  country: "England",
+  propertyType: "HOTEL" as const,
+  amenities: ["Wifi", "Breakfast included", "24-hour reception", "Lift", "Sea view"],
+  placeholderIcon: "house" as const,
+  cancellationPolicy: "MODERATE" as const,
+  roomTypes: [
+    {
+      name: "Standard Double",
+      description:
+        "A comfortable double room with an en-suite shower, a short walk from the seafront.",
+      pricePerNightCents: 6900,
+      maxGuests: 2,
+      bedrooms: 1,
+      beds: 1,
+      bathrooms: 1,
+      totalRooms: 6,
+      photos: [] as string[],
+    },
+    {
+      name: "Deluxe Sea View Suite",
+      description:
+        "A larger suite with a private sea-view balcony and a super-king bed, sleeping up to four.",
+      pricePerNightCents: 12900,
+      maxGuests: 4,
+      bedrooms: 1,
+      beds: 2,
+      bathrooms: 1,
+      totalRooms: 2,
+      photos: [] as string[],
+    },
+  ],
+};
+
 export type SeedDemoDataSummary = {
   hostEmail: string;
   guestEmail: string;
@@ -603,6 +650,42 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
       : created;
     createdListings.push(withCoordinates);
     newlyCreatedTitles.add(listing.title);
+    listingsCreated++;
+  }
+
+  // The one HOTEL listing, seeded separately from the loop above since it
+  // needs RoomType rows created alongside it and its own price/capacity
+  // fields derived from them (see recomputeListingAggregatesFromRoomTypes),
+  // rather than a flat Listing insert.
+  const existingHotel = await prisma.listing.findFirst({
+    where: { title: DEMO_HOTEL_LISTING.title },
+  });
+  if (existingHotel) {
+    createdListings.push(existingHotel);
+    listingsSkippedExisting++;
+  } else {
+    const { roomTypes, placeholderIcon, ...hotelListing } = DEMO_HOTEL_LISTING;
+    const createdHotel = await prisma.listing.create({
+      data: {
+        ...hotelListing,
+        pricePerNightCents: Math.min(...roomTypes.map((rt) => rt.pricePerNightCents)),
+        maxGuests: Math.max(...roomTypes.map((rt) => rt.maxGuests)),
+        bedrooms: Math.max(...roomTypes.map((rt) => rt.bedrooms)),
+        beds: Math.max(...roomTypes.map((rt) => rt.beds)),
+        bathrooms: Math.max(...roomTypes.map((rt) => rt.bathrooms)),
+        photos: listingPhotos(hotelListing.city, 4, placeholderIcon),
+        hostId: host.id,
+      },
+    });
+    await prisma.roomType.createMany({
+      data: roomTypes.map((rt) => ({ ...rt, listingId: createdHotel.id })),
+    });
+    const coordinates = geocodeListing({ id: createdHotel.id, city: createdHotel.city });
+    const withCoordinates = coordinates
+      ? await prisma.listing.update({ where: { id: createdHotel.id }, data: coordinates })
+      : createdHotel;
+    createdListings.push(withCoordinates);
+    newlyCreatedTitles.add(DEMO_HOTEL_LISTING.title);
     listingsCreated++;
   }
 

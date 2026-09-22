@@ -6,6 +6,7 @@ import {
   blockingBookingWhere,
   blockingRanges,
   isRangeAvailable,
+  isRoomTypeRangeAvailable,
   nightsBetween,
   stayLengthError,
 } from "@/lib/availability";
@@ -51,6 +52,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           availabilityBlocks: { select: { startDate: true, endDate: true } },
         },
       },
+      roomType: {
+        include: {
+          bookings: {
+            where: blockingBookingWhere(),
+            select: { id: true, checkIn: true, checkOut: true, roomsBooked: true },
+          },
+          availabilityBlocks: { select: { startDate: true, endDate: true } },
+        },
+      },
       changeRequests: { where: { status: "PENDING" } },
     },
   });
@@ -67,9 +77,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       { status: 409 },
     );
   }
-  if (parsed.data.guests > booking.listing.maxGuests) {
+
+  // A HOTEL booking (booking.roomTypeId set) is scoped to its own room
+  // type's capacity/inventory/rate throughout this route, never the
+  // listing's aggregate fields (min price / max capacity across room
+  // types) - see api/bookings/route.ts's createRoomTypeBooking for the
+  // same distinction at creation time.
+  const { roomType } = booking;
+  const maxGuests = roomType ? roomType.maxGuests * booking.roomsBooked : booking.listing.maxGuests;
+  if (parsed.data.guests > maxGuests) {
     return NextResponse.json(
-      { error: `This listing sleeps up to ${booking.listing.maxGuests} guests` },
+      { error: `This ${roomType ? "room type" : "listing"} sleeps up to ${maxGuests} guests` },
       { status: 400 },
     );
   }
@@ -80,14 +98,31 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: lengthError }, { status: 400 });
   }
 
-  const otherBookedRanges = booking.listing.bookings.filter((b) => b.id !== booking.id);
-  const merged = blockingRanges(otherBookedRanges, booking.listing.availabilityBlocks);
-  if (!isRangeAvailable(checkIn, checkOut, merged)) {
+  const isAvailable = roomType
+    ? isRoomTypeRangeAvailable(
+        checkIn,
+        checkOut,
+        booking.roomsBooked,
+        roomType.totalRooms,
+        roomType.bookings.filter((b) => b.id !== booking.id),
+        roomType.availabilityBlocks,
+      )
+    : isRangeAvailable(
+        checkIn,
+        checkOut,
+        blockingRanges(
+          booking.listing.bookings.filter((b) => b.id !== booking.id),
+          booking.listing.availabilityBlocks,
+        ),
+      );
+  if (!isAvailable) {
     return NextResponse.json({ error: "Those dates are not available" }, { status: 409 });
   }
   const priceDeltaCents = computePriceDeltaCents({
     requestedNights: nights,
-    pricePerNightCents: booking.listing.pricePerNightCents,
+    pricePerNightCents: roomType
+      ? roomType.pricePerNightCents * booking.roomsBooked
+      : booking.listing.pricePerNightCents,
     cleaningFeeCents: booking.cleaningFeeCents,
     weeklyDiscountPercent: booking.listing.weeklyDiscountPercent,
     monthlyDiscountPercent: booking.listing.monthlyDiscountPercent,

@@ -302,6 +302,9 @@ async function createListingBooking(
   if (isSuspended(listing)) {
     throw new BookingRequestError(403, "This listing is currently unavailable.");
   }
+  if (listing.hostId === guestId) {
+    throw new BookingRequestError(403, "You can't book your own listing");
+  }
   if (guests > listing.maxGuests) {
     throw new BookingRequestError(400, `This listing sleeps up to ${listing.maxGuests} guests`);
   }
@@ -424,6 +427,9 @@ async function createRoomTypeBooking(
   const { listing } = roomType;
   if (isSuspended(listing)) {
     throw new BookingRequestError(403, "This listing is currently unavailable.");
+  }
+  if (listing.hostId === guestId) {
+    throw new BookingRequestError(403, "You can't book your own listing");
   }
   if (guests > roomType.maxGuests * roomsBooked) {
     throw new BookingRequestError(

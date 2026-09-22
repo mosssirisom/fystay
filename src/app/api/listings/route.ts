@@ -153,6 +153,7 @@ export async function GET(request: Request) {
       roomTypes: {
         select: {
           totalRooms: true,
+          maxGuests: true,
           bookings: {
             where: blockingBookingWhere(),
             select: { checkIn: true, checkOut: true, roomsBooked: true },
@@ -171,23 +172,28 @@ export async function GET(request: Request) {
 
   const checkIn = checkInParam ? new Date(checkInParam) : null;
   const checkOut = checkOutParam ? new Date(checkOutParam) : null;
+  const guestsNeeded = guests ? Number(guests) : 0;
 
   // A hotel with one fully-booked room type and another still free is still
   // bookable - see ListingsGrid.tsx's own copy of this same logic for the
-  // guest-facing search page (a separate query, kept in sync by hand).
+  // guest-facing search page (a separate query, kept in sync by hand). The
+  // room type also has to actually sleep the requested party (maxGuests),
+  // not just have a free room - see that same file's comment for why.
   const filtered =
     checkIn && checkOut
       ? listings.filter((listing) =>
           listing.propertyType === "HOTEL"
-            ? listing.roomTypes.some((roomType) =>
-                isRoomTypeRangeAvailable(
-                  checkIn,
-                  checkOut,
-                  1,
-                  roomType.totalRooms,
-                  roomType.bookings,
-                  roomType.availabilityBlocks,
-                ),
+            ? listing.roomTypes.some(
+                (roomType) =>
+                  roomType.maxGuests >= guestsNeeded &&
+                  isRoomTypeRangeAvailable(
+                    checkIn,
+                    checkOut,
+                    1,
+                    roomType.totalRooms,
+                    roomType.bookings,
+                    roomType.availabilityBlocks,
+                  ),
               )
             : isRangeAvailable(
                 checkIn,

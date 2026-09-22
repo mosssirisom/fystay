@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { blockingBookingWhere, blockingRanges, isRangeAvailable } from "@/lib/availability";
+import { isRequestedRangeStillAvailable } from "@/lib/availability";
 import { sendBookingRequestRespondedEmail } from "@/lib/notificationEmails";
 
 const respondSchema = z.object({ action: z.enum(["approve", "decline"]) });
@@ -66,9 +66,10 @@ export async function POST(
 
   if (parsed.data.action === "decline") {
     // Never charged - so nothing to refund except the referral credit (see
-    // referral.ts) the guest had spent on this booking at creation. Unlike
-    // an instant-book PENDING booking that simply goes unpaid, a decline
-    // here is entirely the host's call, not something the guest let lapse.
+    // referral.ts) and any promo code redemption the guest had spent on
+    // this booking at creation. Unlike an instant-book PENDING booking
+    // that simply goes unpaid, a decline here is entirely the host's call,
+    // not something the guest let lapse.
     await prisma.$transaction([
       prisma.booking.update({
         where: { id },
@@ -79,6 +80,14 @@ export async function POST(
             prisma.user.update({
               where: { id: booking.guestId },
               data: { creditBalanceCents: { increment: booking.creditAppliedCents } },
+            }),
+          ]
+        : []),
+      ...(booking.promoCodeId
+        ? [
+            prisma.promoCode.update({
+              where: { id: booking.promoCodeId },
+              data: { redemptionCount: { decrement: 1 } },
             }),
           ]
         : []),
@@ -93,21 +102,15 @@ export async function POST(
   // Approving: re-check availability, since the dates may have been booked
   // or blocked by something else while this request sat awaiting a
   // decision (up to REQUEST_HOLD_HOURS).
-  const [otherBookings, blocks] = await Promise.all([
-    prisma.booking.findMany({
-      where: {
-        listingId: booking.listingId,
-        id: { not: booking.id },
-        ...blockingBookingWhere(),
-      },
-      select: { checkIn: true, checkOut: true },
-    }),
-    prisma.availabilityBlock.findMany({
-      where: { listingId: booking.listingId },
-      select: { startDate: true, endDate: true },
-    }),
-  ]);
-  if (!isRangeAvailable(booking.checkIn, booking.checkOut, blockingRanges(otherBookings, blocks))) {
+  const isAvailable = await isRequestedRangeStillAvailable(prisma, {
+    listingId: booking.listingId,
+    roomTypeId: booking.roomTypeId,
+    roomsBooked: booking.roomsBooked,
+    excludeBookingId: booking.id,
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+  });
+  if (!isAvailable) {
     return NextResponse.json(
       { error: "Those dates are no longer available" },
       { status: 409 },

@@ -25,8 +25,8 @@ export default function TermsPage() {
         </p>
         <p>
           FYStay acts as a booking platform connecting guests and hosts. Unless stated otherwise,
-          the accommodation contract for a stay is between the guest and the host, not with FY
-          Stay.
+          the accommodation contract for a stay is between the guest and the host, not with
+          FYStay.
         </p>
         {company && (
           <p>

@@ -29,10 +29,14 @@ export type ExpiredBookingRequest = Booking & { listing: Listing & { host: User 
  * /api/cron/expire-booking-requests) - this app has no background job
  * runner to fire the moment a deadline actually passes.
  *
- * Any referral credit the guest had spent on the booking (see
- * computeCreditToApply in referral.ts) is refunded back to their balance -
- * unlike an instant-book PENDING booking that simply goes unpaid, this
- * guest did nothing wrong; the host is the one who let the clock run out.
+ * Any referral credit or promo code redemption the guest had spent on the
+ * booking (see computeCreditToApply in referral.ts and applyPromoAndCredit
+ * in api/bookings/route.ts) is refunded/released - unlike an instant-book
+ * PENDING booking that simply goes unpaid, this guest did nothing wrong;
+ * the host is the one who let the clock run out. Releasing the promo
+ * redemption matters most for a capped code (PromoCode.maxRedemptions): a
+ * string of never-answered requests would otherwise permanently burn
+ * redemption slots nobody ever actually paid for.
  *
  * Returns the bookings it just expired (with listing/host attached) so a
  * caller that wants to notify the guest - only the cron sweep does today -
@@ -65,6 +69,14 @@ export async function expireStaleBookingRequests(
             prisma.user.update({
               where: { id: booking.guestId },
               data: { creditBalanceCents: { increment: booking.creditAppliedCents } },
+            }),
+          ]
+        : []),
+      ...(booking.promoCodeId
+        ? [
+            prisma.promoCode.update({
+              where: { id: booking.promoCodeId },
+              data: { redemptionCount: { decrement: 1 } },
             }),
           ]
         : []),

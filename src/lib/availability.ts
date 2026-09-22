@@ -1,4 +1,5 @@
 import { addDays, differenceInCalendarDays } from "date-fns";
+import type { PrismaClient } from "@prisma/client";
 
 export type BookedRange = { checkIn: Date; checkOut: Date };
 export type RoomTypeBookedRange = BookedRange & { roomsBooked: number };
@@ -157,4 +158,71 @@ export function blockingRanges(
   blocks: { startDate: Date; endDate: Date }[] = [],
 ): BookedRange[] {
   return [...bookings, ...blocks.map((b) => ({ checkIn: b.startDate, checkOut: b.endDate }))];
+}
+
+/**
+ * Re-checks a specific booking's dates for availability at approval time
+ * (a change-request or a request-to-book being approved), scoped correctly
+ * for both booking shapes: a HOTEL booking (roomTypeId set) is checked
+ * against that room type's own inventory count via
+ * isRoomTypeRangeAvailable, never the whole listing - checking every
+ * booking on the listing regardless of room type/capacity (as this used to)
+ * rejects perfectly available dates the moment any other room type, or the
+ * same room type with capacity to spare, has an overlapping booking, which
+ * is the normal state of an operating hotel, not an edge case. A
+ * non-hotel booking is checked exactly as before, via isRangeAvailable
+ * against the whole listing.
+ */
+export async function isRequestedRangeStillAvailable(
+  prisma: PrismaClient,
+  params: {
+    listingId: string;
+    roomTypeId: string | null;
+    roomsBooked: number;
+    excludeBookingId: string;
+    checkIn: Date;
+    checkOut: Date;
+  },
+): Promise<boolean> {
+  const { listingId, roomTypeId, roomsBooked, excludeBookingId, checkIn, checkOut } = params;
+
+  if (roomTypeId) {
+    const [roomTypeBookings, roomTypeBlocks, roomType] = await Promise.all([
+      prisma.booking.findMany({
+        where: {
+          roomTypeId,
+          id: { not: excludeBookingId },
+          checkIn: { lt: checkOut },
+          checkOut: { gt: checkIn },
+          ...blockingBookingWhere(),
+        },
+        select: { checkIn: true, checkOut: true, roomsBooked: true },
+      }),
+      prisma.availabilityBlock.findMany({
+        where: { roomTypeId },
+        select: { startDate: true, endDate: true },
+      }),
+      prisma.roomType.findUnique({ where: { id: roomTypeId }, select: { totalRooms: true } }),
+    ]);
+    return isRoomTypeRangeAvailable(
+      checkIn,
+      checkOut,
+      roomsBooked,
+      roomType?.totalRooms ?? 0,
+      roomTypeBookings,
+      roomTypeBlocks,
+    );
+  }
+
+  const [otherBookings, blocks] = await Promise.all([
+    prisma.booking.findMany({
+      where: { listingId, id: { not: excludeBookingId }, ...blockingBookingWhere() },
+      select: { checkIn: true, checkOut: true },
+    }),
+    prisma.availabilityBlock.findMany({
+      where: { listingId },
+      select: { startDate: true, endDate: true },
+    }),
+  ]);
+  return isRangeAvailable(checkIn, checkOut, blockingRanges(otherBookings, blocks));
 }

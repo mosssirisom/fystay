@@ -109,6 +109,7 @@ export async function ListingsGrid({
         roomTypes: {
           select: {
             totalRooms: true,
+            maxGuests: true,
             bookings: {
               where: blockingBookingWhere(),
               select: { checkIn: true, checkOut: true, roomsBooked: true },
@@ -140,20 +141,26 @@ export async function ListingsGrid({
   // A hotel with one fully-booked room type and another still free is still
   // bookable - hiding it because *some* room type overlaps would be wrong,
   // unlike a non-hotel listing where any overlap really does close the
-  // whole thing.
+  // whole thing. The room type also has to actually sleep the searched
+  // party (maxGuests), not just have a free room - a listing's own
+  // aggregate maxGuests filter above only rules out a hotel where *every*
+  // room type is too small, not one where the only room type that fits is
+  // the one that's sold out.
   const dateFiltered =
     checkIn && checkOut
       ? listings.filter((listing) =>
           listing.propertyType === "HOTEL"
-            ? listing.roomTypes.some((roomType) =>
-                isRoomTypeRangeAvailable(
-                  checkIn,
-                  checkOut,
-                  1,
-                  roomType.totalRooms,
-                  roomType.bookings,
-                  roomType.availabilityBlocks,
-                ),
+            ? listing.roomTypes.some(
+                (roomType) =>
+                  roomType.maxGuests >= guestsNeeded &&
+                  isRoomTypeRangeAvailable(
+                    checkIn,
+                    checkOut,
+                    1,
+                    roomType.totalRooms,
+                    roomType.bookings,
+                    roomType.availabilityBlocks,
+                  ),
               )
             : isRangeAvailable(
                 checkIn,

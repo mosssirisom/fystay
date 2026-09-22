@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LegalPageLayout, LegalSection } from "@/components/legal/LegalPageLayout";
 import { getCompanyInfo } from "@/lib/companyInfo";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, SITE_URL } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Privacy Policy",
@@ -13,12 +13,13 @@ const LAST_UPDATED = "31 August 2026";
 
 export default function PrivacyPolicyPage() {
   const company = getCompanyInfo();
+  const siteHost = new URL(SITE_URL).host;
 
   return (
     <LegalPageLayout title="Privacy Policy" lastUpdated={LAST_UPDATED}>
       <LegalSection heading="Who we are">
         <p>
-          FYStay (&quot;we&quot;, &quot;us&quot;) operates fystay.vercel.app, a booking platform
+          FYStay (&quot;we&quot;, &quot;us&quot;) operates {siteHost}, a booking platform
           for independent accommodation on the Fylde Coast. This policy explains what personal
           data we collect, why, and the rights you have over it under UK GDPR and the Data
           Protection Act 2018. For questions or to exercise any of the rights below, contact{" "}

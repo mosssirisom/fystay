@@ -118,7 +118,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
           {googleEnabled && (
             <>
               <GoogleSignInButton callbackUrl={callbackUrl ?? undefined} />
-              <div className="my-4 flex items-center gap-3 text-xs text-stone-400">
+              <div className="my-4 flex items-center gap-3 text-xs text-stone-500">
                 <span className="h-px flex-1 bg-border-subtle" />
                 or
                 <span className="h-px flex-1 bg-border-subtle" />

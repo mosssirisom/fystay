@@ -477,7 +477,7 @@ export const DEMO_LISTINGS = [
   {
     title: "Restored fisherman's cottage in Fleetwood's old town",
     description:
-      "A two-up two-down cottage in Fleetwood's original fishing quarter, restored with a modern kitchen but its period features kept intact. The Freeport outlet and North Euston tram terminus are both a short walk away.",
+      "A two-up two-down cottage in Fleetwood's original fishing quarter, restored with a modern kitchen but its period features kept intact. Affinity Lancashire outlet centre and North Euston tram terminus are both a short walk away.",
     city: "Fleetwood",
     country: "England",
     propertyType: "COTTAGE" as const,

@@ -46,7 +46,7 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
       key: "couples",
       steps: [
         { time: "Morning", activity: "Winter Gardens & Opera House's Victorian interiors", place: "Winter Gardens Blackpool" },
-        { time: "Midday", activity: "Lunch at The Cottage Restaurant, Queen Street" },
+        { time: "Midday", activity: "Lunch at The Cottage Restaurant, Newhouse Road, Marton" },
         { time: "Afternoon", activity: "A walk through Stanley Park's Italian Gardens", place: "Stanley Park Blackpool" },
         { time: "Evening", activity: "Blackpool Tower Eye at dusk, then a walk down the Golden Mile", place: "Blackpool Tower" },
       ],
@@ -64,8 +64,8 @@ export const PERFECT_DAYS: Record<string, PerfectDay[]> = {
       key: "foodie",
       steps: [
         { time: "Morning", activity: "Breakfast at a North Shore seafront café" },
-        { time: "Midday", activity: "The Cottage Restaurant, Queen Street, for fish and chips done properly" },
-        { time: "Afternoon", activity: "Abingdon Street Market for seaside treats and local produce" },
+        { time: "Midday", activity: "The Cottage Restaurant, Newhouse Road, Marton, for fish and chips done properly" },
+        { time: "Afternoon", activity: "Abingdon Street Market's food hall for street food and local stalls" },
         { time: "Evening", activity: "A drink in the Winter Gardens' Spanish Hall", place: "Winter Gardens Blackpool" },
       ],
     },

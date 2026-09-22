@@ -124,7 +124,7 @@ export default async function AdminDisputesPage() {
                                 {overdue && " (overdue)"}
                               </span>
                             ) : (
-                              <span className="text-stone-400">-</span>
+                              <span className="text-stone-500">-</span>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -140,7 +140,7 @@ export default async function AdminDisputesPage() {
                                 {dispute.bookingExtra.offering.name} (extra)
                               </span>
                             ) : (
-                              <span className="text-stone-400">Unmatched</span>
+                              <span className="text-stone-500">Unmatched</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-stone-500">

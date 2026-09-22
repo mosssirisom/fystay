@@ -54,10 +54,10 @@ function SourceRow({ source }: { source: SourceSummary }) {
         <span className={source.failuresLast7Days > 0 ? "font-semibold text-red-600" : undefined}>
           {source.failuresLast7Days}
         </span>{" "}
-        <span className="text-xs text-stone-400">/ 7d</span>
+        <span className="text-xs text-stone-500">/ 7d</span>
       </td>
       <td className="py-3 font-mono tabular-nums text-stone-700">
-        {source.syncRunsLast24h} <span className="text-xs text-stone-400">/ 24h</span>
+        {source.syncRunsLast24h} <span className="text-xs text-stone-500">/ 24h</span>
       </td>
     </tr>
   );

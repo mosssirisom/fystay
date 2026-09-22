@@ -108,7 +108,7 @@ export function TripExtrasCard({
                   {offering.description && (
                     <p className="mt-0.5 text-sm text-stone-500">{offering.description}</p>
                   )}
-                  <p className="mt-1 text-xs text-stone-400">Provided by {offering.providerName}</p>
+                  <p className="mt-1 text-xs text-stone-500">Provided by {offering.providerName}</p>
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-2">

@@ -109,7 +109,7 @@ export default async function AdminSupportTicketDetailPage({
             >
               {message.body}
             </div>
-            <p className="mt-1 text-xs text-stone-400">
+            <p className="mt-1 text-xs text-stone-500">
               {message.isAdminReply ? "FYStay support" : message.sender.name} ·{" "}
               {dateFormatter.format(message.createdAt)}
             </p>

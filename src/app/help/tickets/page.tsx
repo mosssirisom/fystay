@@ -77,7 +77,7 @@ export default async function SupportTicketsPage() {
                   {lastMessage && (
                     <p className="truncate text-sm text-stone-500">{previewMessage(lastMessage.body)}</p>
                   )}
-                  <p className="text-xs text-stone-400">{dateFormatter.format(ticket.updatedAt)}</p>
+                  <p className="text-xs text-stone-500">{dateFormatter.format(ticket.updatedAt)}</p>
                 </Link>
               </li>
             );

@@ -830,6 +830,13 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
   // company's name would misrepresent an affiliation that doesn't exist.
   // Once a real partner is signed, rename/replace these via /admin/extras
   // rather than this seed.
+  //
+  // Seeded inactive (active: false, create-only - a reseed never flips an
+  // admin's own reactivation back off) because notificationEmail is a
+  // guaranteed-bouncing @fystay.invalid address: if a guest ever paid for
+  // one of these before a real partner and real email replaced it, nobody
+  // - not the "provider", not FYStay support - would ever be notified of
+  // the purchase. Reactivate from /admin/extras once both are real.
   const attractionsProvider = await prisma.extraProvider.upsert({
     where: { name: "Fylde Coast Attractions (placeholder)" },
     update: {},
@@ -837,6 +844,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
       name: "Fylde Coast Attractions (placeholder)",
       category: "ATTRACTION_TICKET",
       notificationEmail: "placeholder-attractions@fystay.invalid",
+      active: false,
     },
   });
   await prisma.extraOffering.upsert({
@@ -856,6 +864,8 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
     },
   });
 
+  // Same reasoning as attractionsProvider above - inactive until a real
+  // partner and real notification email replace this placeholder.
   const carHireProvider = await prisma.extraProvider.upsert({
     where: { name: "Fylde Coast Car Hire (placeholder)" },
     update: {},
@@ -863,6 +873,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
       name: "Fylde Coast Car Hire (placeholder)",
       category: "CAR_HIRE",
       notificationEmail: "placeholder-carhire@fystay.invalid",
+      active: false,
     },
   });
   await prisma.extraOffering.upsert({

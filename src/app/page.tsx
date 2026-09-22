@@ -212,7 +212,7 @@ export default async function Home() {
           bar - clipping the section would cut those panels off (confirmed
           on a real phone) instead of letting them float over the page
           content below, which is normal, expected dropdown behaviour. */}
-      {/* -mt-[84px]/lg:-mt-[101px] pulls this section up underneath the
+      {/* -mt-[84px]/lg:-mt-[111px] pulls this section up underneath the
           navbar at every breakpoint (previously lg:-only, with a plain
           positive margin below lg instead - the navbar itself used to
           stay opaque and in-flow there, so nothing needed to overlap; now
@@ -220,14 +220,18 @@ export default async function Home() {
           behind it everywhere too) - see NavbarChrome's own comment on why
           that's a negative margin on this sibling rather than making the
           nav position:absolute (which would ignore the cookie consent
-          banner's flow height and overlap it). 84px/101px match that
+          banner's flow height and overlap it). 84px/111px match that
           navbar's actual rendered height at each breakpoint (measured
           directly, not a round-number guess - lg: comes out taller because
           the desktop logo/tagline lockup (Logo size="lg", enlarged so the
           "Hotels · B&Bs · Apartments" tagline spans the full width of the
-          "FYStay" wordmark beneath it) is taller than the mobile icon-
-          button row) - if the navbar's own padding/content ever changes
-          height, this needs to move with it.
+          "FYStay" wordmark beneath it, plus extra mt-3 clearance so the
+          "y" descender's swash doesn't touch the tagline) is taller than
+          the mobile icon-button row - the mobile logo lockup itself grew
+          too, but it's absolutely positioned over the header rather than
+          in flow, so it doesn't add to the header's own layout height
+          there) - if the navbar's own padding/content ever changes height,
+          this needs to move with it.
 
           h-[100svh] (small viewport height, not dvh - a hero shouldn't
           resize itself while the user is mid-scroll as mobile browser
@@ -241,7 +245,7 @@ export default async function Home() {
           stops it growing unbounded on a very tall desktop window, where a
           hero taller than that starts to feel like its own page rather
           than an opener. */}
-      <section className="relative -mt-[84px] h-[100svh] min-h-[560px] w-full lg:-mt-[101px] lg:max-h-[860px]">
+      <section className="relative -mt-[84px] h-[100svh] min-h-[560px] w-full lg:-mt-[111px] lg:max-h-[860px]">
         <HeroBanner className="absolute inset-0 h-full w-full" />
 
         {/* Scrim over the video - darkens the sky band (behind the

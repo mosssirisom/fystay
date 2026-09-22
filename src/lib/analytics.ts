@@ -12,12 +12,20 @@
  * route, or the DB schema to change to start recording events.
  */
 
-/** The five events this phase's brief asks for, plus room to grow: any
- * string is accepted by trackAddonEvent, this union just gives the known
- * ones autocomplete and typo-safety at call sites. */
+/** The events this phase's brief asks for, plus room to grow: any string
+ * is accepted by trackAddonEvent, this union just gives the known ones
+ * autocomplete and typo-safety at call sites. `transfer_intent_added` and
+ * `transfer_added` are deliberately separate names, not the same event
+ * fired from two places - the former is a pre-checkout click with no
+ * money moved yet (TransferStepCard's "Add airport transfer" button,
+ * fired client-side), the latter only ever fires server-side once a
+ * purchase actually completes (see the extras route's own comment) -
+ * merging them would conflate clicks with real revenue in any future
+ * report built on this data. */
 export type AddonAnalyticsEvent =
   | "transfer_offer_viewed"
   | "transfer_offer_clicked"
+  | "transfer_intent_added"
   | "transfer_added"
   | "transfer_skipped"
   | "transfer_booking_completed";

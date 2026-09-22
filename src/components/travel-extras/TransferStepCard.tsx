@@ -37,12 +37,14 @@ export function TransferStepCard({
   });
 
   function handleAdd() {
+    // Distinct from the server-fired "transfer_added" event (only recorded
+    // once a purchase actually completes - see src/lib/analytics.ts's own
+    // comment) - this is just the pre-checkout click, no money moved yet.
     trackAddonEvent({
-      name: "transfer_added",
+      name: "transfer_intent_added",
       category: offering.category,
       surface: "booking_flow",
       offeringId: offering.id,
-      metadata: { intent: true },
     });
   }
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { summarizePlatformFinancials, type AdminBookingSummary } from "./adminSummary";
+import {
+  summarizeExtrasRevenue,
+  summarizePlatformFinancials,
+  type AdminBookingSummary,
+  type AdminExtraSummary,
+} from "./adminSummary";
 
 function booking(overrides: Partial<AdminBookingSummary> = {}): AdminBookingSummary {
   return {
@@ -66,5 +71,39 @@ describe("summarizePlatformFinancials", () => {
       platformRevenueCents: 0,
       paidBookingsCount: 0,
     });
+  });
+});
+
+function extra(overrides: Partial<AdminExtraSummary> = {}): AdminExtraSummary {
+  return {
+    status: "PAID",
+    priceCents: 4500,
+    ...overrides,
+  };
+}
+
+describe("summarizeExtrasRevenue", () => {
+  it("counts only PAID extras", () => {
+    const result = summarizeExtrasRevenue([
+      extra({ status: "PENDING_PAYMENT" }),
+      extra({ status: "CANCELLED" }),
+      extra({ status: "REFUNDED" }),
+      extra({ status: "PAID" }),
+    ]);
+    expect(result).toEqual({ extrasRevenueCents: 4500, paidExtrasCount: 1 });
+  });
+
+  it("sums the full price of every paid extra - no Connect split for these", () => {
+    const result = summarizeExtrasRevenue([
+      extra({ priceCents: 4500 }),
+      extra({ priceCents: 3500 }),
+      extra({ priceCents: 9000 }),
+    ]);
+    expect(result.extrasRevenueCents).toBe(17000);
+    expect(result.paidExtrasCount).toBe(3);
+  });
+
+  it("returns all zeros for an empty list", () => {
+    expect(summarizeExtrasRevenue([])).toEqual({ extrasRevenueCents: 0, paidExtrasCount: 0 });
   });
 });

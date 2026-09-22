@@ -44,3 +44,35 @@ export function summarizePlatformFinancials(bookings: AdminBookingSummary[]): Pl
 
   return { grossBookingValueCents, platformRevenueCents, paidBookingsCount };
 }
+
+export type AdminExtraSummary = {
+  status: "PENDING_PAYMENT" | "PAID" | "CANCELLED" | "REFUNDED";
+  priceCents: number;
+};
+
+export type ExtrasFinancials = {
+  extrasRevenueCents: number;
+  paidExtrasCount: number;
+};
+
+/**
+ * Trip Extras (airport transfers, attraction tickets, car hire) run through
+ * FYStay's own Stripe account, never Stripe Connect (see
+ * src/app/api/bookings/[id]/extras/route.ts's own comment) - a paid
+ * extra's full price is FYStay's own revenue today, not split with a host
+ * or the third-party provider (Phase 1 fulfillment pays providers off-
+ * platform), so this is a plain sum rather than the fee-minus-discounts
+ * shape summarizePlatformFinancials uses for bookings.
+ */
+export function summarizeExtrasRevenue(extras: AdminExtraSummary[]): ExtrasFinancials {
+  let extrasRevenueCents = 0;
+  let paidExtrasCount = 0;
+
+  for (const extra of extras) {
+    if (extra.status !== "PAID") continue;
+    extrasRevenueCents += extra.priceCents;
+    paidExtrasCount += 1;
+  }
+
+  return { extrasRevenueCents, paidExtrasCount };
+}

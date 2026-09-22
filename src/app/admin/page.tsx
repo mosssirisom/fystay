@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BedDouble, CalendarCheck2, PoundSterling, Users } from "lucide-react";
+import { BedDouble, CalendarCheck2, PoundSterling, Ticket, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { summarizePlatformFinancials } from "@/lib/adminSummary";
+import { summarizeExtrasRevenue, summarizePlatformFinancials } from "@/lib/adminSummary";
 import { formatPrice } from "@/lib/format";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { StatCard } from "@/components/host/StatCard";
@@ -34,41 +34,51 @@ export default async function AdminOverviewPage() {
   if (!session?.user) redirect("/login?callbackUrl=/admin");
   if (session.user.role !== "ADMIN") redirect("/");
 
-  const [usersByRole, listingCounts, hotelListingCount, bookingsByStatus, paidBookings, recentBookings] =
-    await Promise.all([
-      prisma.user.groupBy({ by: ["role"], _count: true }),
-      prisma.listing.aggregate({
-        _count: true,
-        where: { published: true },
-      }),
-      prisma.listing.count({ where: { propertyType: "HOTEL" } }),
-      prisma.booking.groupBy({ by: ["status"], _count: true }),
-      prisma.booking.findMany({
-        where: { paymentStatus: { not: "UNPAID" } },
-        select: {
-          paymentStatus: true,
-          totalPriceCents: true,
-          serviceFeeCents: true,
-          taxCents: true,
-          creditAppliedCents: true,
-          promoDiscountCents: true,
-        },
-      }),
-      prisma.booking.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        select: {
-          id: true,
-          reference: true,
-          guestName: true,
-          status: true,
-          totalPriceCents: true,
-          checkIn: true,
-          createdAt: true,
-          listing: { select: { title: true } },
-        },
-      }),
-    ]);
+  const [
+    usersByRole,
+    listingCounts,
+    hotelListingCount,
+    bookingsByStatus,
+    paidBookings,
+    bookingExtras,
+    recentBookings,
+  ] = await Promise.all([
+    prisma.user.groupBy({ by: ["role"], _count: true }),
+    prisma.listing.aggregate({
+      _count: true,
+      where: { published: true },
+    }),
+    prisma.listing.count({ where: { propertyType: "HOTEL" } }),
+    prisma.booking.groupBy({ by: ["status"], _count: true }),
+    prisma.booking.findMany({
+      where: { paymentStatus: { not: "UNPAID" } },
+      select: {
+        paymentStatus: true,
+        totalPriceCents: true,
+        serviceFeeCents: true,
+        taxCents: true,
+        creditAppliedCents: true,
+        promoDiscountCents: true,
+      },
+    }),
+    prisma.bookingExtra.findMany({
+      select: { status: true, priceCents: true },
+    }),
+    prisma.booking.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        reference: true,
+        guestName: true,
+        status: true,
+        totalPriceCents: true,
+        checkIn: true,
+        createdAt: true,
+        listing: { select: { title: true } },
+      },
+    }),
+  ]);
 
   const totalListings = await prisma.listing.count();
   const totalUsers = usersByRole.reduce((sum, r) => sum + r._count, 0);
@@ -76,6 +86,7 @@ export default async function AdminOverviewPage() {
   const guestCount = usersByRole.find((r) => r.role === "GUEST")?._count ?? 0;
 
   const financials = summarizePlatformFinancials(paidBookings);
+  const extrasFinancials = summarizeExtrasRevenue(bookingExtras);
   const activeBookingsCount =
     (bookingsByStatus.find((b) => b.status === "PENDING")?._count ?? 0) +
     (bookingsByStatus.find((b) => b.status === "CONFIRMED")?._count ?? 0);
@@ -103,6 +114,12 @@ export default async function AdminOverviewPage() {
           label="Platform revenue"
           value={formatPrice(financials.platformRevenueCents)}
           sublabel="Service fees, net of credit/promo"
+        />
+        <StatCard
+          icon={Ticket}
+          label="Extras revenue"
+          value={formatPrice(extrasFinancials.extrasRevenueCents)}
+          sublabel={`${extrasFinancials.paidExtrasCount} paid extra${extrasFinancials.paidExtrasCount === 1 ? "" : "s"}`}
         />
         <StatCard
           icon={Users}

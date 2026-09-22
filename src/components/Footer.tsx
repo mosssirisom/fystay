@@ -9,6 +9,7 @@ const columns = [
       { label: "Help center", href: "/help" },
       { label: "Trust & Safety", href: "/safety" },
       { label: "Cancellation options", href: "/cancellation-policies" },
+      { label: "Travel extras", href: "/travel-extras" },
     ],
   },
   {

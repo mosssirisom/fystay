@@ -49,7 +49,7 @@ import { SITE_NAME, SITE_URL, withCity } from "@/lib/seo";
 import { computeRatingBreakdown } from "@/lib/reviews";
 import { computeHostResponseStats, isGreatHost } from "@/lib/hostStats";
 import { PROPERTY_TYPE_LABEL } from "@/lib/propertyType";
-import { getActiveOfferingByCategory } from "@/lib/travelAddons";
+import { getFeaturedOffering } from "@/lib/travelAddons";
 import { formatPrice } from "@/lib/format";
 import { isSuspended } from "@/lib/suspension";
 
@@ -118,10 +118,10 @@ export default async function ListingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [listing, session, airportTransferOffering] = await Promise.all([
+  const [listing, session, featuredAddonOffering] = await Promise.all([
     getListing(id),
     auth(),
-    getActiveOfferingByCategory("AIRPORT_TRANSFER"),
+    getFeaturedOffering(),
   ]);
 
   if (!listing || !listing.published) {
@@ -492,7 +492,7 @@ export default async function ListingDetailPage({
             />
           )}
 
-          {airportTransferOffering && <PropertyTransferPromo offering={airportTransferOffering} />}
+          {featuredAddonOffering && <PropertyTransferPromo offering={featuredAddonOffering} />}
         </div>
       </div>
 

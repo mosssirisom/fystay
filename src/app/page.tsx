@@ -28,7 +28,7 @@ import { TripTypeCategories } from "@/components/TripTypeCategories";
 import { TravelAddonsSection } from "@/components/TravelAddonsSection";
 import { Reveal } from "@/components/Reveal";
 import { beachStaysSection, groupByCity, recentlyAddedSection } from "@/lib/marketplace";
-import { getActiveOfferingByCategory, travelAddonHref } from "@/lib/travelAddons";
+import { ADDON_CATEGORY_LABELS, getFeaturedOffering, travelAddonHref } from "@/lib/travelAddons";
 import { FYLDE_COAST_DESTINATIONS } from "@/lib/destinations";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/seo";
 import { cn } from "@/lib/cn";
@@ -150,7 +150,7 @@ async function MarketplaceSections() {
 }
 
 export default async function Home() {
-  const airportTransferOffering = await getActiveOfferingByCategory("AIRPORT_TRANSFER");
+  const featuredAddonOffering = await getFeaturedOffering();
 
   // WebSite + SearchAction tells Google this site has an internal search it
   // can offer directly in results (a "sitelinks search box"), targeting the
@@ -310,7 +310,7 @@ export default async function Home() {
                 dark-glass tokens as the search panel below (bg-ink/*,
                 border-white/*) so the two read as one attached unit rather
                 than a different visual language bolted on top. */}
-            {airportTransferOffering && (
+            {featuredAddonOffering && (
               <div className="mb-2 flex justify-center gap-1.5 lg:justify-start">
                 <span
                   aria-current="true"
@@ -319,10 +319,10 @@ export default async function Home() {
                   Stays
                 </span>
                 <Link
-                  href={travelAddonHref(airportTransferOffering.category)}
+                  href={travelAddonHref(featuredAddonOffering.category)}
                   className="focus-ring rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-medium text-white/70 backdrop-blur-xl transition-colors hover:bg-white/10 hover:text-white"
                 >
-                  Airport transfer
+                  {ADDON_CATEGORY_LABELS[featuredAddonOffering.category]}
                 </Link>
               </div>
             )}
@@ -530,9 +530,9 @@ export default async function Home() {
             active offering for this category (same "don't show a promise
             with nothing behind it" rule every other conditional section
             on this page already follows). */}
-        {airportTransferOffering && (
+        {featuredAddonOffering && (
           <Reveal className="mt-14">
-            <TravelAddonsSection offering={airportTransferOffering} />
+            <TravelAddonsSection offering={featuredAddonOffering} />
           </Reveal>
         )}
 

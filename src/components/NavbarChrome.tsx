@@ -27,14 +27,16 @@ export function NavbarChrome({ children }: { children: React.ReactNode }) {
           // height" into "relative (not static - see below), transparent,
           // a fixed height with a matching negative margin pulled onto the
           // hero section right after it" (see that section's
-          // -mt-[85px]/lg:-mt-[90px] in page.tsx) - a negative-margin
+          // -mt-[84px]/lg:-mt-[101px] in page.tsx) - a negative-margin
           // overlap rather than position:absolute, so this still renders in
           // normal document flow right after whatever the cookie consent
           // banner (a sibling, in-flow block above this) currently
           // occupies, instead of pinning to the literal top of the page and
           // overlapping the banner when it's showing. Applies at every
           // breakpoint, not just lg: - the header's own rendered height is
-          // ~85-90px everywhere (measured directly), so the same trick
+          // ~84px below lg: and ~101px at lg: (measured directly - lg: is
+          // taller because the desktop logo is Logo size="lg", enlarged so
+          // its tagline spans the wordmark's full width), so the same trick
           // works whether the mobile icon-only layout or the desktop
           // logo/links/menu layout is what's actually rendering inside.
           //

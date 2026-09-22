@@ -50,12 +50,12 @@ export async function Navbar() {
         </Link>
 
         <Link href="/" className="relative z-10 hidden items-center gap-2 lg:flex">
-          <Logo size="md" withTagline taglineClassName="mt-0.5 text-[9px] leading-tight" />
+          <Logo size="lg" withTagline taglineClassName="mt-0.5 text-[9px] leading-tight" />
         </Link>
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center lg:hidden">
           <Link href="/" className="pointer-events-auto flex items-center gap-2">
-            <Logo size="md" withTagline taglineClassName="mt-0.5 text-[9px] leading-tight" />
+            <Logo size="lg" withTagline taglineClassName="mt-0.5 text-[9px] leading-tight" />
           </Link>
         </div>
 

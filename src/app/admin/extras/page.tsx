@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { ExtraProviderForm } from "@/components/admin/ExtraProviderForm";
 import { ExtraOfferingForm } from "@/components/admin/ExtraOfferingForm";
 import { ToggleExtraActiveButton } from "@/components/admin/ToggleExtraActiveButton";
+import { EditExtraProviderDialog } from "@/components/admin/EditExtraProviderDialog";
+import { EditExtraOfferingDialog } from "@/components/admin/EditExtraOfferingDialog";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { formatPrice } from "@/lib/format";
 
@@ -91,11 +93,22 @@ export default async function AdminExtrasPage() {
                         </a>
                       )}
                     </div>
-                    <ToggleExtraActiveButton
-                      endpoint={`/api/admin/extras/providers/${provider.id}`}
-                      active={provider.active}
-                      noun="Provider"
-                    />
+                    <div className="flex shrink-0 gap-2">
+                      <EditExtraProviderDialog
+                        provider={{
+                          id: provider.id,
+                          name: provider.name,
+                          category: provider.category as "AIRPORT_TRANSFER" | "ATTRACTION_TICKET" | "CAR_HIRE",
+                          notificationEmail: provider.notificationEmail,
+                          bookingFormUrl: provider.bookingFormUrl,
+                        }}
+                      />
+                      <ToggleExtraActiveButton
+                        endpoint={`/api/admin/extras/providers/${provider.id}`}
+                        active={provider.active}
+                        noun="Provider"
+                      />
+                    </div>
                   </div>
 
                   {provider.offerings.length > 0 && (
@@ -121,6 +134,15 @@ export default async function AdminExtrasPage() {
                                 {formatPrice(offering.priceCents)}
                               </p>
                               {!offering.active && <Badge variant="neutral">Off</Badge>}
+                              <EditExtraOfferingDialog
+                                offering={{
+                                  id: offering.id,
+                                  name: offering.name,
+                                  description: offering.description,
+                                  priceCents: offering.priceCents,
+                                  features: offering.features,
+                                }}
+                              />
                               <ToggleExtraActiveButton
                                 endpoint={`/api/admin/extras/offerings/${offering.id}`}
                                 active={offering.active}

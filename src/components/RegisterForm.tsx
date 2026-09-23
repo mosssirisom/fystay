@@ -100,7 +100,7 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   return (
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
       <div className="mb-8 flex flex-col items-center text-center">
-        <Logo size="lg" className="mb-3" />
+        <Logo size="xl" className="mb-3" />
         <h1 className="text-2xl font-bold">Create your account</h1>
         <p className="mt-1 text-sm text-stone-500">Join {SITE_NAME} in a few seconds</p>
       </div>

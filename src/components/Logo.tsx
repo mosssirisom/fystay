@@ -6,7 +6,8 @@ import { useNavTone } from "@/components/NavTone";
 const sizeClasses = {
   sm: "text-2xl",
   md: "text-3xl",
-  lg: "text-5xl",
+  lg: "text-4xl",
+  xl: "text-5xl",
 };
 
 export function Logo({

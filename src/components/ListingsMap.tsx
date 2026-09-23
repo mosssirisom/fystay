@@ -12,7 +12,7 @@ const ListingsMapInner = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[480px] w-full animate-pulse items-center justify-center rounded-2xl bg-surface-muted">
+      <div className="skeleton-shimmer flex h-[480px] w-full items-center justify-center rounded-2xl">
         <p className="text-sm text-stone-500">Loading map…</p>
       </div>
     ),

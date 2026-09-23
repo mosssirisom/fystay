@@ -27,7 +27,7 @@ export function ExploreDestinationsSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-surface-muted sm:aspect-[5/4]" />
+        <div key={i} className="skeleton-shimmer aspect-[4/3] w-full rounded-2xl sm:aspect-[5/4]" />
       ))}
     </div>
   );

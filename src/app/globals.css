@@ -470,6 +470,40 @@ body {
   }
 }
 
+/* Loading skeletons (Skeleton.tsx, used by every route's loading.tsx): a
+   slow, understated shimmer across the site's own warm surface tones,
+   rather than Tailwind's default animate-pulse (a flat opacity blink that
+   reads as "something's stalled" more than "content's on its way", and
+   the generic grey block every big OTA already uses). The moving
+   highlight sweeps between the two warm neutrals already used for
+   elevation elsewhere on the page (muted -> the brighter ivory surface
+   tone -> muted) instead of a stark grey-to-white pass, and is slow/gentle
+   enough to read as considered rather than urgent - the kind of restraint
+   an editorial hotel site (Aman, Four Seasons) affords its own loading
+   moments. Deliberately not the brand's own signature gradient sweep
+   (search-sweep/confirm-bar-sweep above) - that stays reserved for actual
+   progress bars so it isn't diluted by appearing on every loading block
+   on the site. */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.skeleton-shimmer {
+  background: linear-gradient(100deg, var(--surface-muted) 35%, var(--surface) 50%, var(--surface-muted) 65%);
+  background-size: 250% 100%;
+  animation: skeleton-shimmer 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--surface-muted);
+  }
+}
+
 /* react-day-picker theming: align its accent with the brand palette. */
 .rdp-root {
   --rdp-accent-color: var(--color-brand-600);

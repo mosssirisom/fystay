@@ -6,7 +6,7 @@ CREATE TYPE "AffiliateConversionStatus" AS ENUM ('PENDING', 'CONFIRMED', 'CANCEL
 
 -- CreateTable
 CREATE TABLE "HotelProvider" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "status" "HotelProviderStatus" NOT NULL DEFAULT 'INACTIVE',
@@ -24,8 +24,8 @@ CREATE TABLE "HotelProvider" (
 
 -- CreateTable
 CREATE TABLE "AffiliateHotel" (
-    "id" TEXT NOT NULL,
-    "providerId" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "providerId" UUID NOT NULL,
     "externalId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -53,8 +53,8 @@ CREATE TABLE "AffiliateHotel" (
 
 -- CreateTable
 CREATE TABLE "AffiliateHotelRoom" (
-    "id" TEXT NOT NULL,
-    "hotelId" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "hotelId" UUID NOT NULL,
     "externalRoomId" TEXT,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -72,8 +72,8 @@ CREATE TABLE "AffiliateHotelRoom" (
 
 -- CreateTable
 CREATE TABLE "AffiliateSearch" (
-    "id" TEXT NOT NULL,
-    "providerId" TEXT,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "providerId" UUID,
     "destination" TEXT NOT NULL,
     "destinationLat" DOUBLE PRECISION,
     "destinationLng" DOUBLE PRECISION,
@@ -92,10 +92,10 @@ CREATE TABLE "AffiliateSearch" (
 
 -- CreateTable
 CREATE TABLE "AffiliateClick" (
-    "id" TEXT NOT NULL,
-    "providerId" TEXT NOT NULL,
-    "hotelId" TEXT NOT NULL,
-    "searchId" TEXT,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "providerId" UUID NOT NULL,
+    "hotelId" UUID NOT NULL,
+    "searchId" UUID,
     "subId" TEXT NOT NULL,
     "destination" TEXT,
     "checkIn" TIMESTAMP(3),
@@ -113,8 +113,8 @@ CREATE TABLE "AffiliateClick" (
 
 -- CreateTable
 CREATE TABLE "AffiliateConversion" (
-    "id" TEXT NOT NULL,
-    "clickId" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "clickId" UUID NOT NULL,
     "status" "AffiliateConversionStatus" NOT NULL DEFAULT 'PENDING',
     "externalBookingReference" TEXT,
     "bookingValueCents" INTEGER,

@@ -1762,7 +1762,7 @@ enum HotelProviderStatus {
 // know that per provider rather than assuming every adapter implements
 // every method identically.
 model HotelProvider {
-  id   String @id @default(cuid())
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   // Stable machine key an adapter registers itself under (e.g.
   // "booking_com", "expedia", "hotelbeds") - what code looks providers up
   // by, distinct from `name`, which is just display copy.
@@ -1805,9 +1805,9 @@ model HotelProvider {
 // display stale prices as guaranteed") rather than presenting these columns
 // as current fact.
 model AffiliateHotel {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  providerId String
+  providerId String        @db.Uuid
   provider   HotelProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
 
   // The provider's own identifier for this hotel - what a later search/
@@ -1873,9 +1873,9 @@ model AffiliateHotel {
 // simply has zero rows here, and the UI falls back to AffiliateHotel's own
 // headline price.
 model AffiliateHotelRoom {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  hotelId String
+  hotelId String         @db.Uuid
   hotel   AffiliateHotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   externalRoomId String?
@@ -1904,9 +1904,9 @@ model AffiliateHotelRoom {
 // shape can change later without another migration - a null providerId
 // would mean "this search wasn't scoped to one provider", not used yet.
 model AffiliateSearch {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  providerId String?
+  providerId String?        @db.Uuid
   provider   HotelProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
 
   destination    String
@@ -1940,17 +1940,17 @@ model AffiliateSearch {
 // and the join point between a FYStay-side search/impression and whatever a
 // provider is later willing to report back about it.
 model AffiliateClick {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  providerId String
+  providerId String        @db.Uuid
   provider   HotelProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
 
-  hotelId String
+  hotelId String         @db.Uuid
   hotel   AffiliateHotel @relation(fields: [hotelId], references: [id], onDelete: Restrict)
 
   // Nullable: a click can happen straight off a destination landing page's
   // featured-hotel slot, not only from a logged search.
-  searchId String?
+  searchId String?          @db.Uuid
   search   AffiliateSearch? @relation(fields: [searchId], references: [id], onDelete: SetNull)
 
   // The tracking/sub-ID FYStay generates and passes to the provider in the
@@ -2004,9 +2004,9 @@ enum AffiliateConversionStatus {
 }
 
 model AffiliateConversion {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  clickId String         @unique
+  clickId String         @unique @db.Uuid
   click   AffiliateClick @relation(fields: [clickId], references: [id], onDelete: Cascade)
 
   status AffiliateConversionStatus @default(PENDING)

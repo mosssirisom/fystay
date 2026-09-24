@@ -126,9 +126,9 @@ enum IdentityVerificationStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String    @unique
   // Set once by self-service account deletion (POST /api/account, see
   // src/lib/accountDeletion.ts) - anonymize-in-place, not a real row
   // delete, since a real DELETE would cascade through every Booking,
@@ -144,10 +144,10 @@ model User {
   // a Credentials login, so authorize() must treat null as "deny" rather
   // than passing it to bcrypt.
   passwordHash String?
-  role         Role     @default(GUEST)
+  role         Role      @default(GUEST)
   image        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // When this account's owner actually agreed to the Terms and Privacy
   // Policy - set once, at account creation, never updated on a later
@@ -209,7 +209,7 @@ model User {
   // identity.verification_session.* handling in the Stripe webhook route) -
   // this app never marks itself verified.
   identityVerificationStatus IdentityVerificationStatus @default(NONE)
-  stripeIdentitySessionId    String?                     @unique
+  stripeIdentitySessionId    String?                    @unique
   identityVerifiedAt         DateTime?
 
   // Optional TOTP two-factor login (see src/lib/twoFactor.ts). The secret
@@ -270,15 +270,21 @@ model User {
   // raised by someone else (e.g. a guest opening a ticket about a
   // problem host); supportTicketMessagesSent covers messages this account
   // wrote into any ticket, whichever side (opener or admin) they wrote as.
-  supportTicketsOpened       SupportTicket[]        @relation("SupportTicketsOpened")
-  supportTicketsAbout        SupportTicket[]        @relation("SupportTicketsAbout")
-  supportTicketMessagesSent  SupportTicketMessage[] @relation("SupportTicketMessagesSent")
+  supportTicketsOpened      SupportTicket[]        @relation("SupportTicketsOpened")
+  supportTicketsAbout       SupportTicket[]        @relation("SupportTicketsAbout")
+  supportTicketMessagesSent SupportTicketMessage[] @relation("SupportTicketMessagesSent")
 
   // PMS/channel-manager connections this host has set up (see the Pms*
   // models below) - a host, not a listing, owns a connection, since one
   // Cloudbeds/SiteMinder/SuperControl account on the provider's side
   // typically covers all of a host's properties at once.
   pmsConnections PmsConnection[]
+
+  // Affiliate hotel searches/clicks this account made while signed in - null
+  // on both relations for a logged-out guest, exactly like every other
+  // optional userId on this schema's tracking tables (see AnalyticsEvent).
+  affiliateSearches AffiliateSearch[]
+  affiliateClicks   AffiliateClick[]
 }
 
 // A single-use, time-limited token for the "forgot password" flow. Only a
@@ -391,12 +397,12 @@ model Listing {
   // distinct from checkInInstructions/wifi below, which are guest-only and
   // only revealed once a booking is actually paid for (see canSeeStayDetails
   // on the booking detail page).
-  selfCheckIn      Boolean @default(false)
-  smokingAllowed   Boolean @default(false)
-  partiesAllowed   Boolean @default(false)
-  quietHoursStart  String?
-  quietHoursEnd    String?
-  additionalRules  String?
+  selfCheckIn     Boolean @default(false)
+  smokingAllowed  Boolean @default(false)
+  partiesAllowed  Boolean @default(false)
+  quietHoursStart String?
+  quietHoursEnd   String?
+  additionalRules String?
 
   // Guest-only, revealed after payment - never shown on the public listing
   // page. checkInInstructions covers lockbox codes, key location, or a
@@ -581,16 +587,16 @@ model Booking {
   // same way as the other price fields - a later edit to the listing's
   // discount settings never rewrites what a guest already agreed to.
   // 0/null when no discount applied to this stay.
-  lengthOfStayDiscountCents Int     @default(0)
+  lengthOfStayDiscountCents Int        @default(0)
   lengthOfStayDiscountLabel String?
-  cleaningFeeCents          Int     @default(0)
-  serviceFeeCents           Int     @default(0)
-  taxCents                  Int     @default(0)
+  cleaningFeeCents          Int        @default(0)
+  serviceFeeCents           Int        @default(0)
+  taxCents                  Int        @default(0)
   // Referral-program credit spent on this booking (see User.creditBalanceCents
   // in referral.ts) - deducted from the guest's balance at booking creation
   // and absorbed out of the platform's own applicationFeeCents at checkout,
   // never the host's share. 0 when the guest had no balance to spend.
-  creditAppliedCents        Int     @default(0)
+  creditAppliedCents        Int        @default(0)
   // An admin-issued PromoCode's discount, snapshotted the same way as every
   // other price field - editing or deactivating the code later never
   // rewrites what a guest already agreed to. Stacks with creditAppliedCents
@@ -600,7 +606,7 @@ model Booking {
   // code was used.
   promoCodeId               String?
   promoCode                 PromoCode? @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
-  promoDiscountCents        Int     @default(0)
+  promoDiscountCents        Int        @default(0)
   totalPriceCents           Int
 
   // Request-to-book (see Listing.instantBook and BookingApprovalStatus).
@@ -624,15 +630,15 @@ model Booking {
   // less than securityDepositCents (a partial claim). depositClaimDeadline
   // is when an AUTHORIZED hold auto-releases if the host files no claim -
   // set once, at authorization time, to checkOut + DEPOSIT_CLAIM_WINDOW_DAYS.
-  securityDepositCents      Int            @default(0)
-  depositStatus             DepositStatus  @default(NOT_REQUIRED)
-  stripeDepositSessionId    String?        @unique
+  securityDepositCents         Int           @default(0)
+  depositStatus                DepositStatus @default(NOT_REQUIRED)
+  stripeDepositSessionId       String?       @unique
   stripeDepositPaymentIntentId String?
-  depositAuthorizedAt       DateTime?
-  depositCapturedCents      Int?
-  depositCapturedAt         DateTime?
-  depositReleasedAt         DateTime?
-  depositClaimDeadline      DateTime?
+  depositAuthorizedAt          DateTime?
+  depositCapturedCents         Int?
+  depositCapturedAt            DateTime?
+  depositReleasedAt            DateTime?
+  depositClaimDeadline         DateTime?
 
   // Contact details for this specific stay, captured at checkout. Kept on
   // the booking (rather than read live off the account) so the record
@@ -670,8 +676,8 @@ model Booking {
   // a guest it already reached. Null means "not sent yet", not "N/A" -
   // both are meaningful on every booking, including a cancelled one that
   // never reaches either window.
-  arrivalReminderSentAt DateTime?
-  reviewRequestSentAt   DateTime?
+  arrivalReminderSentAt     DateTime?
+  reviewRequestSentAt       DateTime?
   // The one-time "did you want an airport transfer?" nudge (see
   // needsTransferUpsellEmail) - sent once per booking regardless of
   // whether a transfer is ever added, so this stays null forever only for
@@ -691,15 +697,15 @@ model Booking {
   // Booking record - see the room-types DELETE route, which enforces the
   // same rule at the app level with a friendlier error before this
   // constraint would ever fire.
-  roomTypeId String?
-  roomType   RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  roomTypeId  String?
+  roomType    RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
   // How many rooms of roomType this single reservation covers. Always 1
   // for a non-hotel booking. nightlyPriceCents already bakes this in (it's
   // the whole-reservation per-night total, i.e. roomType.pricePerNightCents
   // * roomsBooked at booking time) - this field is inventory-count
   // metadata for the availability check and receipts, not a pricing
   // multiplier applied elsewhere.
-  roomsBooked Int @default(1)
+  roomsBooked Int       @default(1)
 
   guestId String
   guest   User   @relation(fields: [guestId], references: [id], onDelete: Cascade)
@@ -1264,7 +1270,7 @@ model PmsConnection {
   // a provider authenticated by a long-lived API key. Checked before each
   // authenticated call so the adapter can refresh proactively rather than
   // waiting for a 401.
-  tokenExpiresAt DateTime?
+  tokenExpiresAt        DateTime?
 
   connectedAt    DateTime?
   disconnectedAt DateTime?
@@ -1273,9 +1279,9 @@ model PmsConnection {
   // so the integrations dashboard can show "Last sync: 2 minutes ago"
   // without a join/aggregate on every page load - the full history is
   // still in PmsSyncLog for the "view errors" detail.
-  lastSyncedAt     DateTime?
-  lastSyncStatus   SyncStatus?
-  lastSyncError    String?
+  lastSyncedAt   DateTime?
+  lastSyncStatus SyncStatus?
+  lastSyncError  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1283,10 +1289,10 @@ model PmsConnection {
   hostId String
   host   User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
 
-  roomMappings      PmsRoomMapping[]
-  reservationLinks  PmsReservationLink[]
-  syncLogs          PmsSyncLog[]
-  webhookEvents     PmsWebhookEvent[]
+  roomMappings     PmsRoomMapping[]
+  reservationLinks PmsReservationLink[]
+  syncLogs         PmsSyncLog[]
+  webhookEvents    PmsWebhookEvent[]
 
   @@unique([hostId, provider])
   @@index([hostId])
@@ -1448,16 +1454,16 @@ enum BookingExtraStatus {
 // phase - see the roadmap's Phase 3 for real provider-API integrations,
 // which may eventually give a provider its own portal.
 model ExtraProvider {
-  id   String @id @default(cuid())
+  id                String        @id @default(cuid())
   // Unique so the seed script (and any future admin "add provider" form)
   // can upsert by name instead of risking duplicate rows for the same real
   // business.
-  name String @unique
+  name              String        @unique
   // Every offering under a provider is technically free to have its own
   // category, but in practice one provider (EV Exec, a car-hire company, a
   // ticketing partner) sells one kind of thing - denormalized here mainly
   // so admin listing/filtering doesn't need a join.
-  category ExtraCategory
+  category          ExtraCategory
   // Where a paid BookingExtra's job is actually sent today (see
   // src/lib/notificationEmails.ts) - the only field Phase 1 fulfillment
   // reads. bookingFormUrl is the provider's own existing booking page
@@ -1465,9 +1471,9 @@ model ExtraProvider {
   // nothing yet links a guest to it directly.
   notificationEmail String
   bookingFormUrl    String?
-  active            Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  active            Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   offerings ExtraOffering[]
 }
@@ -1585,13 +1591,13 @@ model PaymentDispute {
   // stored as-is rather than mapped to an enum, since Stripe documents
   // more values than are worth modeling here and may add more over time;
   // this is a display/triage field, not something this app branches on.
-  reason String
-  status DisputeStatus
+  reason                String
+  status                DisputeStatus
   // Null when Stripe reports no response window for this particular
   // dispute (evidence_details.due_by can be 0/absent) - never treated as
   // "no deadline" by the admin UI, which is why it's nullable rather than
   // defaulted to some far-future date.
-  evidenceDueBy DateTime?
+  evidenceDueBy         DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1656,8 +1662,8 @@ model SupportTicket {
 }
 
 model SupportTicketMessage {
-  id        String   @id @default(cuid())
-  body      String
+  id           String   @id @default(cuid())
+  body         String
   // True when this message was written by an admin acting in a support
   // capacity, false when it's from the ticket's own opener - drives which
   // side of the thread it renders on, the same way Message doesn't need
@@ -1702,4 +1708,326 @@ model AnalyticsEvent {
   @@index([name, createdAt])
   @@index([userId])
   @@index([bookingId])
+}
+
+// ============================================================================
+// Hotel affiliate marketplace - FYStay surfaces third-party hotel inventory
+// (Booking.com first, more providers later) that FYStay never books or takes
+// payment for: a guest clicks through and completes the booking on the
+// provider's own site. Deliberately separate from Listing/RoomType/Booking
+// above, which is FYStay's own directly-managed inventory that FYStay does
+// take payment for (including PropertyType.HOTEL listings, which are a
+// FYStay host's own property, not a third-party affiliate hotel) - these two
+// "hotel" concepts share a name and nothing else, so they get entirely
+// separate tables and code paths rather than any shared/extended model.
+//
+// Provider identity is a plain string code on HotelProvider, not an enum
+// (contrast PmsProvider above): the explicit goal here is that adding
+// Expedia or HBX/Hotelbeds later is a new HotelProvider row plus a new
+// adapter implementation, never a migration. No credentials live in this
+// schema anywhere - every provider's API key/secret is an environment
+// variable, the same convention every other integration in this app already
+// follows (Cloudbeds, Twilio, Ticketmaster, Sentry, PMS encryption).
+//
+// Access model: matches the rest of this schema (a single shared Prisma
+// connection, app-layer checks, no per-row Postgres RLS) rather than the one
+// PMS exception, since there is no per-host/per-tenant data here to isolate
+// - these tables are either public marketplace data (providers, cached
+// hotels, aggregate search/click history) or FYStay's own commercial
+// tracking data. "Cannot be exposed or modified by unauthorized users" is
+// enforced the same way every other admin-only table in this schema already
+// is: provider configuration and the full analytics rollup are read/written
+// only from routes that check session.user.role === "ADMIN" (see every
+// existing /api/admin/* route); the public search/click routes are
+// rate-limited, insert-only from a guest's perspective, and never accept a
+// client-supplied deep-link URL - only a (providerId, hotelId) pair we
+// already stored ourselves, which is also what closes off the open-redirect
+// risk on the click endpoint (see src/lib/hotelProviders/ once built).
+// ============================================================================
+
+// COMING_SOON lets a provider be seeded and configured ahead of actually
+// going live (e.g. while a partner application is pending) without it
+// appearing in search. INACTIVE is the safe default on creation - a new
+// provider row never starts serving traffic by accident.
+enum HotelProviderStatus {
+  ACTIVE
+  INACTIVE
+  COMING_SOON
+}
+
+// One row per third-party hotel supplier FYStay integrates with.
+// Capabilities are booleans, not assumed uniform across providers - a
+// provider added later may support deep links and clicks but not real-time
+// availability or conversion postbacks, and the search/UI layer needs to
+// know that per provider rather than assuming every adapter implements
+// every method identically.
+model HotelProvider {
+  id   String @id @default(cuid())
+  // Stable machine key an adapter registers itself under (e.g.
+  // "booking_com", "expedia", "hotelbeds") - what code looks providers up
+  // by, distinct from `name`, which is just display copy.
+  code String @unique
+  name String
+
+  status HotelProviderStatus @default(INACTIVE)
+
+  supportsSearch             Boolean @default(true)
+  supportsDeepLink           Boolean @default(true)
+  supportsClickTracking      Boolean @default(true)
+  // Most affiliate programs don't hand back real-time booking/commission
+  // data without separate reporting-API approval - false is the honest
+  // default until that access is confirmed for a given provider, so the
+  // admin dashboard never implies conversion tracking exists where it
+  // doesn't (see AffiliateConversion's own comment).
+  supportsConversionTracking Boolean @default(false)
+
+  // Which provider to prefer once more than one is ACTIVE at once (e.g. a
+  // future aggregated search across providers) - higher sorts first. Inert
+  // today with only one active provider.
+  priority Int @default(0)
+
+  websiteUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hotels   AffiliateHotel[]
+  searches AffiliateSearch[]
+  clicks   AffiliateClick[]
+
+  @@index([status])
+}
+
+// A cached, normalized hotel record from one provider's search/details API -
+// never FYStay's own inventory (contrast Listing). Every price/rating field
+// here is "last seen from the provider", not a live, guaranteed value - the
+// UI must treat lastFetchedAt as a staleness signal (see Phase 5's "don't
+// display stale prices as guaranteed") rather than presenting these columns
+// as current fact.
+model AffiliateHotel {
+  id String @id @default(cuid())
+
+  providerId String
+  provider   HotelProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  // The provider's own identifier for this hotel - what a later search/
+  // details call upserts against, and what a deep link is ultimately built
+  // from.
+  externalId String
+
+  name        String
+  description String?
+  city        String
+  country     String
+  latitude    Float?
+  longitude   Float?
+
+  // Provider star class (1-5) and guest review score are deliberately
+  // separate fields, not merged into one "rating" - providers score these
+  // on different scales (e.g. a /10 review score vs a 1-5 star class) and
+  // conflating them would misrepresent whichever one a provider doesn't
+  // send.
+  starRating  Float?
+  guestRating Float?
+  reviewCount Int?
+
+  primaryPhotoUrl String?
+  photos          String[]
+  facilities      String[]
+
+  // Cache-only pricing, not authoritative - see this model's own top
+  // comment. Null until at least one search/details call has populated it.
+  currency            String?
+  lastKnownPriceCents Int?
+  lastFetchedAt       DateTime?
+
+  // App-generated, guaranteed-unique slug for the /hotels/[destination]/
+  // [hotel-slug] URL (see Phase 6) - built from the hotel's name/city plus a
+  // short disambiguator at creation time, never trusted as unique by
+  // construction alone (hence the explicit unique constraint below).
+  slug String @unique
+
+  // Full normalized provider payload, for debugging a bad-looking cached
+  // record without re-calling the provider - same pattern as
+  // LocalPlace.rawData elsewhere in this schema.
+  rawData Json?
+
+  // Lets an admin suppress a bad/stale cached record from search without
+  // deleting the row (and losing its click/conversion history).
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rooms  AffiliateHotelRoom[]
+  clicks AffiliateClick[]
+
+  @@unique([providerId, externalId])
+  @@index([city])
+  @@index([providerId])
+}
+
+// A cached per-room-type deal under one AffiliateHotel, for providers whose
+// API returns room-level detail rather than just a single headline price.
+// Optional by nature - a provider/hotel combination with no room-level data
+// simply has zero rows here, and the UI falls back to AffiliateHotel's own
+// headline price.
+model AffiliateHotelRoom {
+  id String @id @default(cuid())
+
+  hotelId String
+  hotel   AffiliateHotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  externalRoomId String?
+  name           String
+  description    String?
+  maxGuests      Int?
+
+  currency   String?
+  priceCents Int?
+  refundable Boolean?
+
+  lastFetchedAt DateTime?
+  rawData       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hotelId])
+}
+
+// One row per hotel search performed against a provider - powers the
+// admin dashboard's "total searches" and search-to-click funnel. providerId
+// is nullable on purpose: a single search performed against more than one
+// provider at once (a future aggregated search, Phase 10) still logs as one
+// row per provider call today, but keeping this nullable means that
+// shape can change later without another migration - a null providerId
+// would mean "this search wasn't scoped to one provider", not used yet.
+model AffiliateSearch {
+  id String @id @default(cuid())
+
+  providerId String?
+  provider   HotelProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  destination    String
+  destinationLat Float?
+  destinationLng Float?
+  checkIn        DateTime
+  checkOut       DateTime
+  adults         Int      @default(1)
+  children       Int      @default(0)
+  rooms          Int      @default(1)
+
+  // Null means the provider call errored/timed out rather than genuinely
+  // returning zero results - the admin dashboard and Phase 5's "provider
+  // unavailable" state both need to tell those apart.
+  resultCount Int?
+
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+
+  createdAt DateTime @default(now())
+
+  clicks AffiliateClick[]
+
+  @@index([createdAt])
+  @@index([providerId])
+  @@index([userId])
+}
+
+// One row per "View Deal" / "Book Now" click - the record Phase 7 describes,
+// and the join point between a FYStay-side search/impression and whatever a
+// provider is later willing to report back about it.
+model AffiliateClick {
+  id String @id @default(cuid())
+
+  providerId String
+  provider   HotelProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  hotelId String
+  hotel   AffiliateHotel @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+
+  // Nullable: a click can happen straight off a destination landing page's
+  // featured-hotel slot, not only from a logged search.
+  searchId String?
+  search   AffiliateSearch? @relation(fields: [searchId], references: [id], onDelete: SetNull)
+
+  // The tracking/sub-ID FYStay generates and passes to the provider in the
+  // deep link (Booking.com's aid/sub-id mechanism, or the equivalent on a
+  // future provider) - what a later conversion postback/report is matched
+  // back to this exact click by. Defaulted so a click can be recorded and a
+  // deep link built in the same request without a round trip.
+  subId String @unique @default(cuid())
+
+  destination String?
+  checkIn     DateTime?
+  checkOut    DateTime?
+
+  // The exact URL the guest was sent to - a full audit trail of what FYStay
+  // actually redirected to, built entirely server-side from providerId +
+  // hotelId + subId (see this file's own top comment on the open-redirect
+  // protection this gives).
+  deepLinkUrl String
+
+  userId       String?
+  user         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId    String?
+  ipAddress    String?
+  userAgent    String?
+  // Which FYStay page the click came from (e.g. "/hotels/blackpool/...") -
+  // for the admin dashboard's revenue-by-destination view without needing a
+  // separate destination column duplicated from the referring page.
+  referrerPath String?
+
+  createdAt DateTime @default(now())
+
+  conversion AffiliateConversion?
+
+  @@index([providerId, createdAt])
+  @@index([hotelId])
+  @@index([searchId])
+  @@index([userId])
+}
+
+// A confirmed (or pending/cancelled) booking outcome reported back by a
+// provider against one specific click - only ever created from a real
+// provider report or postback, never inferred or guessed client-side. This
+// is what makes "Do not claim a booking or commission has happened unless
+// the provider confirms it" true structurally: there is no path to a
+// nonzero commissionCents that doesn't originate from provider data landing
+// in this table.
+enum AffiliateConversionStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model AffiliateConversion {
+  id String @id @default(cuid())
+
+  clickId String         @unique
+  click   AffiliateClick @relation(fields: [clickId], references: [id], onDelete: Cascade)
+
+  status AffiliateConversionStatus @default(PENDING)
+
+  externalBookingReference String?
+  bookingValueCents        Int?
+  currency                 String?
+  // The admin dashboard's "estimated" vs "confirmed" commission split
+  // (Phase 8) is this one field's own state, not two separate columns:
+  // commissionCents is always FYStay's best-known figure, and
+  // commissionConfirmed says whether that figure came from the provider's
+  // own finalized report (true) or an estimate calculated from the
+  // provider's published commission rate before final confirmation (false).
+  commissionCents          Int?
+  commissionConfirmed      Boolean @default(false)
+
+  reportedAt DateTime?
+  rawData    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
 }

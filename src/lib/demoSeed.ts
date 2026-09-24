@@ -888,6 +888,29 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedDemoDataSu
     },
   });
 
+  // Hotel affiliate marketplace (src/lib/hotelProviders/) - the "mock"
+  // HotelProvider row is what src/lib/hotelProviders/search.ts reads to
+  // decide which provider(s) to query, exactly the same "read ACTIVE rows
+  // from the database" path a real Booking.com row will use once one
+  // exists. Seeded ACTIVE here (dev/test data only, never real inventory)
+  // so hotel search has something to query out of the box; deliberately
+  // NOT seeding a "booking_com" row - see src/lib/hotelProviders/providers/
+  // bookingCom.ts's own comment for why that stays unconfigured until real
+  // partner credentials exist.
+  await prisma.hotelProvider.upsert({
+    where: { code: "mock" },
+    update: {},
+    create: {
+      code: "mock",
+      name: "Mock provider (dev/test only)",
+      status: "ACTIVE",
+      supportsSearch: true,
+      supportsDeepLink: true,
+      supportsClickTracking: true,
+      supportsConversionTracking: false,
+    },
+  });
+
   return {
     hostEmail: host.email,
     guestEmail: guest.email,

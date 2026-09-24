@@ -161,6 +161,7 @@ export const mockHotelProviderAdapter: HotelProviderAdapter = {
         guestRating: hotel.guestRating,
         reviewCount: hotel.reviewCount,
         primaryPhotoUrl: hotel.primaryPhotoUrl,
+        facilities: hotel.facilities,
         currency: hotel.currency,
         priceCents: hotel.priceCents,
       };

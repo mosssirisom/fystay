@@ -98,6 +98,8 @@ export type HotelSearchResult = {
   guestRating?: number | null;
   reviewCount?: number | null;
   primaryPhotoUrl?: string | null;
+  /** A few headline amenities, for the search-result card's own facility tags - the full list lives on HotelDetails, fetched only once a guest opens the hotel's own page. */
+  facilities: string[];
   currency: string;
   priceCents: number;
 };

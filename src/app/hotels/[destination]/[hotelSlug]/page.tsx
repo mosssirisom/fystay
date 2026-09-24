@@ -2,16 +2,23 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AlertTriangle, ExternalLink, MapPin, Star } from "lucide-react";
+import { AlertTriangle, CalendarCheck, ExternalLink, Home, MapPin, Sparkles, Star } from "lucide-react";
 import {
   destinationSlugFor,
   getHotelAvailability,
   getHotelForBooking,
 } from "@/lib/hotelProviders/search";
 import { getHotelProviderAdapter } from "@/lib/hotelProviders/registry";
-import { parseOptionalGuestCounts, parseOptionalStayWindow } from "@/lib/hotelSearchParams";
+import {
+  buildHotelSearchQuery,
+  parseOptionalGuestCounts,
+  parseOptionalStayWindow,
+} from "@/lib/hotelSearchParams";
 import { PhotoGallery } from "@/components/PhotoGallery";
+import { SectionHeading } from "@/components/SectionHeading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { HotelMobileBookingBar } from "@/components/hotels/HotelMobileBookingBar";
 import { formatProviderPrice } from "@/lib/format";
 import { SITE_URL, withCity } from "@/lib/seo";
 
@@ -54,19 +61,30 @@ export async function generateMetadata({
 
   const { details, slug } = outcome.hotel;
   const title = withCity(details.name, details.city);
+  const description =
+    details.description?.slice(0, 155) ??
+    `${details.name} in ${details.city}, ${details.country} - compare and book via our booking partner.`;
+  // Deliberately excludes checkIn/checkOut/guests: the same hotel is
+  // reachable from any number of date/guest combinations, and they'd all
+  // dilute into the same canonical page - a duplicate/thin-page risk this
+  // avoids entirely rather than papering over with per-query canonicals.
   const url = `${SITE_URL}/hotels/${destinationSlugFor(details.city)}/${slug}`;
 
   return {
     title,
-    description:
-      details.description?.slice(0, 155) ??
-      `${details.name} in ${details.city}, ${details.country} - compare and book via our booking partner.`,
+    description,
     alternates: { canonical: url },
-    // Built against the mock provider only today (Phase 5) - never index a
-    // page whose content is test fixture data. Revisit once a real
+    // Built against the mock provider only today (Phase 5/6) - never index
+    // a page whose content is test fixture data. Revisit once a real
     // provider (e.g. Booking.com) is live and this reflects real inventory.
     robots: { index: false, follow: true },
-    openGraph: details.photos[0] ? { title, images: [{ url: details.photos[0] }] } : undefined,
+    openGraph: details.photos[0] ? { title, description, images: [{ url: details.photos[0] }] } : undefined,
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: details.photos[0] ? [details.photos[0]] : undefined,
+    },
   };
 }
 
@@ -129,11 +147,44 @@ export default async function HotelDetailPage({
   const details = hotel.details;
   const totalGuests = guestCounts.adults + guestCounts.children;
 
+  // "Back to these results" - the same city, dates and guests the guest
+  // already searched with, so following the breadcrumb (or a "see other
+  // hotels" link from the empty-deals state below) never drops their
+  // search context. destinationSlugFor(details.city) already established
+  // this hotel's own canonical city text is what search treats as the
+  // destination, so reusing it here keeps the two in agreement.
+  const backToResultsHref = `/hotels?${buildHotelSearchQuery({
+    destination: details.city,
+    checkIn: stayWindow.checkIn,
+    checkOut: stayWindow.checkOut,
+    adults: guestCounts.adults,
+    children: guestCounts.children,
+    rooms: guestCounts.rooms,
+  })}`;
+  // Same destination/guests, dates deliberately omitted - lands on a
+  // pre-filled search form prompting the guest to pick new ones, for the
+  // "no deals for these dates" case.
+  const changeDatesHref = `/hotels?${buildHotelSearchQuery({
+    destination: details.city,
+    adults: guestCounts.adults,
+    children: guestCounts.children,
+    rooms: guestCounts.rooms,
+  })}`;
+
+  const lowestDeal =
+    availabilityOutcome.status === "ok" && availabilityOutcome.deals.length > 0
+      ? availabilityOutcome.deals.reduce((min, deal) => (deal.priceCents < min.priceCents ? deal : min))
+      : null;
+
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
       <nav aria-label="Breadcrumb" className="mb-2 flex items-center gap-1.5 text-xs text-stone-500">
         <Link href="/hotels" className="focus-ring rounded-sm hover:text-brand-700">
           Hotels
+        </Link>
+        <span aria-hidden>/</span>
+        <Link href={backToResultsHref} className="focus-ring rounded-sm hover:text-brand-700">
+          {details.city}
         </Link>
         <span aria-hidden>/</span>
         <span className="truncate text-stone-600">{details.name}</span>
@@ -165,16 +216,16 @@ export default async function HotelDetailPage({
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-8">
           {details.description && (
-            <section>
-              <h2 className="text-lg font-semibold text-foreground">About this hotel</h2>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">{details.description}</p>
+            <section className="flex flex-col gap-2">
+              <SectionHeading icon={Home}>About this hotel</SectionHeading>
+              <p className="text-sm leading-relaxed text-stone-600">{details.description}</p>
             </section>
           )}
 
           {details.facilities.length > 0 && (
-            <section>
-              <h2 className="text-lg font-semibold text-foreground">Facilities</h2>
-              <ul className="mt-3 flex flex-wrap gap-2">
+            <section className="flex flex-col gap-3">
+              <SectionHeading icon={Sparkles}>Facilities</SectionHeading>
+              <ul className="flex flex-wrap gap-2">
                 {details.facilities.map((facility) => (
                   <li
                     key={facility}
@@ -188,22 +239,49 @@ export default async function HotelDetailPage({
           )}
         </div>
 
-        <aside>
+        {/* A distinct bordered/shadowed Card, deliberately unlike the plain
+            inline sections to the left - the visual break itself is most of
+            what tells a guest "this box is a live check against the
+            provider, not fixed content about the hotel", reinforced by the
+            "Live pricing" badge and id="hotel-deals" (the mobile sticky
+            bar's scroll target). */}
+        <aside id="hotel-deals">
           <Card className="lg:sticky lg:top-24">
             <CardHeader className="pb-0">
-              <CardTitle>Available deals</CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarCheck className="h-4 w-4 text-brand-600" aria-hidden />
+                  Available deals
+                </CardTitle>
+                <Badge variant="success">Live pricing</Badge>
+              </div>
               <p className="mt-1 text-xs text-stone-500">
                 {formatDateRange(stayWindow.checkIn, stayWindow.checkOut)} · {totalGuests} guest
                 {totalGuests === 1 ? "" : "s"}, {guestCounts.rooms} room{guestCounts.rooms === 1 ? "" : "s"}
               </p>
+              <p className="mt-0.5 text-[11px] text-stone-400">Checked just now</p>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 pt-4">
               {availabilityOutcome.status === "unavailable" ? (
                 <p className="text-sm text-stone-500">{availabilityOutcome.message}</p>
               ) : availabilityOutcome.deals.length === 0 ? (
-                <p className="text-sm text-stone-500">
-                  No rooms available for these dates. Try different dates.
-                </p>
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-stone-500">No rooms available for these dates.</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    <Link
+                      href={changeDatesHref}
+                      className="focus-ring rounded-sm text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      Try different dates
+                    </Link>
+                    <Link
+                      href={backToResultsHref}
+                      className="focus-ring rounded-sm text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      See other hotels in {details.city}
+                    </Link>
+                  </div>
+                </div>
               ) : (
                 availabilityOutcome.deals.map((deal, i) => {
                   const deepLink = adapter.createDeepLink({
@@ -237,21 +315,29 @@ export default async function HotelDetailPage({
                         rel="nofollow sponsored noopener noreferrer"
                         className="focus-ring mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
                       >
-                        Book now on {hotel.providerName}
+                        Book now
                         <ExternalLink className="h-3.5 w-3.5" aria-hidden />
                       </a>
                     </div>
                   );
                 })
               )}
-              <p className="mt-1 text-[11px] text-stone-500">
-                You&apos;ll book and pay directly with {hotel.providerName}. FYStay doesn&apos;t process this
-                booking.
-              </p>
+              {availabilityOutcome.status === "ok" && availabilityOutcome.deals.length > 0 && (
+                <p className="mt-1 text-[11px] text-stone-500">
+                  You&apos;ll book and pay directly with {hotel.providerName}. FYStay doesn&apos;t process
+                  this booking.
+                </p>
+              )}
             </CardContent>
           </Card>
         </aside>
       </div>
+
+      <HotelMobileBookingBar
+        lowestPriceCents={lowestDeal?.priceCents ?? null}
+        currency={lowestDeal?.currency ?? "GBP"}
+        targetId="hotel-deals"
+      />
     </div>
   );
 }

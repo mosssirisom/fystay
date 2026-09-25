@@ -94,6 +94,26 @@ function formatDateParam(date: Date): string {
 export type HotelStayWindow = { checkIn: Date; checkOut: Date };
 export type HotelGuestCounts = { adults: number; children: number; rooms: number };
 
+/** The guest counts assumed when a hotel page or redirect is hit with none in the URL at all - see parseOptionalGuestCounts's own comment on why that's a fallback, not an error, here. */
+export const DEFAULT_GUEST_COUNTS: HotelGuestCounts = { adults: 2, children: 0, rooms: 1 };
+
+/**
+ * The stay window assumed when a hotel page or redirect is hit with no
+ * dates in the URL at all (a bookmarked/shared link, or a click whose
+ * referring page somehow dropped its query string) - a week out, one
+ * night, always in the future. Shared by the hotel detail page (Phase 6)
+ * and the click/redirect route (Phase 7) so the two can never compute a
+ * different "effective" stay for the same request - the guest always books
+ * against exactly the dates the page showed them.
+ */
+export function defaultStayWindow(now: Date = new Date()): HotelStayWindow {
+  const checkIn = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  checkIn.setDate(checkIn.getDate() + 7);
+  const checkOut = new Date(checkIn);
+  checkOut.setDate(checkOut.getDate() + 1);
+  return { checkIn, checkOut };
+}
+
 /**
  * A lenient counterpart to parseHotelSearchParams for the hotel detail page
  * (Phase 5) - that page has no destination param to validate (the

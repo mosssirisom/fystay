@@ -8,9 +8,10 @@ import {
   getHotelAvailability,
   getHotelForBooking,
 } from "@/lib/hotelProviders/search";
-import { getHotelProviderAdapter } from "@/lib/hotelProviders/registry";
 import {
   buildHotelSearchQuery,
+  DEFAULT_GUEST_COUNTS,
+  defaultStayWindow,
   parseOptionalGuestCounts,
   parseOptionalStayWindow,
 } from "@/lib/hotelSearchParams";
@@ -26,24 +27,6 @@ type Params = { destination: string; hotelSlug: string };
 type SearchParams = Record<string, string | string[] | undefined>;
 
 const getHotel = cache(async (slug: string) => getHotelForBooking(slug));
-
-/**
- * A guest can land here straight from a search result (real dates/guests
- * carried in the URL - see HotelResultCard) or from a bookmarked/shared
- * link with no query string at all. The latter still needs *some* stay to
- * show live availability for, so this picks a week out, one night - a
- * plain, always-in-the-future default, not an error state (unlike the
- * search page, where missing dates on a real search attempt is invalid
- * input worth telling the guest about).
- */
-function defaultStayWindow(): { checkIn: Date; checkOut: Date } {
-  const checkIn = new Date();
-  checkIn.setHours(0, 0, 0, 0);
-  checkIn.setDate(checkIn.getDate() + 7);
-  const checkOut = new Date(checkIn);
-  checkOut.setDate(checkOut.getDate() + 1);
-  return { checkIn, checkOut };
-}
 
 function formatDateRange(checkIn: Date, checkOut: Date): string {
   const fmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
@@ -91,11 +74,12 @@ export async function generateMetadata({
 /**
  * The affiliate hotel detail page - photos/description/facilities/rating
  * come from a live getHotelForBooking() call (never the AffiliateHotel
- * cache row directly - see search.ts's own top comment on why), and every
- * "Book now" CTA links straight out to the provider via a deep link built
- * server-side from data this app already holds, opening in a new tab so a
- * guest never loses their place on FYStay. FYStay never takes payment or a
- * booking on this page itself.
+ * cache row directly - see search.ts's own top comment on why). Every
+ * "Book now" CTA links to this app's own /api/hotels/redirect (Phase 7),
+ * never straight to a provider URL - that route is what actually resolves
+ * the provider, builds the deep link, and records the click, opening in a
+ * new tab so a guest never loses their place on FYStay. FYStay never takes
+ * payment or a booking on this page itself.
  */
 export default async function HotelDetailPage({
   params,
@@ -132,19 +116,30 @@ export default async function HotelDetailPage({
   }
 
   const stayWindow = parseOptionalStayWindow(resolvedSearchParams) ?? defaultStayWindow();
-  const guestCounts = parseOptionalGuestCounts(resolvedSearchParams) ?? {
-    adults: 2,
-    children: 0,
-    rooms: 1,
-  };
+  const guestCounts = parseOptionalGuestCounts(resolvedSearchParams) ?? DEFAULT_GUEST_COUNTS;
 
   const availabilityOutcome = await getHotelAvailability(hotel.providerCode, hotel.externalId, {
     ...stayWindow,
     ...guestCounts,
   });
 
-  const adapter = getHotelProviderAdapter(hotel.providerCode);
   const details = hotel.details;
+  // The exact query every "Book now" link below carries into
+  // /api/hotels/redirect - that route re-derives the same stay window/
+  // guest counts from these same params (falling back to the same
+  // defaults if any are missing), so the deep link it builds always
+  // matches what this page just showed the guest. Never includes a
+  // provider or hotel id directly - the route resolves both itself from
+  // the "hotel" slug against the database (see that route's own top
+  // comment on why nothing here is trusted as-is).
+  const redirectQuery = buildHotelSearchQuery({
+    destination: "",
+    checkIn: stayWindow.checkIn,
+    checkOut: stayWindow.checkOut,
+    adults: guestCounts.adults,
+    children: guestCounts.children,
+    rooms: guestCounts.rooms,
+  });
   const totalGuests = guestCounts.adults + guestCounts.children;
 
   // "Back to these results" - the same city, dates and guests the guest
@@ -284,15 +279,10 @@ export default async function HotelDetailPage({
                 </div>
               ) : (
                 availabilityOutcome.deals.map((deal, i) => {
-                  const deepLink = adapter.createDeepLink({
-                    externalId: hotel.externalId,
-                    checkIn: stayWindow.checkIn,
-                    checkOut: stayWindow.checkOut,
-                    adults: guestCounts.adults,
-                    children: guestCounts.children,
-                    rooms: guestCounts.rooms,
-                    subId: crypto.randomUUID(),
-                  });
+                  const redirectParams = new URLSearchParams(redirectQuery);
+                  redirectParams.set("hotel", hotel.slug);
+                  if (deal.externalRoomId) redirectParams.set("room", deal.externalRoomId);
+                  const redirectHref = `/api/hotels/redirect?${redirectParams.toString()}`;
                   return (
                     <div key={deal.externalRoomId ?? i} className="rounded-xl border border-border-subtle p-3">
                       <p className="text-sm font-semibold text-foreground">{deal.name}</p>
@@ -310,7 +300,7 @@ export default async function HotelDetailPage({
                         )}
                       </div>
                       <a
-                        href={deepLink}
+                        href={redirectHref}
                         target="_blank"
                         rel="nofollow sponsored noopener noreferrer"
                         className="focus-ring mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"

@@ -267,3 +267,50 @@ export async function getHotelAvailability(
 export function destinationSlugFor(city: string): string {
   return slugify(city);
 }
+
+export type AffiliateHotelForRedirect = {
+  id: string;
+  externalId: string;
+  slug: string;
+  city: string;
+  active: boolean;
+  provider: {
+    id: string;
+    code: string;
+    status: string;
+    supportsDeepLink: boolean;
+  };
+};
+
+/**
+ * The one lookup the click/redirect route (Phase 7) resolves a hotel from -
+ * by slug only, the same stable public identifier every other hotel page
+ * already uses, never a raw id or provider/hotel pair taken directly off
+ * the request. Deliberately doesn't call the provider adapter at all (unlike
+ * getHotelForBooking above): a redirect only needs this cached row's own
+ * identity/status fields, and requiring a live details call to succeed
+ * before a guest can be forwarded to book would make an unrelated provider
+ * hiccup block a click that has nothing to do with fetching details.
+ */
+export async function resolveAffiliateHotelForRedirect(
+  slug: string,
+): Promise<AffiliateHotelForRedirect | null> {
+  const row = await prisma.affiliateHotel.findUnique({
+    where: { slug },
+    include: { provider: true },
+  });
+  if (!row) return null;
+  return {
+    id: row.id,
+    externalId: row.externalId,
+    slug: row.slug,
+    city: row.city,
+    active: row.active,
+    provider: {
+      id: row.provider.id,
+      code: row.provider.code,
+      status: row.provider.status,
+      supportsDeepLink: row.provider.supportsDeepLink,
+    },
+  };
+}

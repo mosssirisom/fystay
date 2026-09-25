@@ -16,13 +16,34 @@ export type AffiliateFunnelCounts = {
 };
 
 export type AffiliateFunnelSummary = AffiliateFunnelCounts & {
-  /** clicks / searches, as a fraction (0-1) - the page formats it as a percentage. 0 when there have been no searches yet, never a divide-by-zero NaN/Infinity. */
-  clickThroughRate: number;
+  /**
+   * The dashboard's primary CTR: clicks / hotel detail views, as a fraction
+   * (0-1) - the page formats it as a percentage. This is the conventional
+   * definition of "click-through rate" (clicks against views of the surface
+   * the link actually sits on, i.e. the hotel detail page), not clicks
+   * against searches - a search can produce many detail views, so measuring
+   * against searches understates how many people who actually saw the link
+   * went on to click it. 0 when there have been no detail views yet, never
+   * a divide-by-zero NaN/Infinity.
+   */
+  affiliateClickThroughRate: number;
+  /**
+   * A separate, non-CTR funnel metric: clicks / searches. Deliberately not
+   * named/labelled as CTR anywhere - see affiliateClickThroughRate above for
+   * why. Also not a reliable per-search conversion measure for any click
+   * recorded before AffiliateSearch rows started being written (Phase 8):
+   * such clicks have no AffiliateSearch of their own behind them, so this
+   * ratio can run far above 100% until enough post-tracking volume accrues.
+   * 0 when there have been no searches yet, never a divide-by-zero.
+   */
+  searchToClickRate: number;
 };
 
 export function summarizeAffiliateFunnel(counts: AffiliateFunnelCounts): AffiliateFunnelSummary {
-  const clickThroughRate = counts.totalSearches > 0 ? counts.totalClicks / counts.totalSearches : 0;
-  return { ...counts, clickThroughRate };
+  const affiliateClickThroughRate =
+    counts.totalDetailViews > 0 ? counts.totalClicks / counts.totalDetailViews : 0;
+  const searchToClickRate = counts.totalSearches > 0 ? counts.totalClicks / counts.totalSearches : 0;
+  return { ...counts, affiliateClickThroughRate, searchToClickRate };
 }
 
 export type ConversionRow = {

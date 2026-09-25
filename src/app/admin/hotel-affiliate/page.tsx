@@ -104,26 +104,38 @@ export default async function HotelAffiliateAnalyticsPage() {
   if (!session?.user) redirect("/login?callbackUrl=/admin/hotel-affiliate");
   if (session.user.role !== "ADMIN") redirect("/");
 
-  const [totalSearches, totalDetailViews, totalClicks, conversions, recentClicks, recentSearches] =
-    await Promise.all([
-      prisma.affiliateSearch.count(),
-      prisma.analyticsEvent.count({ where: { name: HOTEL_DETAIL_VIEWED_EVENT } }),
-      prisma.affiliateClick.count(),
-      prisma.affiliateConversion.findMany({
-        include: { click: { include: { provider: true } } },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.affiliateClick.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        include: { provider: true, hotel: { select: { name: true } } },
-      }),
-      prisma.affiliateSearch.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        include: { provider: true },
-      }),
-    ]);
+  const [
+    totalSearches,
+    totalDetailViews,
+    totalClicks,
+    searchLinkedClicks,
+    conversions,
+    recentClicks,
+    recentSearches,
+  ] = await Promise.all([
+    prisma.affiliateSearch.count(),
+    prisma.analyticsEvent.count({ where: { name: HOTEL_DETAIL_VIEWED_EVENT } }),
+    prisma.affiliateClick.count(),
+    // Clicks whose searchId points at a real AffiliateSearch row - always 0
+    // today (searchId isn't populated at click-creation time yet; see
+    // src/app/api/hotels/redirect/route.ts's own comment) - which is exactly
+    // the fact the "Search -> click" note below surfaces rather than hides.
+    prisma.affiliateClick.count({ where: { searchId: { not: null } } }),
+    prisma.affiliateConversion.findMany({
+      include: { click: { include: { provider: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.affiliateClick.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: { provider: true, hotel: { select: { name: true } } },
+    }),
+    prisma.affiliateSearch.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: { provider: true },
+    }),
+  ]);
 
   const funnel = summarizeAffiliateFunnel({ totalSearches, totalDetailViews, totalClicks });
   const revenue = summarizeConversionRevenue(conversions);
@@ -168,11 +180,33 @@ export default async function HotelAffiliateAnalyticsPage() {
         />
         <StatCard
           icon={Percent}
-          label="Click-through rate"
-          value={`${(funnel.clickThroughRate * 100).toFixed(1)}%`}
-          sublabel="Clicks ÷ searches"
+          label="Affiliate CTR"
+          value={`${(funnel.affiliateClickThroughRate * 100).toFixed(1)}%`}
+          sublabel="Clicks ÷ hotel views"
         />
       </div>
+
+      <Card className="mt-3">
+        <CardContent className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Search → click:{" "}
+              <span className="tabular-nums font-normal text-stone-600">
+                {(funnel.searchToClickRate * 100).toFixed(0)}%
+              </span>
+            </p>
+            <p className="mt-0.5 text-xs text-stone-500">
+              A separate funnel metric, not this dashboard&apos;s CTR (that&apos;s clicks ÷ hotel views,
+              above) - clicks per search recorded.
+            </p>
+          </div>
+          <p className="max-w-sm text-xs text-stone-400 sm:text-right">
+            {searchLinkedClicks} of {funnel.totalClicks} recorded clicks are linked to a tracked search.
+            The rest predate per-search click tracking (added this phase) or are otherwise historical/test
+            traffic, so this ratio isn&apos;t a reliable per-search conversion figure yet.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StatCard

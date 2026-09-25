@@ -7,25 +7,39 @@ import {
 } from "./hotelAffiliateSummary";
 
 describe("summarizeAffiliateFunnel", () => {
-  it("computes click-through rate as clicks / searches", () => {
+  it("computes the primary affiliate CTR as clicks / hotel detail views, not clicks / searches", () => {
     const result = summarizeAffiliateFunnel({ totalSearches: 200, totalDetailViews: 80, totalClicks: 20 });
-    expect(result.clickThroughRate).toBe(0.1);
+    expect(result.affiliateClickThroughRate).toBe(0.25);
     expect(result.totalSearches).toBe(200);
     expect(result.totalDetailViews).toBe(80);
     expect(result.totalClicks).toBe(20);
   });
 
-  it("returns 0 CTR rather than NaN/Infinity when there have been no searches yet", () => {
-    const result = summarizeAffiliateFunnel({ totalSearches: 0, totalDetailViews: 0, totalClicks: 0 });
-    expect(result.clickThroughRate).toBe(0);
+  it("computes search -> click as a separate, non-CTR funnel metric", () => {
+    const result = summarizeAffiliateFunnel({ totalSearches: 200, totalDetailViews: 80, totalClicks: 20 });
+    expect(result.searchToClickRate).toBe(0.1);
   });
 
-  it("still returns 0 CTR when there are clicks but somehow no searches on record", () => {
-    // Shouldn't happen in practice (a click always implies a prior search),
-    // but the function must never divide by zero regardless.
+  it("returns 0 CTR rather than NaN/Infinity when there have been no detail views yet", () => {
+    const result = summarizeAffiliateFunnel({ totalSearches: 0, totalDetailViews: 0, totalClicks: 0 });
+    expect(result.affiliateClickThroughRate).toBe(0);
+    expect(result.searchToClickRate).toBe(0);
+  });
+
+  it("still returns 0 for both rates when there are clicks but somehow no detail views/searches on record", () => {
+    // Shouldn't happen in practice (a click always implies a prior detail
+    // view and search), but neither function must ever divide by zero.
     const result = summarizeAffiliateFunnel({ totalSearches: 0, totalDetailViews: 0, totalClicks: 5 });
-    expect(result.clickThroughRate).toBe(0);
-    expect(Number.isFinite(result.clickThroughRate)).toBe(true);
+    expect(result.affiliateClickThroughRate).toBe(0);
+    expect(result.searchToClickRate).toBe(0);
+    expect(Number.isFinite(result.affiliateClickThroughRate)).toBe(true);
+    expect(Number.isFinite(result.searchToClickRate)).toBe(true);
+  });
+
+  it("can exceed 100% for either rate - clicking multiple hotels per view/search is real, not a bug", () => {
+    const result = summarizeAffiliateFunnel({ totalSearches: 1, totalDetailViews: 1, totalClicks: 39 });
+    expect(result.affiliateClickThroughRate).toBe(39);
+    expect(result.searchToClickRate).toBe(39);
   });
 });
 

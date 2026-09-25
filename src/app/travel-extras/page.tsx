@@ -13,7 +13,15 @@ const CATEGORIES: ExtraCategory[] = ["AIRPORT_TRANSFER", "ATTRACTION_TICKET", "C
 
 export const metadata: Metadata = { title: "Travel extras" };
 
-type SearchParams = { category?: string };
+type SearchParams = {
+  category?: string;
+  destination?: string;
+  hotel?: string;
+  checkIn?: string;
+  checkOut?: string;
+  adults?: string;
+  children?: string;
+};
 
 /**
  * One generic landing page for whichever travel add-on category a CTA
@@ -57,5 +65,31 @@ export default async function TravelExtrasPage({
       })
     : null;
 
-  return <TravelAddonLanding offering={offering} eligibleBookingId={eligibleBooking?.id ?? null} />;
+  // Purely informational context a cross-sell surface (e.g. the hotel
+  // affiliate detail page) may have carried through in the URL - see
+  // travelAddonHref/TravelAddonContext in src/lib/travelAddons.ts. Never
+  // affects eligibleBooking above or which CTA TravelAddonLanding shows;
+  // it only lets this generic landing page acknowledge the trip the guest
+  // was actually looking at a moment ago.
+  const parsedAdults = resolved.adults ? Number(resolved.adults) : NaN;
+  const parsedChildren = resolved.children ? Number(resolved.children) : NaN;
+  const tripContext =
+    resolved.destination || resolved.hotel || resolved.checkIn || resolved.checkOut
+      ? {
+          destination: resolved.destination ?? null,
+          hotelName: resolved.hotel ?? null,
+          checkIn: resolved.checkIn ?? null,
+          checkOut: resolved.checkOut ?? null,
+          adults: Number.isFinite(parsedAdults) ? parsedAdults : null,
+          children: Number.isFinite(parsedChildren) ? parsedChildren : null,
+        }
+      : null;
+
+  return (
+    <TravelAddonLanding
+      offering={offering}
+      eligibleBookingId={eligibleBooking?.id ?? null}
+      tripContext={tripContext}
+    />
+  );
 }

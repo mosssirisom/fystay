@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/Button";
 import { trackAddonEvent } from "@/lib/analytics";
 import { useViewOnce } from "@/hooks/useViewOnce";
 import { cn } from "@/lib/cn";
-import type { TravelAddonOffering } from "@/lib/travelAddons";
+import { travelAddonContextSummary, type TravelAddonContext, type TravelAddonOffering } from "@/lib/travelAddons";
 
 const CATEGORY_ICONS: Record<TravelAddonOffering["category"], LucideIcon> = {
   AIRPORT_TRANSFER: CarFront,
@@ -28,11 +28,14 @@ const CATEGORY_ICONS: Record<TravelAddonOffering["category"], LucideIcon> = {
 export function TravelAddonLanding({
   offering,
   eligibleBookingId,
+  tripContext,
 }: {
   offering: TravelAddonOffering;
   eligibleBookingId: string | null;
+  tripContext?: TravelAddonContext | null;
 }) {
   const Icon = CATEGORY_ICONS[offering.category];
+  const contextSummary = tripContext ? travelAddonContextSummary(tripContext) : null;
   const viewRef = useViewOnce<HTMLDivElement>(() => {
     trackAddonEvent({
       name: "transfer_offer_viewed",
@@ -63,6 +66,12 @@ export function TravelAddonLanding({
           <p className="text-sm text-stone-500">Provided by {offering.providerName}</p>
         </div>
       </div>
+
+      {contextSummary && (
+        <p className="mt-4 inline-flex max-w-lg rounded-lg bg-surface-muted px-3 py-2 text-xs font-medium text-stone-600">
+          For your trip: {contextSummary}
+        </p>
+      )}
 
       {offering.description && (
         <p className="mt-4 max-w-lg text-sm text-stone-600">{offering.description}</p>

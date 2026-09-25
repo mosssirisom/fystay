@@ -82,7 +82,77 @@ export async function getFeaturedOffering(): Promise<TravelAddonOffering | null>
   return null;
 }
 
-/** Every cross-sell CTA across the site links here - one generic landing page per category, not a bespoke page per add-on. */
-export function travelAddonHref(category: ExtraCategory): string {
-  return `/travel-extras?category=${category}`;
+/**
+ * Optional trip context a cross-sell surface can pass through to the
+ * /travel-extras landing page for display only (see TravelAddonLanding) -
+ * never used to change eligibility or take a booking on that page itself
+ * (see tripExtraPurchaseError in src/lib/tripExtras.ts, which still gates
+ * on an existing FYStay Booking regardless). Every field is optional and
+ * left out entirely when unknown - callers must never invent a value (an
+ * airport, in particular, has no mapping anywhere in this codebase today)
+ * just to fill this in.
+ */
+export type TravelAddonContext = {
+  destination?: string | null;
+  hotelName?: string | null;
+  /** yyyy-mm-dd, matching formatDateParam in src/lib/hotelSearchParams.ts. */
+  checkIn?: string | null;
+  checkOut?: string | null;
+  adults?: number | null;
+  children?: number | null;
+  airport?: string | null;
+};
+
+/** Every cross-sell CTA across the site links here - one generic landing page per category, not a bespoke page per add-on. `context` is appended as extra, purely-informational query params when known (see TravelAddonContext above). */
+export function travelAddonHref(category: ExtraCategory, context?: TravelAddonContext): string {
+  const params = new URLSearchParams({ category });
+  if (context?.destination) params.set("destination", context.destination);
+  if (context?.hotelName) params.set("hotel", context.hotelName);
+  if (context?.checkIn) params.set("checkIn", context.checkIn);
+  if (context?.checkOut) params.set("checkOut", context.checkOut);
+  if (context?.adults != null) params.set("adults", String(context.adults));
+  if (context?.children != null) params.set("children", String(context.children));
+  if (context?.airport) params.set("airport", context.airport);
+  return `/travel-extras?${params.toString()}`;
+}
+
+/** yyyy-mm-dd -> "15 Oct" for display; falls back to the raw value if it doesn't parse rather than showing "Invalid Date". */
+export function formatTravelAddonContextDate(value: string): string {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" }).format(date);
+}
+
+/**
+ * One line acknowledging the trip a guest was just looking at elsewhere
+ * (e.g. a hotel affiliate deal) before landing on /travel-extras - display
+ * only, see TravelAddonContext's own comment for why nothing here ever
+ * affects eligibility or which CTA TravelAddonLanding shows. Returns null
+ * when the context carries nothing worth summarizing (every field absent),
+ * so a caller can render nothing rather than an empty line.
+ */
+export function travelAddonContextSummary(context: TravelAddonContext): string | null {
+  const parts: string[] = [];
+  if (context.destination) {
+    // Hotel display names in this app already fold their town into the name
+    // itself (e.g. "The Grand Lodge, Blackpool") - appending the destination
+    // again unconditionally would read as "The Grand Lodge, Blackpool,
+    // Blackpool". Only append it when the hotel name doesn't already say it.
+    const hotelAlreadyNamesDestination = Boolean(
+      context.hotelName?.toLowerCase().includes(context.destination.toLowerCase()),
+    );
+    if (context.hotelName) {
+      parts.push(hotelAlreadyNamesDestination ? context.hotelName : `${context.hotelName}, ${context.destination}`);
+    } else {
+      parts.push(context.destination);
+    }
+  }
+  if (context.checkIn && context.checkOut) {
+    parts.push(
+      `${formatTravelAddonContextDate(context.checkIn)} – ${formatTravelAddonContextDate(context.checkOut)}`,
+    );
+  }
+  const guests = (context.adults ?? 0) + (context.children ?? 0);
+  if (guests > 0) parts.push(`${guests} guest${guests === 1 ? "" : "s"}`);
+  return parts.length > 0 ? parts.join(" · ") : null;
 }

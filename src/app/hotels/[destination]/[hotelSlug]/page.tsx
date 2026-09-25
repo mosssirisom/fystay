@@ -13,6 +13,7 @@ import {
   buildHotelSearchQuery,
   DEFAULT_GUEST_COUNTS,
   defaultStayWindow,
+  formatDateParam,
   parseOptionalGuestCounts,
   parseOptionalStayWindow,
 } from "@/lib/hotelSearchParams";
@@ -21,6 +22,8 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { HotelMobileBookingBar } from "@/components/hotels/HotelMobileBookingBar";
+import { EvExecCrossSellCard } from "@/components/EvExecCrossSellCard";
+import { getActiveOfferingByCategory } from "@/lib/travelAddons";
 import { formatProviderPrice } from "@/lib/format";
 import { SITE_URL, withCity } from "@/lib/seo";
 
@@ -119,12 +122,19 @@ export default async function HotelDetailPage({
   const stayWindow = parseOptionalStayWindow(resolvedSearchParams) ?? defaultStayWindow();
   const guestCounts = parseOptionalGuestCounts(resolvedSearchParams) ?? DEFAULT_GUEST_COUNTS;
 
-  const [availabilityOutcome] = await Promise.all([
+  const [availabilityOutcome, evExecOffering] = await Promise.all([
     getHotelAvailability(hotel.providerCode, hotel.externalId, { ...stayWindow, ...guestCounts }),
+    // The EV Exec cross-sell (Phase 9) - a completely separate lookup from
+    // everything else on this page: it never touches AffiliateHotel/
+    // AffiliateClick/AffiliateConversion, and its own analytics events
+    // (ev_exec_cross_sell_impression/click, see EvExecCrossSellCard) are
+    // never mixed into hotel affiliate reporting.
+    getActiveOfferingByCategory("AIRPORT_TRANSFER"),
     // Only after the canonical-destination check above, so a guest hitting
     // the non-canonical URL (immediately redirected, never actually shown
     // this page) doesn't get double-counted alongside the canonical render
-    // they land on next.
+    // they land on next. Its result is discarded (void) - it must come
+    // last in this array so the two names above line up positionally.
     recordHotelDetailView(hotel, hotel.details.city),
   ]);
 
@@ -146,6 +156,19 @@ export default async function HotelDetailPage({
     rooms: guestCounts.rooms,
   });
   const totalGuests = guestCounts.adults + guestCounts.children;
+
+  // What EvExecCrossSellCard carries through to /travel-extras - only real,
+  // already-known values from this exact search (see travelAddonHref's own
+  // comment: no airport is ever included, since no airport mapping exists
+  // anywhere in this codebase and one is never invented here).
+  const evExecContext = {
+    destination: details.city,
+    hotelName: details.name,
+    checkIn: formatDateParam(stayWindow.checkIn),
+    checkOut: formatDateParam(stayWindow.checkOut),
+    adults: guestCounts.adults,
+    children: guestCounts.children,
+  };
 
   // "Back to these results" - the same city, dates and guests the guest
   // already searched with, so following the breadcrumb (or a "see other
@@ -245,7 +268,7 @@ export default async function HotelDetailPage({
             provider, not fixed content about the hotel", reinforced by the
             "Live pricing" badge and id="hotel-deals" (the mobile sticky
             bar's scroll target). */}
-        <aside id="hotel-deals">
+        <aside id="hotel-deals" className="flex flex-col gap-4">
           <Card className="lg:sticky lg:top-24">
             <CardHeader className="pb-0">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -325,6 +348,18 @@ export default async function HotelDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Optional, separate from the deal above it - see EvExecCrossSellCard's
+              own comment for why this is its own component rather than a reuse of
+              PropertyTransferPromo, and item 8 of the Phase 9 brief for why nothing
+              above this line changes to make room for it. */}
+          {evExecOffering && (
+            <EvExecCrossSellCard
+              offering={evExecOffering}
+              context={evExecContext}
+              surface="hotel_detail_page"
+            />
+          )}
         </aside>
       </div>
 

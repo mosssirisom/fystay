@@ -28,7 +28,18 @@ export type AddonAnalyticsEvent =
   | "transfer_intent_added"
   | "transfer_added"
   | "transfer_skipped"
-  | "transfer_booking_completed";
+  | "transfer_booking_completed"
+  /**
+   * The hotel-affiliate journey's own EV Exec cross-sell (Phase 9) - kept
+   * as distinct names from transfer_offer_viewed/clicked above, not the
+   * same events reused with a different `surface`, because this cross-sell
+   * sits inside a different booking journey entirely (an external
+   * affiliate redirect, no FYStay Booking involved) and must never be
+   * conflated with hotel affiliate click tracking (AffiliateClick/subId)
+   * or with the main journey's own transfer funnel in any future report.
+   */
+  | "ev_exec_cross_sell_impression"
+  | "ev_exec_cross_sell_click";
 
 export type AddonAnalyticsPayload = {
   name: AddonAnalyticsEvent | (string & {});

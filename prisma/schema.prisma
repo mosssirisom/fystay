@@ -2031,3 +2031,22 @@ model AffiliateConversion {
 
   @@index([status])
 }
+
+// A small DB-backed cache in front of the two provider calls worth caching
+// (searchHotels, getAvailability - see src/lib/hotelProviders/cache.ts for
+// exactly which and why). Not an in-memory cache: same reasoning as
+// RateLimitHit above - FYStay runs as short-lived Vercel serverless
+// functions, so an in-process cache wouldn't survive a cold start or agree
+// across concurrent instances. providerCode is a plain string, not a
+// relation to HotelProvider, since the cache key is already provider-scoped
+// and nothing here needs a join back to that table.
+model HotelProviderCacheEntry {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cacheKey     String   @unique
+  providerCode String
+  payload      Json
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([expiresAt])
+}

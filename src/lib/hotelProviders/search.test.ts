@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { HotelProviderAdapterError } from "./types";
+import { HotelProviderAdapterError, HotelProviderTimeoutError } from "./types";
 
 const mockHotelProviderFindMany = vi.fn();
 const mockAffiliateSearchFindFirst = vi.fn();
@@ -106,6 +106,21 @@ describe("searchHotels", () => {
     expect(mockAffiliateSearchCreate).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ resultCount: null }) }),
     );
+  });
+
+  it("treats a HotelProviderTimeoutError exactly like any other HotelProviderAdapterError - reports 'unavailable' rather than crashing the guest-facing search", async () => {
+    mockHotelProviderFindMany.mockResolvedValue([{ id: "p1", code: "mock", name: "Mock" }]);
+    const adapter = fakeAdapter({
+      searchHotels: vi.fn().mockRejectedValue(new HotelProviderTimeoutError(8000)),
+    });
+    mockGetHotelProviderAdapter.mockReturnValue(adapter);
+
+    const outcome = await searchHotels(stayWindowParams);
+
+    expect(outcome).toEqual({
+      status: "unavailable",
+      message: "We couldn't reach our hotel search partner. Please try again shortly.",
+    });
   });
 
   it("re-throws an unexpected (non-adapter) error rather than swallowing it as 'unavailable'", async () => {

@@ -159,3 +159,23 @@ export class HotelProviderAdapterError extends Error {
     this.statusCode = options.statusCode;
   }
 }
+
+/**
+ * Thrown by src/lib/hotelProviders/resilience.ts when an adapter call
+ * doesn't resolve within its configured timeout - a subclass of
+ * HotelProviderAdapterError (not a separate error type) specifically so
+ * every existing `catch` site written against that base class (search.ts,
+ * getHotelForBooking, getHotelAvailability) keeps working unchanged: a
+ * timeout is still, correctly, an "unavailable" outcome to them. It exists
+ * as its own class only so a test (or future caller) that specifically
+ * needs to tell "the provider timed out" apart from "the provider answered
+ * with an error" can do so with `instanceof HotelProviderTimeoutError`.
+ * Always retryable: a timeout is transient by definition, never a
+ * configuration/validation problem.
+ */
+export class HotelProviderTimeoutError extends HotelProviderAdapterError {
+  constructor(timeoutMs: number) {
+    super(`Provider call timed out after ${timeoutMs}ms`, { retryable: true });
+    this.name = "HotelProviderTimeoutError";
+  }
+}

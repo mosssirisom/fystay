@@ -1,6 +1,8 @@
 import type { HotelProviderAdapter } from "@/lib/hotelProviders/types";
 import { mockHotelProviderAdapter } from "@/lib/hotelProviders/providers/mock";
 import { bookingComAdapter } from "@/lib/hotelProviders/providers/bookingCom";
+import { withResilientAdapter } from "@/lib/hotelProviders/resilience";
+import { withCachedAdapter } from "@/lib/hotelProviders/cache";
 
 /**
  * The one place that maps a HotelProvider.code to its adapter
@@ -20,12 +22,22 @@ const ADAPTERS: Record<string, HotelProviderAdapter> = {
   booking_com: bookingComAdapter,
 };
 
+/**
+ * Every adapter returned from here is wrapped in caching(resilience(...))
+ * before it reaches a caller - see resilience.ts and cache.ts for what each
+ * layer does and why. Wrapping happens in exactly this one place so every
+ * existing and future caller (search.ts, the redirect route) gets timeout/
+ * retry handling and DB-backed caching automatically, with zero changes to
+ * those call sites and zero provider-specific logic in either wrapper.
+ * Cache sits outermost: a cache hit never even reaches the resilience
+ * layer, since there's no provider call to time out or retry.
+ */
 export function getHotelProviderAdapter(code: string): HotelProviderAdapter {
   const adapter = ADAPTERS[code];
   if (!adapter) {
     throw new Error(`No HotelProviderAdapter registered for code "${code}"`);
   }
-  return adapter;
+  return withCachedAdapter(withResilientAdapter(adapter));
 }
 
 /**

@@ -4,9 +4,16 @@ import { auth } from "@/auth";
 import { withApiErrorHandling } from "@/lib/apiError";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, clientIp, rateLimitedResponse } from "@/lib/rateLimit";
+import { CLIENT_REPORTABLE_ADDON_EVENTS } from "@/lib/analytics";
 
 const eventSchema = z.object({
-  name: z.string().min(1).max(100),
+  // Restricted to the known client-originated event names (see
+  // CLIENT_REPORTABLE_ADDON_EVENTS's own comment) - this being public and
+  // unauthenticated, an unrestricted free-text name would let anyone write
+  // an arbitrarily-named row here, including forging events (like a
+  // purchase completion) that are only ever meant to be recorded
+  // server-side from a verified action elsewhere in the app.
+  name: z.enum(CLIENT_REPORTABLE_ADDON_EVENTS),
   category: z.string().max(100).optional(),
   surface: z.string().max(100).optional(),
   bookingId: z.string().max(100).optional(),

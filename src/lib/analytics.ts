@@ -41,6 +41,28 @@ export type AddonAnalyticsEvent =
   | "ev_exec_cross_sell_impression"
   | "ev_exec_cross_sell_click";
 
+/**
+ * The only event names /api/analytics/events (a public, unauthenticated
+ * endpoint - see that route's own comment) will ever accept and persist.
+ * Deliberately narrower than AddonAnalyticsEvent above: "transfer_added"
+ * and "transfer_booking_completed" are excluded on purpose, since nothing
+ * legitimate ever sends them here (they're written directly via Prisma from
+ * the extras route once a purchase server-side actually completes - see
+ * that route's own comment). Accepting them through this public endpoint
+ * too would let anyone forge a fake "add-on purchased" event indistinguishable
+ * from a real one in any revenue-adjacent report built on this data - a
+ * risk excluding them here closes off entirely, since a request naming
+ * either one is now just rejected as invalid input rather than recorded.
+ */
+export const CLIENT_REPORTABLE_ADDON_EVENTS = [
+  "transfer_offer_viewed",
+  "transfer_offer_clicked",
+  "transfer_intent_added",
+  "transfer_skipped",
+  "ev_exec_cross_sell_impression",
+  "ev_exec_cross_sell_click",
+] as const satisfies readonly AddonAnalyticsEvent[];
+
 export type AddonAnalyticsPayload = {
   name: AddonAnalyticsEvent | (string & {});
   /** Which add-on category this concerns - "AIRPORT_TRANSFER" today, free-text so future categories (attractions, car hire, experiences, restaurant bookings) never need a schema change. */

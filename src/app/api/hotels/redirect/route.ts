@@ -172,9 +172,14 @@ export const GET = withApiErrorHandling(async function GET(request: Request) {
       data: {
         providerId: hotel.provider.id,
         hotelId: hotel.id,
-        // AffiliateSearch rows aren't written yet (still deferred, per
-        // Phase 5's own decision) - every click's searchId stays null
-        // until that lands.
+        // AffiliateSearch rows have existed since Phase 8, but this route
+        // has no reliable way to know *which* search (if any) led to this
+        // click - correlating them (e.g. "most recent search for this
+        // visitor/session within some time window") is a real design
+        // decision (how wide a window, how to break ties) that risks
+        // mislinking a click to the wrong search if guessed casually, so
+        // searchId is deliberately left null here rather than guessed at.
+        // See the Phase 10 production-readiness report for this open item.
         searchId: null,
         subId,
         destination: hotel.city,

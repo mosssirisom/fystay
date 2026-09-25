@@ -11,7 +11,14 @@ import type { ExtraCategory } from "@prisma/client";
 
 const CATEGORIES: ExtraCategory[] = ["AIRPORT_TRANSFER", "ATTRACTION_TICKET", "CAR_HIRE"];
 
-export const metadata: Metadata = { title: "Travel extras" };
+// Content varies entirely by query string (category, and since Phase 9 also
+// destination/hotel/dates/guests carried through from a cross-sell surface -
+// see travelAddonHref in src/lib/travelAddons.ts) with no canonical set, the
+// same "one URL shape renders many different combinations" pattern /hotels
+// and /hotels/[destination]/[hotelSlug] are deliberately noindexed for -
+// this page follows that same convention rather than indexing whichever
+// query-param combination a crawler happens to hit first.
+export const metadata: Metadata = { title: "Travel extras", robots: { index: false, follow: true } };
 
 type SearchParams = {
   category?: string;

@@ -7,6 +7,7 @@ import {
   destinationSlugFor,
   getHotelAvailability,
   getHotelForBooking,
+  recordHotelDetailView,
 } from "@/lib/hotelProviders/search";
 import {
   buildHotelSearchQuery,
@@ -118,10 +119,14 @@ export default async function HotelDetailPage({
   const stayWindow = parseOptionalStayWindow(resolvedSearchParams) ?? defaultStayWindow();
   const guestCounts = parseOptionalGuestCounts(resolvedSearchParams) ?? DEFAULT_GUEST_COUNTS;
 
-  const availabilityOutcome = await getHotelAvailability(hotel.providerCode, hotel.externalId, {
-    ...stayWindow,
-    ...guestCounts,
-  });
+  const [availabilityOutcome] = await Promise.all([
+    getHotelAvailability(hotel.providerCode, hotel.externalId, { ...stayWindow, ...guestCounts }),
+    // Only after the canonical-destination check above, so a guest hitting
+    // the non-canonical URL (immediately redirected, never actually shown
+    // this page) doesn't get double-counted alongside the canonical render
+    // they land on next.
+    recordHotelDetailView(hotel, hotel.details.city),
+  ]);
 
   const details = hotel.details;
   // The exact query every "Book now" link below carries into

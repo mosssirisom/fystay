@@ -22,6 +22,8 @@
  *      needs to keep answering to that same slug on every later search
  *      that surfaces it again.
  */
+import { cookies, headers } from "next/headers";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getHotelProviderAdapter } from "@/lib/hotelProviders/registry";
 import {
@@ -33,6 +35,7 @@ import {
   type HotelSearchResult,
 } from "@/lib/hotelProviders/types";
 import { buildHotelSlugBase, ensureUniqueSlug, slugify } from "@/lib/hotelSlug";
+import { VISITOR_ID_COOKIE } from "@/lib/visitorId";
 
 export type HotelSearchCard = HotelSearchResult & {
   slug: string;
@@ -142,6 +145,79 @@ async function upsertAffiliateHotels(
 }
 
 /**
+ * A search page render can legitimately fire searchHotels() more than once
+ * for the *exact same* query with no real new intent behind it - most
+ * notably a browser/Next.js Link prefetch of a URL the guest only hovered,
+ * or (before Phase 7/8) simply re-rendering the same results page. Rather
+ * than count every one of those as its own "search" (Phase 5 explicitly
+ * deferred this exact concern), an identical search for the same provider/
+ * destination/dates/guests/visitor within this window is treated as the
+ * same search event and not recorded again. Long enough to absorb a
+ * prefetch immediately before/after the real navigation; short enough that
+ * a guest genuinely repeating the same search minutes later still counts.
+ */
+const SEARCH_DEDUP_WINDOW_MS = 30_000;
+
+type SearchIdentity = { userId: string | null; sessionId: string | null };
+
+/**
+ * One AffiliateSearch row per provider actually queried (see this file's
+ * own top comment on why that's the schema's intended shape, not one row
+ * per searchHotels() call) - resultCount is the provider's real result
+ * count on success, or null on a provider failure (never 0, which would
+ * misreport "the provider answered with nothing" as "the provider was
+ * down" or vice versa - see AffiliateSearch.resultCount's own schema
+ * comment). Never lets a tracking failure break search results: any error
+ * here is logged and swallowed, not surfaced to the guest.
+ */
+async function recordSearchEvent(
+  provider: { id: string },
+  params: HotelSearchParams,
+  resultCount: number | null,
+  identity: SearchIdentity,
+  now: Date = new Date(),
+): Promise<void> {
+  try {
+    const since = new Date(now.getTime() - SEARCH_DEDUP_WINDOW_MS);
+    const recentDuplicate = await prisma.affiliateSearch.findFirst({
+      where: {
+        providerId: provider.id,
+        destination: params.destination,
+        checkIn: params.checkIn,
+        checkOut: params.checkOut,
+        adults: params.adults,
+        children: params.children,
+        rooms: params.rooms,
+        userId: identity.userId,
+        sessionId: identity.sessionId,
+        createdAt: { gte: since },
+      },
+      select: { id: true },
+    });
+    if (recentDuplicate) return;
+
+    await prisma.affiliateSearch.create({
+      data: {
+        providerId: provider.id,
+        destination: params.destination,
+        destinationLat: params.destinationLat ?? null,
+        destinationLng: params.destinationLng ?? null,
+        checkIn: params.checkIn,
+        checkOut: params.checkOut,
+        adults: params.adults,
+        children: params.children,
+        rooms: params.rooms,
+        resultCount,
+        userId: identity.userId,
+        sessionId: identity.sessionId,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/**
  * Searches every ACTIVE provider and merges their results. A single
  * provider failing (HotelProviderAdapterError) doesn't fail the whole
  * search if at least one other provider succeeded - only surfaces as
@@ -158,6 +234,12 @@ export async function searchHotels(params: HotelSearchParams): Promise<HotelSear
     };
   }
 
+  const [session, cookieStore] = await Promise.all([auth(), cookies()]);
+  const identity: SearchIdentity = {
+    userId: session?.user?.id ?? null,
+    sessionId: cookieStore.get(VISITOR_ID_COOKIE)?.value ?? null,
+  };
+
   const allResults: HotelSearchCard[] = [];
   let failureCount = 0;
 
@@ -165,6 +247,7 @@ export async function searchHotels(params: HotelSearchParams): Promise<HotelSear
     const adapter = getHotelProviderAdapter(provider.code);
     try {
       const results = await adapter.searchHotels(params);
+      await recordSearchEvent(provider, params, results.length, identity);
       if (results.length === 0) continue;
       const slugByExternalId = await upsertAffiliateHotels(provider.id, results);
       for (const result of results) {
@@ -173,8 +256,9 @@ export async function searchHotels(params: HotelSearchParams): Promise<HotelSear
         allResults.push({ ...result, slug, providerCode: provider.code, providerName: provider.name });
       }
     } catch (err) {
-      failureCount++;
       if (!(err instanceof HotelProviderAdapterError)) throw err;
+      failureCount++;
+      await recordSearchEvent(provider, params, null, identity);
     }
   }
 
@@ -200,6 +284,75 @@ export type HotelLookupOutcome =
   | { status: "ok"; hotel: HotelForBooking }
   | { status: "not_found" }
   | { status: "unavailable"; message: string };
+
+const HOTEL_DETAIL_VIEWED_EVENT = "hotel_detail_viewed";
+/** See recordSearchEvent's own comment on why a dedup window exists at all - the risk here is more acute: every hotel-result card links to its detail page via next/link, which prefetches routes as they scroll into the viewport, so without this a guest merely scrolling past six cards on the results page would look identical to opening six hotel pages. */
+const DETAIL_VIEW_DEDUP_WINDOW_MS = 60_000;
+
+/**
+ * Records a hotel_detail_viewed row in AnalyticsEvent - the same general-
+ * purpose event log Trip Extras cross-sell tracking already uses (see
+ * src/lib/analytics.ts) rather than a new bespoke table, since a "detail
+ * view" isn't a search, a click, or a conversion and the Phase 2 schema has
+ * no dedicated table for it. Never lets a tracking failure break the page:
+ * any error here is logged and swallowed.
+ *
+ * Dedup identity falls back three ways: a logged-in userId, else the
+ * fystay_vid visitor cookie (see visitorId.ts), else the request's own IP -
+ * that last fallback matters more here than it would for search tracking,
+ * because this is a guest's *first-ever* touch of the hotel-affiliate
+ * system just as often as not (the visitor cookie is only ever issued by
+ * the click/redirect route, so a guest who has only ever viewed hotels, not
+ * clicked one, never has it yet) - without an IP fallback, exactly the
+ * highest-prefetch-risk population (brand-new anonymous visitors scrolling
+ * a results page full of next/link cards) would get none of this
+ * function's own dedup protection. IP is a coarser key (shared by
+ * everyone behind the same NAT/office connection) - an acceptable
+ * imprecision for best-effort analytics dedup, never used for anything
+ * where that imprecision would matter.
+ */
+export async function recordHotelDetailView(
+  hotel: { slug: string; providerCode: string },
+  destination: string,
+  now: Date = new Date(),
+): Promise<void> {
+  try {
+    const [session, cookieStore, headerList] = await Promise.all([auth(), cookies(), headers()]);
+    const userId = session?.user?.id ?? null;
+    const sessionId = cookieStore.get(VISITOR_ID_COOKIE)?.value ?? null;
+    const ipKey = userId || sessionId ? null : headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+
+    if (userId || sessionId || ipKey) {
+      const since = new Date(now.getTime() - DETAIL_VIEW_DEDUP_WINDOW_MS);
+      const identityFilter = userId
+        ? { userId }
+        : sessionId
+          ? { metadata: { path: ["sessionId"], equals: sessionId } }
+          : { metadata: { path: ["ipKey"], equals: ipKey as string } };
+      const recentDuplicate = await prisma.analyticsEvent.findFirst({
+        where: {
+          name: HOTEL_DETAIL_VIEWED_EVENT,
+          createdAt: { gte: since },
+          AND: [{ metadata: { path: ["slug"], equals: hotel.slug } }, identityFilter],
+        },
+        select: { id: true },
+      });
+      if (recentDuplicate) return;
+    }
+
+    await prisma.analyticsEvent.create({
+      data: {
+        name: HOTEL_DETAIL_VIEWED_EVENT,
+        category: "HOTEL_AFFILIATE",
+        surface: "hotel_detail_page",
+        userId,
+        metadata: { slug: hotel.slug, providerCode: hotel.providerCode, destination, sessionId, ipKey },
+      },
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 /**
  * Resolves a public hotel slug back to (provider, externalId) via the

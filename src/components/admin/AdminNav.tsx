@@ -7,6 +7,7 @@ const ADMIN_LINKS = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/promo-codes", label: "Promo codes" },
   { href: "/admin/extras", label: "Trip extras" },
+  { href: "/admin/hotel-affiliate", label: "Hotel affiliate" },
   { href: "/admin/disputes", label: "Disputes" },
   { href: "/admin/review-reports", label: "Review reports" },
   { href: "/admin/support-tickets", label: "Support tickets" },
